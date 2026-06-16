@@ -36,7 +36,10 @@ impl PyArray {
 
     /// Open the array stored at `path` in `store`.
     #[staticmethod]
-    #[pyo3(signature = (store, path))]
+    #[pyo3(
+        signature = (store, path = PyNodePath::root()),
+        text_signature = "(store, path='/')"
+    )]
     fn open(store: &Bound<'_, PyAny>, path: PyNodePath) -> PyResult<Self> {
         let storage = extract_storage(store)?;
         let inner = Array::open(storage, path.as_str()).map_err(to_py_err)?;

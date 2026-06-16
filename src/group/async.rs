@@ -39,7 +39,10 @@ impl PyAsyncGroup {
 impl PyAsyncGroup {
     /// Open the group stored at `path` in `store`.
     #[staticmethod]
-    #[pyo3(signature = (store, path))]
+    #[pyo3(
+        signature = (store, path = PyNodePath::root()),
+        text_signature = "(store, path='/')"
+    )]
     fn open_async<'py>(
         py: Python<'py>,
         store: AnyObjectStore,
