@@ -1,15 +1,18 @@
 //! zarrsita: a small, read-only, zarrita-flavored Python binding to zarrs.
 
 mod array;
+mod codec;
 mod dtype;
 mod error;
 mod group;
+mod metadata;
 mod node;
 mod store;
 
 use pyo3::prelude::*;
 
 use crate::array::{PyArray, PyAsyncArray};
+use crate::codec::PyCodecChain;
 use crate::dtype::PyDataType;
 use crate::group::{PyAsyncGroup, PyGroup};
 use crate::store::{FilesystemStore, MemoryStore};
@@ -53,8 +56,9 @@ fn _zarrsita(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<PyArray>()?;
     m.add_class::<PyAsyncArray>()?;
     m.add_class::<PyAsyncGroup>()?;
-    m.add_class::<PyGroup>()?;
+    m.add_class::<PyCodecChain>()?;
     m.add_class::<PyDataType>()?;
+    m.add_class::<PyGroup>()?;
     // m.add_function(wrap_pyfunction!(open, m)?)?;
 
     // m.add("ZarrsitaError", m.py().get_type::<ZarrsitaError>())?;

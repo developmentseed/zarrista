@@ -2,6 +2,7 @@
 
 use std::sync::Arc;
 
+use crate::codec::PyCodecChain;
 use crate::dtype::PyDataType;
 use crate::error::to_py_err;
 use crate::node::PyNodePath;
@@ -28,6 +29,14 @@ impl PyAsyncArray {
 
 #[pymethods]
 impl PyAsyncArray {
+    fn __repr__(&self) -> String {
+        format!(
+            "AsyncArray(shape={:?}, dtype={:?})",
+            self.inner.shape(),
+            self.dtype().__repr__()
+        )
+    }
+
     /// Open the array stored at `path` in `store`.
     #[staticmethod]
     #[pyo3(signature = (store, path))]
@@ -46,22 +55,15 @@ impl PyAsyncArray {
         })
     }
 
-    /// The array shape.
+    /// The array's user attributes as a dict.
     #[getter]
-    fn shape(&self) -> &[u64] {
-        self.inner.shape()
+    fn attrs<'py>(&self, py: Python<'py>) -> PythonizeResult<Bound<'py, PyAny>> {
+        pythonize(py, self.inner.attributes())
     }
 
-    /// The number of dimensions.
     #[getter]
-    fn ndim(&self) -> usize {
-        self.inner.shape().len()
-    }
-
-    /// The Zarr data-type
-    #[getter]
-    fn dtype(&self) -> PyDataType {
-        self.inner.data_type().clone().into()
+    fn codecs(&self) -> PyCodecChain {
+        self.inner.codecs().into()
     }
 
     /// The dimension names, if any were specified.
@@ -70,17 +72,27 @@ impl PyAsyncArray {
         self.inner.dimension_names()
     }
 
-    /// The array's user attributes as a dict.
+    /// The Zarr data-type
     #[getter]
-    fn attrs<'py>(&self, py: Python<'py>) -> PythonizeResult<Bound<'py, PyAny>> {
-        pythonize(py, self.inner.attributes())
+    fn dtype(&self) -> PyDataType {
+        self.inner.data_type().clone().into()
     }
 
-    fn __repr__(&self) -> String {
-        format!(
-            "AsyncArray(shape={:?}, dtype={:?})",
-            self.inner.shape(),
-            self.dtype().__repr__()
-        )
+    /// The number of dimensions.
+    #[getter]
+    fn ndim(&self) -> usize {
+        self.inner.dimensionality()
+    }
+
+    /// The array's path in the store.
+    #[getter]
+    fn path(&self) -> &str {
+        self.inner.path().as_str()
+    }
+
+    /// The array shape.
+    #[getter]
+    fn shape(&self) -> &[u64] {
+        self.inner.shape()
     }
 }

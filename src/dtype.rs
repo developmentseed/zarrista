@@ -4,16 +4,15 @@
 use std::borrow::Cow;
 
 use crate::error::to_py_err;
+use crate::metadata::PyMetadataV3;
 use numpy::prelude::*;
 use numpy::IntoPyArray;
 use pyo3::exceptions::PyNotImplementedError;
 use pyo3::prelude::*;
 use pyo3::IntoPyObjectExt;
-use pythonize::depythonize;
 use zarrs::array::{Array, ArraySubset};
 use zarrs::array::{ArrayError, ElementOwned};
 use zarrs::array::{DataType, DataTypeSize};
-use zarrs::metadata::v3::MetadataV3;
 use zarrs::storage::ReadableListableStorageTraits;
 
 #[pyclass(module = "zarrsita", frozen, name = "DataType")]
@@ -21,18 +20,11 @@ pub struct PyDataType {
     pub(crate) inner: DataType,
 }
 
-impl PyDataType {
-    pub(crate) fn new(data_type: DataType) -> Self {
-        Self { inner: data_type }
-    }
-}
-
 #[pymethods]
 impl PyDataType {
     #[new]
-    fn py_new(metadata: &Bound<PyAny>) -> Self {
-        let meta_v3: MetadataV3 = depythonize(metadata).unwrap();
-        let data_type = DataType::from_metadata(&meta_v3).unwrap();
+    fn py_new(metadata: PyMetadataV3) -> Self {
+        let data_type = DataType::from_metadata(&metadata.into_inner()).unwrap();
         PyDataType { inner: data_type }
     }
 

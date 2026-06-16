@@ -14,6 +14,8 @@ use zarrs::storage::AsyncReadableListableStorageTraits;
 
 /// An opened node: either an array or a group.
 #[derive(IntoPyObject)]
+// TODO: fix this
+#[allow(clippy::large_enum_variant)]
 pub(crate) enum Node {
     Array(PyArray),
     Group(PyGroup),
