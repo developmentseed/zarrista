@@ -1,5 +1,6 @@
 //! The `Array` Python class: metadata accessors and numpy-style reads.
 
+use crate::chunks::PyChunkGrid;
 use crate::codec::PyCodecChain;
 use crate::dtype::PyDataType;
 use crate::error::to_py_err;
@@ -49,6 +50,11 @@ impl PyArray {
     }
 
     #[getter]
+    fn chunk_grid(&self) -> PyChunkGrid {
+        self.inner.chunk_grid().clone().into()
+    }
+
+    #[getter]
     fn codecs(&self) -> PyCodecChain {
         self.inner.codecs().into()
     }
@@ -63,6 +69,11 @@ impl PyArray {
     #[getter]
     fn dtype(&self) -> PyDataType {
         self.inner.data_type().clone().into()
+    }
+
+    #[getter]
+    fn metadata<'py>(&self, py: Python<'py>) -> Bound<'py, PyAny> {
+        pythonize(py, self.inner.metadata()).unwrap()
     }
 
     /// The number of dimensions.
