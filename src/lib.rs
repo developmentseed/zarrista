@@ -1,15 +1,64 @@
+//! zarrsita: a small, read-only, zarrita-flavored Python binding to zarrs.
+
+mod array;
+mod convert;
+mod dtype;
+mod error;
+mod group;
+mod node;
+mod store;
+
+use pyo3::exceptions::PyValueError;
 use pyo3::prelude::*;
 
-/// Return a friendly greeting, proving the Rust <-> Python round-trip works.
-#[pyfunction]
-fn hello() -> &'static str {
-    "Hello from zarrsita!"
-}
+use crate::array::PyArray;
+use crate::error::{to_py_err, NotFoundError, ZarrsitaError};
+use crate::group::PyGroup;
+use crate::node::open_node;
+use crate::store::{extract_storage, FilesystemStore, MemoryStore};
+
+// /// Open a Zarr array or group from a store.
+// ///
+// /// With `kind` omitted, the node kind is auto-detected (array first, then
+// /// group). Pass `kind="array"` or `kind="group"` to require a specific kind.
+// #[pyfunction]
+// #[pyo3(signature = (store, path = "/", *, kind = None))]
+// fn open(
+//     py: Python<'_>,
+//     store: &Bound<'_, PyAny>,
+//     path: &str,
+//     kind: Option<&str>,
+// ) -> PyResult<PyObject> {
+//     let storage = extract_storage(store)?;
+//     match kind {
+//         None => open_node(py, storage, path),
+//         Some("array") => {
+//             let inner = ZarrsArray::open(storage, path).map_err(to_py_err)?;
+//             Ok(Py::new(py, Array::new(inner))?.into_any())
+//         }
+//         Some("group") => {
+//             let inner = ZarrsGroup::open(storage.clone(), path).map_err(to_py_err)?;
+//             Ok(Py::new(py, PyGroup::new(storage, path.to_string(), inner))?.into_any())
+//         }
+//         Some(other) => Err(PyValueError::new_err(format!(
+//             "kind must be 'array', 'group', or None, got {other:?}"
+//         ))),
+//     }
+// }
 
 /// The compiled core of zarrsita, imported as `zarrsita._zarrsita`.
 #[pymodule]
 fn _zarrsita(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add("__version__", env!("CARGO_PKG_VERSION"))?;
-    m.add_function(wrap_pyfunction!(hello, m)?)?;
+
+    m.add_class::<FilesystemStore>()?;
+    m.add_class::<MemoryStore>()?;
+    m.add_class::<PyArray>()?;
+    m.add_class::<PyGroup>()?;
+    // m.add_function(wrap_pyfunction!(open, m)?)?;
+
+    // m.add("ZarrsitaError", m.py().get_type::<ZarrsitaError>())?;
+    // m.add("NotFoundError", m.py().get_type::<NotFoundError>())?;
+
     Ok(())
 }
