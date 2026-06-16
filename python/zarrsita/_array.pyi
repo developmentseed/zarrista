@@ -4,6 +4,7 @@ from obstore.store import ObjectStore
 
 from ._chunks import ChunkGrid
 from ._codec import CodecChain
+from ._data import Data
 from ._dtype import DataType
 from ._store import FilesystemStore, MemoryStore
 
@@ -37,6 +38,8 @@ class Array:
     @property
     def path(self) -> str:
         """The array's path in the store."""
+    def retrieve_chunk(self, chunk_indices: list[int]) -> Data:
+        """Read and decode the chunk at the given chunk grid indices."""
     @property
     def shape(self) -> list[int]:
         """The array shape."""
@@ -72,6 +75,8 @@ class AsyncArray:
     @property
     def path(self) -> str:
         """The array's path in the store."""
+    async def retrieve_chunk(self, chunk_indices: list[int]) -> Data:
+        """Read and decode the chunk at the given chunk grid indices."""
     @property
     def shape(self) -> list[int]:
         """The array shape."""

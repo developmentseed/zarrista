@@ -4,9 +4,12 @@ use std::sync::Arc;
 
 use crate::chunks::PyChunkGrid;
 use crate::codec::PyCodecChain;
+use crate::data::{DataInner, PyData};
 use crate::dtype::PyDataType;
 use crate::error::ZarrsitaError;
 use crate::node::PyNodePath;
+use ndarray::ArrayD;
+use pyo3::exceptions::PyNotImplementedError;
 use pyo3::prelude::*;
 use pyo3_async_runtimes::tokio::future_into_py;
 use pyo3_object_store::AnyObjectStore;
@@ -102,6 +105,49 @@ impl PyAsyncArray {
     #[getter]
     fn path(&self) -> &str {
         self.inner.path().as_str()
+    }
+
+    fn retrieve_chunk<'py>(
+        &self,
+        py: Python<'py>,
+        chunk_indices: Vec<u64>,
+    ) -> PyResult<Bound<'py, PyAny>> {
+        use zarrs::array::data_type::*;
+
+        let inner = self.inner.clone();
+
+        future_into_py(py, async move {
+            let dtype = inner.data_type();
+
+            macro_rules! retrieve {
+                ($dtype:ty, $variant:ident, $elem:ty) => {
+                    if dtype.is::<$dtype>() {
+                        let chunk = inner
+                            .async_retrieve_chunk::<ArrayD<$elem>>(&chunk_indices)
+                            .await
+                            .map_err(ZarrsitaError::from)?;
+                        return Ok(PyData::from(DataInner::$variant(chunk)));
+                    }
+                };
+            }
+
+            retrieve!(BoolDataType, Bool, bool);
+            retrieve!(Int8DataType, Int8, i8);
+            retrieve!(Int16DataType, Int16, i16);
+            retrieve!(Int32DataType, Int32, i32);
+            retrieve!(Int64DataType, Int64, i64);
+            retrieve!(UInt8DataType, Uint8, u8);
+            retrieve!(UInt16DataType, Uint16, u16);
+            retrieve!(UInt32DataType, Uint32, u32);
+            retrieve!(UInt64DataType, Uint64, u64);
+            retrieve!(Float16DataType, Float16, half::f16);
+            retrieve!(Float32DataType, Float32, f32);
+            retrieve!(Float64DataType, Float64, f64);
+
+            Err(PyNotImplementedError::new_err(format!(
+                "reading data type {dtype} is not supported yet"
+            )))
+        })
     }
 
     /// The array shape.

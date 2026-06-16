@@ -26,10 +26,17 @@ python-source = "python"
 
 [dependency-groups]
 dev = [
+    "ipykernel>=7.3.0",
     "maturin>=1.12",
+    "numpy>=2.4.6",
+    "obstore>=0.10.1",
     "pytest>=8.0",
     "ruff>=0.6",
 ]
+
+[tool.ruff]
+# A REPL/notebook-style scratch file using top-level `await`; not a real test.
+extend-exclude = ["tests/example.py"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "W", "UP", "B"]

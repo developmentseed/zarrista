@@ -3,6 +3,7 @@
 mod array;
 mod chunks;
 mod codec;
+mod data;
 mod dtype;
 mod error;
 mod group;
@@ -15,6 +16,7 @@ use pyo3::prelude::*;
 use crate::array::{PyArray, PyAsyncArray};
 use crate::chunks::PyChunkGrid;
 use crate::codec::PyCodecChain;
+use crate::data::PyData;
 use crate::dtype::PyDataType;
 use crate::error::{NotFoundError, ZarrsitaException};
 use crate::group::{PyAsyncGroup, PyGroup};
@@ -61,6 +63,7 @@ fn _zarrsita(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<PyAsyncGroup>()?;
     m.add_class::<PyChunkGrid>()?;
     m.add_class::<PyCodecChain>()?;
+    m.add_class::<PyData>()?;
     m.add_class::<PyDataType>()?;
     m.add_class::<PyGroup>()?;
     // m.add_function(wrap_pyfunction!(open, m)?)?;
