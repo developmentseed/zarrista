@@ -9,7 +9,7 @@ mod store;
 
 use pyo3::prelude::*;
 
-use crate::array::PyArray;
+use crate::array::{PyArray, PyAsyncArray};
 use crate::dtype::PyDataType;
 use crate::group::{PyAsyncGroup, PyGroup};
 use crate::store::{FilesystemStore, MemoryStore};
@@ -51,6 +51,7 @@ fn _zarrsita(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<FilesystemStore>()?;
     m.add_class::<MemoryStore>()?;
     m.add_class::<PyArray>()?;
+    m.add_class::<PyAsyncArray>()?;
     m.add_class::<PyAsyncGroup>()?;
     m.add_class::<PyGroup>()?;
     m.add_class::<PyDataType>()?;

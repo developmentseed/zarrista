@@ -2,7 +2,7 @@ use std::sync::Arc;
 
 use super::last_segment;
 use crate::error::to_py_err;
-use crate::node::{open_node, PyNodePath};
+use crate::node::{open_node_async, PyNodePath};
 use pyo3::prelude::*;
 use pyo3_async_runtimes::tokio::future_into_py;
 use pyo3_object_store::AnyObjectStore;
@@ -40,11 +40,11 @@ impl PyAsyncGroup {
     /// Open the group stored at `path` in `store`.
     #[staticmethod]
     #[pyo3(signature = (store, path))]
-    fn open_async(
-        py: Python<'_>,
+    fn open_async<'py>(
+        py: Python<'py>,
         store: AnyObjectStore,
         path: PyNodePath,
-    ) -> PyResult<Bound<PyAny>> {
+    ) -> PyResult<Bound<'py, PyAny>> {
         let storage: Arc<dyn AsyncReadableListableStorageTraits> =
             Arc::new(AsyncObjectStore::new(store.into_dyn()));
         future_into_py(py, async move {
@@ -85,16 +85,11 @@ impl PyAsyncGroup {
         })
     }
 
-    fn open_child_async<'py>(&self, py: Python<'py>, name: &str) -> PyResult<Bound<'py, PyAny>> {
-        self.inner.clone().async_children(recursive)
-        let storage = self.storage.clone();
-        let path = self.path.join(name).unwrap();
-        future_into_py(py, async move { open_node(py, storage, path).await })
-    }
-
     /// Open a direct child array or group by name.
-    fn __getitem__(&self, py: Python<'_>, name: &str) -> PyResult<Py<PyAny>> {
-        open_node(py, self.storage.clone(), self.path.join(name).unwrap())
+    fn open_child_async<'py>(&self, py: Python<'py>, name: &str) -> PyResult<Bound<'py, PyAny>> {
+        let storage = self.storage.clone();
+        let path = self.path.join(name).map_err(to_py_err)?;
+        future_into_py(py, async move { open_node_async(storage, path).await })
     }
 
     fn __repr__(&self) -> String {
