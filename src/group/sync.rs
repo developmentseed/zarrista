@@ -5,7 +5,7 @@ use std::sync::Arc;
 use super::last_segment;
 use crate::error::ZarrsitaResult;
 use crate::node::{open_node, Node, PyNodePath};
-use crate::store::extract_storage;
+use crate::storage::extract_storage;
 use pyo3::prelude::*;
 use pythonize::pythonize;
 use pythonize::Result as PythonizeResult;
