@@ -1,5 +1,6 @@
 //! The `Array` Python class: metadata accessors and numpy-style reads.
 
+use crate::codec::PyCodecChain;
 use crate::dtype::PyDataType;
 use crate::error::to_py_err;
 use crate::node::PyNodePath;
@@ -24,6 +25,14 @@ impl PyArray {
 
 #[pymethods]
 impl PyArray {
+    fn __repr__(&self) -> String {
+        format!(
+            "Array(shape={:?}, dtype={:?})",
+            self.inner.shape(),
+            self.dtype().__repr__()
+        )
+    }
+
     /// Open the array stored at `path` in `store`.
     #[staticmethod]
     #[pyo3(signature = (store, path))]
@@ -33,16 +42,45 @@ impl PyArray {
         Ok(Self::new(inner))
     }
 
-    /// The array shape.
+    /// The array's user attributes as a dict.
     #[getter]
-    fn shape(&self) -> &[u64] {
-        self.inner.shape()
+    fn attrs<'py>(&self, py: Python<'py>) -> PythonizeResult<Bound<'py, PyAny>> {
+        pythonize(py, self.inner.attributes())
+    }
+
+    #[getter]
+    fn codecs(&self) -> PyCodecChain {
+        self.inner.codecs().into()
+    }
+
+    /// The dimension names, if any were specified.
+    #[getter]
+    fn dimension_names(&self) -> &Option<Vec<Option<String>>> {
+        self.inner.dimension_names()
+    }
+
+    /// The Zarr data-type
+    #[getter]
+    fn dtype(&self) -> PyDataType {
+        self.inner.data_type().clone().into()
     }
 
     /// The number of dimensions.
     #[getter]
     fn ndim(&self) -> usize {
-        self.inner.shape().len()
+        self.inner.dimensionality()
+    }
+
+    /// The array's path in the store.
+    #[getter]
+    fn path(&self) -> &str {
+        self.inner.path().as_str()
+    }
+
+    /// The array shape.
+    #[getter]
+    fn shape(&self) -> &[u64] {
+        self.inner.shape()
     }
 
     // /// The chunk shape (size of a chunk along each dimension).
@@ -53,24 +91,6 @@ impl PyArray {
     //     let chunk_shape = self.inner.chunk_shape(&origin).map_err(to_py_err)?;
     //     Ok(chunk_shape.iter().map(|n| n.get()).collect())
     // }
-
-    /// The Zarr data-type
-    #[getter]
-    fn dtype(&self) -> PyDataType {
-        self.inner.data_type().clone().into()
-    }
-
-    /// The dimension names, if any were specified.
-    #[getter]
-    fn dimension_names(&self) -> &Option<Vec<Option<String>>> {
-        self.inner.dimension_names()
-    }
-
-    /// The array's user attributes as a dict.
-    #[getter]
-    fn attrs<'py>(&self, py: Python<'py>) -> PythonizeResult<Bound<'py, PyAny>> {
-        pythonize(py, self.inner.attributes())
-    }
 
     // /// The fill value as a Python scalar (or `None` if not interpretable).
     // #[getter]
@@ -96,12 +116,4 @@ impl PyArray {
     //     let out_shape: Vec<usize> = chunk_shape.iter().map(|n| n.get() as usize).collect();
     //     dtype::read_region(py, &self.inner, &Region::Chunk(&chunk_coords), &out_shape)
     // }
-
-    fn __repr__(&self) -> String {
-        format!(
-            "Array(shape={:?}, dtype={:?})",
-            self.inner.shape(),
-            self.dtype().__repr__()
-        )
-    }
 }
