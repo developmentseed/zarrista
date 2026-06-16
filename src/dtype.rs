@@ -1,25 +1,81 @@
 //! Data-type handling: zarrs `DataType` names, reading regions into numpy
 //! arrays, and converting fill values into Python scalars.
 
+use std::borrow::Cow;
+
 use crate::error::to_py_err;
 use numpy::prelude::*;
 use numpy::IntoPyArray;
 use pyo3::exceptions::PyNotImplementedError;
 use pyo3::prelude::*;
 use pyo3::IntoPyObjectExt;
-use zarrs::array::DataType;
+use pythonize::depythonize;
 use zarrs::array::{Array, ArraySubset};
 use zarrs::array::{ArrayError, ElementOwned};
-use zarrs::plugin::ZarrVersion;
+use zarrs::array::{DataType, DataTypeSize};
+use zarrs::metadata::v3::MetadataV3;
 use zarrs::storage::ReadableListableStorageTraits;
+
+#[pyclass(module = "zarrsita", frozen, name = "DataType")]
+pub struct PyDataType {
+    pub(crate) inner: DataType,
+}
+
+impl PyDataType {
+    pub(crate) fn new(data_type: DataType) -> Self {
+        Self { inner: data_type }
+    }
+}
+
+#[pymethods]
+impl PyDataType {
+    #[new]
+    fn py_new(metadata: &Bound<PyAny>) -> Self {
+        let meta_v3: MetadataV3 = depythonize(metadata).unwrap();
+        let data_type = DataType::from_metadata(&meta_v3).unwrap();
+        PyDataType { inner: data_type }
+    }
+
+    #[getter]
+    fn name(&self) -> Option<Cow<'static, str>> {
+        self.inner.name_v3()
+    }
+
+    #[getter]
+    fn size(&self) -> Option<usize> {
+        match self.inner.size() {
+            DataTypeSize::Fixed(n) => Some(n),
+            DataTypeSize::Variable => None,
+        }
+    }
+
+    fn __eq__(&self, other: &Bound<PyAny>) -> bool {
+        if let Ok(other) = other.cast::<Self>() {
+            self.inner == other.get().inner
+        } else {
+            false
+        }
+    }
+
+    pub(crate) fn __repr__(&self) -> String {
+        format!("DataType({})", self.inner)
+    }
+}
+
+impl From<DataType> for PyDataType {
+    fn from(data_type: DataType) -> Self {
+        PyDataType { inner: data_type }
+    }
+}
+
+impl From<PyDataType> for DataType {
+    fn from(py_data_type: PyDataType) -> Self {
+        py_data_type.inner
+    }
+}
 
 /// The store trait object backing every zarrsita array/group.
 pub(crate) type DynStorage = dyn ReadableListableStorageTraits;
-
-/// The Zarr V3 name of a data type (e.g. `"float32"`), if it has one.
-pub(crate) fn dtype_name(data_type: &DataType) -> Option<String> {
-    data_type.name(ZarrVersion::V3).map(|n| n.to_string())
-}
 
 /// A region of an array to read: either an explicit subset or a whole chunk.
 pub(crate) enum Region<'a> {
@@ -55,7 +111,7 @@ pub(crate) fn read_region(
     region: &Region<'_>,
     out_shape: &[usize],
 ) -> PyResult<Py<PyAny>> {
-    let name = dtype_name(array.data_type());
+    let name = array.data_type().name_v3();
 
     macro_rules! arm {
         ($t:ty) => {{
@@ -101,7 +157,8 @@ pub(crate) fn fill_value_to_py(
         }};
     }
 
-    let value = match dtype_name(data_type).as_deref() {
+    let dtype_name = data_type.name_v3();
+    let value = match dtype_name.as_deref() {
         Some("bool") => (!bytes.is_empty() && bytes[0] != 0)
             .into_bound_py_any(py)?
             .unbind(),

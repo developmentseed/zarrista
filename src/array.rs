@@ -1,12 +1,12 @@
 //! The `Array` Python class: metadata accessors and numpy-style reads.
 
+use crate::dtype::PyDataType;
 use crate::error::to_py_err;
 use crate::node::PyNodePath;
 use crate::store::extract_storage;
 use pyo3::prelude::*;
 use pythonize::pythonize;
 use pythonize::Result as PythonizeResult;
-use std::borrow::Cow;
 use zarrs::array::Array;
 use zarrs::storage::ReadableListableStorageTraits;
 
@@ -54,10 +54,10 @@ impl PyArray {
     //     Ok(chunk_shape.iter().map(|n| n.get()).collect())
     // }
 
-    /// The Zarr V3 data-type name (e.g. `"float32"`).
+    /// The Zarr data-type
     #[getter]
-    fn dtype(&self) -> Option<Cow<'static, str>> {
-        self.inner.data_type().name_v3()
+    fn dtype(&self) -> PyDataType {
+        self.inner.data_type().clone().into()
     }
 
     /// The dimension names, if any were specified.
@@ -101,7 +101,7 @@ impl PyArray {
         format!(
             "Array(shape={:?}, dtype={:?})",
             self.inner.shape(),
-            self.dtype().unwrap_or_else(|| "<unknown>".into())
+            self.dtype().__repr__()
         )
     }
 }
