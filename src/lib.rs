@@ -3,6 +3,7 @@
 mod array;
 mod chunks;
 mod codec;
+mod data;
 mod dtype;
 mod error;
 mod group;

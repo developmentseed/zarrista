@@ -3156,6 +3156,7 @@ name = "zarrsita"
 version = "0.1.0"
 dependencies = [
  "half",
+ "ndarray",
  "numpy",
  "pyo3",
  "pyo3-async-runtimes",

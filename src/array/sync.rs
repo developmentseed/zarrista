@@ -2,10 +2,13 @@
 
 use crate::chunks::PyChunkGrid;
 use crate::codec::PyCodecChain;
+use crate::data::{DataInner, PyData};
 use crate::dtype::PyDataType;
 use crate::error::ZarrsitaResult;
 use crate::node::PyNodePath;
 use crate::store::extract_storage;
+use ndarray::ArrayD;
+use pyo3::exceptions::PyNotImplementedError;
 use pyo3::prelude::*;
 use pythonize::pythonize;
 use pythonize::Result as PythonizeResult;
@@ -89,6 +92,39 @@ impl PyArray {
     #[getter]
     fn path(&self) -> &str {
         self.inner.path().as_str()
+    }
+
+    fn retrieve_chunk(&self, chunk_indices: Vec<u64>) -> ZarrsitaResult<PyData> {
+        use zarrs::array::data_type::*;
+
+        let dtype = self.inner.data_type();
+
+        macro_rules! retrieve {
+            ($dtype:ty, $variant:ident, $elem:ty) => {
+                if dtype.is::<$dtype>() {
+                    let chunk = self.inner.retrieve_chunk::<ArrayD<$elem>>(&chunk_indices)?;
+                    return Ok(PyData::from(DataInner::$variant(chunk)));
+                }
+            };
+        }
+
+        retrieve!(BoolDataType, Bool, bool);
+        retrieve!(Int8DataType, Int8, i8);
+        retrieve!(Int16DataType, Int16, i16);
+        retrieve!(Int32DataType, Int32, i32);
+        retrieve!(Int64DataType, Int64, i64);
+        retrieve!(UInt8DataType, Uint8, u8);
+        retrieve!(UInt16DataType, Uint16, u16);
+        retrieve!(UInt32DataType, Uint32, u32);
+        retrieve!(UInt64DataType, Uint64, u64);
+        retrieve!(Float16DataType, Float16, half::f16);
+        retrieve!(Float32DataType, Float32, f32);
+        retrieve!(Float64DataType, Float64, f64);
+
+        Err(PyNotImplementedError::new_err(format!(
+            "reading data type {dtype} is not supported yet"
+        ))
+        .into())
     }
 
     /// The array shape.
