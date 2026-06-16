@@ -1,8 +1,11 @@
 //! The `Group` Python class: attributes and child navigation.
 
+use std::sync::Arc;
+
+use super::last_segment;
 use crate::error::to_py_err;
-use crate::node::{open_node, PyNodePath};
-use crate::store::{extract_storage, Storage};
+use crate::node::{open_node, Node, PyNodePath};
+use crate::store::extract_storage;
 use pyo3::prelude::*;
 use pythonize::pythonize;
 use pythonize::Result as PythonizeResult;
@@ -13,14 +16,14 @@ use zarrs::storage::ReadableListableStorageTraits;
 /// A read-only Zarr group.
 #[pyclass(module = "zarrsita", frozen, name = "Group")]
 pub struct PyGroup {
-    pub(crate) storage: Storage,
+    pub(crate) storage: Arc<dyn ReadableListableStorageTraits>,
     pub(crate) path: NodePath,
     pub(crate) inner: Group<dyn ReadableListableStorageTraits>,
 }
 
 impl PyGroup {
     pub(crate) fn new(
-        storage: Storage,
+        storage: Arc<dyn ReadableListableStorageTraits>,
         path: NodePath,
         inner: Group<dyn ReadableListableStorageTraits>,
     ) -> Self {
@@ -62,21 +65,11 @@ impl PyGroup {
     }
 
     /// Open a direct child array or group by name.
-    fn __getitem__(&self, py: Python<'_>, name: &str) -> PyResult<Py<PyAny>> {
-        open_node(py, self.storage.clone(), self.path.join(name).unwrap())
+    fn __getitem__(&self, name: &str) -> PyResult<Node> {
+        open_node(self.storage.clone(), self.path.join(name).unwrap())
     }
 
     fn __repr__(&self) -> String {
         format!("Group(path={:?})", self.path)
     }
-}
-
-/// The final path segment of an absolute node path (`/a/b` -> `b`).
-// TODO: switch to using richer Path type
-fn last_segment(path: &str) -> String {
-    path.trim_end_matches('/')
-        .rsplit('/')
-        .next()
-        .unwrap_or("")
-        .to_string()
 }
