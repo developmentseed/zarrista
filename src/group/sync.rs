@@ -1,8 +1,10 @@
 //! The `Group` Python class: attributes and child navigation.
 
+use std::sync::Arc;
+
 use crate::error::to_py_err;
 use crate::node::{open_node, PyNodePath};
-use crate::store::{extract_storage, Storage};
+use crate::store::extract_storage;
 use pyo3::prelude::*;
 use pythonize::pythonize;
 use pythonize::Result as PythonizeResult;
@@ -13,14 +15,14 @@ use zarrs::storage::ReadableListableStorageTraits;
 /// A read-only Zarr group.
 #[pyclass(module = "zarrsita", frozen, name = "Group")]
 pub struct PyGroup {
-    pub(crate) storage: Storage,
+    pub(crate) storage: Arc<dyn ReadableListableStorageTraits>,
     pub(crate) path: NodePath,
     pub(crate) inner: Group<dyn ReadableListableStorageTraits>,
 }
 
 impl PyGroup {
     pub(crate) fn new(
-        storage: Storage,
+        storage: Arc<dyn ReadableListableStorageTraits>,
         path: NodePath,
         inner: Group<dyn ReadableListableStorageTraits>,
     ) -> Self {
