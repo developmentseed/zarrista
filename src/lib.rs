@@ -8,14 +8,11 @@ mod group;
 mod node;
 mod store;
 
-use pyo3::exceptions::PyValueError;
 use pyo3::prelude::*;
 
 use crate::array::PyArray;
-use crate::error::{to_py_err, NotFoundError, ZarrsitaError};
 use crate::group::PyGroup;
-use crate::node::open_node;
-use crate::store::{extract_storage, FilesystemStore, MemoryStore};
+use crate::store::{FilesystemStore, MemoryStore};
 
 // /// Open a Zarr array or group from a store.
 // ///
