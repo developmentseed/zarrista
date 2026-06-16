@@ -1,10 +1,11 @@
 //! The `Array` Python class: metadata accessors and numpy-style reads.
 
-use crate::convert::attributes_to_py;
 use crate::error::to_py_err;
 use crate::store::extract_storage;
 use pyo3::prelude::*;
-use pyo3::types::{PyDict, PySlice};
+use pyo3::types::PySlice;
+use pythonize::pythonize;
+use pythonize::Result as PythonizeResult;
 use std::borrow::Cow;
 use zarrs::array::Array;
 use zarrs::storage::ReadableListableStorageTraits;
@@ -77,8 +78,8 @@ impl PyArray {
 
     /// The array's user attributes as a dict.
     #[getter]
-    fn attrs<'py>(&self, py: Python<'py>) -> PyResult<Bound<'py, PyDict>> {
-        attributes_to_py(py, self.inner.attributes())
+    fn attrs<'py>(&self, py: Python<'py>) -> PythonizeResult<Bound<'py, PyAny>> {
+        pythonize(py, self.inner.attributes())
     }
 
     // /// The fill value as a Python scalar (or `None` if not interpretable).

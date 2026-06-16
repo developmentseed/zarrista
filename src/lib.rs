@@ -1,7 +1,6 @@
 //! zarrsita: a small, read-only, zarrita-flavored Python binding to zarrs.
 
 mod array;
-mod convert;
 mod dtype;
 mod error;
 mod group;
