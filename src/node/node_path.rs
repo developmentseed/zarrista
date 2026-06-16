@@ -8,6 +8,10 @@ use zarrs::node::NodePath;
 pub struct PyNodePath(NodePath);
 
 impl PyNodePath {
+    pub fn root() -> Self {
+        Self(NodePath::root())
+    }
+
     pub fn as_str(&self) -> &str {
         self.0.as_str()
     }
