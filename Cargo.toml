@@ -29,6 +29,7 @@ pythonize = "0.29"
 serde_json = "1"
 zarrs = { version = "0.23", features = ["async"] }
 zarrs_object_store = { version = "0.6.2" }
+thiserror = "2.0.18"
 
 [profile.release]
 lto = true

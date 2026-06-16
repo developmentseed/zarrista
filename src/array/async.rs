@@ -5,7 +5,7 @@ use std::sync::Arc;
 use crate::chunks::PyChunkGrid;
 use crate::codec::PyCodecChain;
 use crate::dtype::PyDataType;
-use crate::error::to_py_err;
+use crate::error::ZarrsitaError;
 use crate::node::PyNodePath;
 use pyo3::prelude::*;
 use pyo3_async_runtimes::tokio::future_into_py;
@@ -54,7 +54,7 @@ impl PyAsyncArray {
         future_into_py(py, async move {
             let inner = Array::async_open(storage, path.as_str())
                 .await
-                .map_err(to_py_err)?;
+                .map_err(ZarrsitaError::from)?;
             Ok(Self::new(Arc::new(inner)))
         })
     }

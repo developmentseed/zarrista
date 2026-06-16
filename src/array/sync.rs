@@ -3,7 +3,7 @@
 use crate::chunks::PyChunkGrid;
 use crate::codec::PyCodecChain;
 use crate::dtype::PyDataType;
-use crate::error::to_py_err;
+use crate::error::ZarrsitaResult;
 use crate::node::PyNodePath;
 use crate::store::extract_storage;
 use pyo3::prelude::*;
@@ -40,9 +40,9 @@ impl PyArray {
         signature = (store, path = PyNodePath::root()),
         text_signature = "(store, path='/')"
     )]
-    fn open(store: &Bound<'_, PyAny>, path: PyNodePath) -> PyResult<Self> {
+    fn open(store: &Bound<'_, PyAny>, path: PyNodePath) -> ZarrsitaResult<Self> {
         let storage = extract_storage(store)?;
-        let inner = Array::open(storage, path.as_str()).map_err(to_py_err)?;
+        let inner = Array::open(storage, path.as_str())?;
         Ok(Self::new(inner))
     }
 

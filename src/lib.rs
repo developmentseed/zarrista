@@ -16,6 +16,7 @@ use crate::array::{PyArray, PyAsyncArray};
 use crate::chunks::PyChunkGrid;
 use crate::codec::PyCodecChain;
 use crate::dtype::PyDataType;
+use crate::error::{NotFoundError, ZarrsitaException};
 use crate::group::{PyAsyncGroup, PyGroup};
 use crate::store::{FilesystemStore, MemoryStore};
 
@@ -64,8 +65,8 @@ fn _zarrsita(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<PyGroup>()?;
     // m.add_function(wrap_pyfunction!(open, m)?)?;
 
-    // m.add("ZarrsitaError", m.py().get_type::<ZarrsitaError>())?;
-    // m.add("NotFoundError", m.py().get_type::<NotFoundError>())?;
+    m.add("ZarrsitaError", m.py().get_type::<ZarrsitaException>())?;
+    m.add("NotFoundError", m.py().get_type::<NotFoundError>())?;
 
     Ok(())
 }

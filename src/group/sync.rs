@@ -3,7 +3,7 @@
 use std::sync::Arc;
 
 use super::last_segment;
-use crate::error::to_py_err;
+use crate::error::ZarrsitaResult;
 use crate::node::{open_node, Node, PyNodePath};
 use crate::store::extract_storage;
 use pyo3::prelude::*;
@@ -43,9 +43,9 @@ impl PyGroup {
         signature = (store, path = PyNodePath::root()),
         text_signature = "(store, path='/')"
     )]
-    fn open(store: &Bound<'_, PyAny>, path: PyNodePath) -> PyResult<Self> {
+    fn open(store: &Bound<'_, PyAny>, path: PyNodePath) -> ZarrsitaResult<Self> {
         let storage = extract_storage(store)?;
-        let inner = Group::open(storage.clone(), path.as_str()).map_err(to_py_err)?;
+        let inner = Group::open(storage.clone(), path.as_str())?;
         Ok(Self::new(storage, path.into(), inner))
     }
 
@@ -56,20 +56,20 @@ impl PyGroup {
     }
 
     /// Names of the direct child arrays.
-    fn array_keys(&self) -> PyResult<Vec<String>> {
-        let paths = self.inner.child_array_paths().map_err(to_py_err)?;
+    fn array_keys(&self) -> ZarrsitaResult<Vec<String>> {
+        let paths = self.inner.child_array_paths()?;
         Ok(paths.iter().map(|p| last_segment(p.as_str())).collect())
     }
 
     /// Names of the direct child groups.
-    fn group_keys(&self) -> PyResult<Vec<String>> {
-        let paths = self.inner.child_group_paths().map_err(to_py_err)?;
+    fn group_keys(&self) -> ZarrsitaResult<Vec<String>> {
+        let paths = self.inner.child_group_paths()?;
         Ok(paths.iter().map(|p| last_segment(p.as_str())).collect())
     }
 
     /// Open a direct child array or group by name.
-    fn __getitem__(&self, name: &str) -> PyResult<Node> {
-        open_node(self.storage.clone(), self.path.join(name).unwrap())
+    fn __getitem__(&self, name: &str) -> ZarrsitaResult<Node> {
+        open_node(self.storage.clone(), self.path.join(name)?)
     }
 
     fn __repr__(&self) -> String {
