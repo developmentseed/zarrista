@@ -25,6 +25,8 @@ pub struct PyData {
 #[pymethods]
 impl PyData {
     /// Copy the decoded chunk into a NumPy array.
+    ///
+    /// NOTE: in the future, we'll use the buffer protocol as much as possible to avoid copying
     fn to_numpy<'py>(&self, py: Python<'py>) -> Bound<'py, PyAny> {
         use DataInner::*;
 
