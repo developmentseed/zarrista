@@ -6,7 +6,7 @@ use crate::data::{DataInner, PyData};
 use crate::dtype::PyDataType;
 use crate::error::ZarrsitaResult;
 use crate::node::PyNodePath;
-use crate::store::extract_storage;
+use crate::storage::extract_storage;
 use ndarray::ArrayD;
 use pyo3::exceptions::PyNotImplementedError;
 use pyo3::prelude::*;

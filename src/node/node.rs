@@ -5,12 +5,11 @@ use std::sync::Arc;
 use crate::array::{PyArray, PyAsyncArray};
 use crate::error::{ZarrsitaError, ZarrsitaResult};
 use crate::group::{PyAsyncGroup, PyGroup};
-use crate::store::Storage;
 use pyo3::prelude::*;
 use zarrs::array::Array;
 use zarrs::group::Group;
 use zarrs::node::NodePath;
-use zarrs::storage::AsyncReadableListableStorageTraits;
+use zarrs::storage::{AsyncReadableListableStorageTraits, ReadableListableStorageTraits};
 
 /// An opened node: either an array or a group.
 #[derive(IntoPyObject)]
@@ -25,7 +24,10 @@ pub(crate) enum Node {
 ///
 /// Returns a [`Node`] (Python `Array` or `Group`), or raises `NotFoundError`
 /// if neither exists at the path.
-pub(crate) fn open_node(storage: Storage, path: NodePath) -> ZarrsitaResult<Node> {
+pub(crate) fn open_node(
+    storage: Arc<dyn ReadableListableStorageTraits>,
+    path: NodePath,
+) -> ZarrsitaResult<Node> {
     if let Ok(inner) = Array::open(storage.clone(), path.as_str()) {
         return Ok(Node::Array(PyArray::new(inner)));
     }
