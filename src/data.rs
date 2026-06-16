@@ -1,3 +1,35 @@
+//! A Python-exposed array type that implements the buffer protocol.
+//!
+//! This module provides `PyData`, an ND array type that can be used with numpy
+//! via Python's buffer protocol. The buffer protocol allows Python objects to
+//! expose raw memory buffers, enabling zero-copy interoperability with numpy.
+//!
+//! ## Buffer Protocol Overview
+//!
+//! The buffer protocol is defined in [PEP 3118] and allows objects to expose their
+//! internal data as a contiguous or strided memory region. Key concepts:
+//!
+//! [PEP 3118](https://peps.python.org/pep-3118/)
+//!
+//! - **view**: A `Py_buffer` struct that describes how to interpret the memory
+//! - **format**: A string describing the element type (e.g., "<H" for little-endian uint16)
+//! - **shape**: Array dimensions (e.g., [height, width, bands] for a 3D array)
+//! - **strides**: Byte offsets between consecutive elements in each dimension
+//!
+//! ## Reference Counting
+//!
+//! When `__getbuffer__` is called, we increment the reference count on the PyData
+//! object (`Py_INCREF`) to ensure it stays alive while the buffer view exists.
+//! Python's `PyBuffer_Release` automatically calls `Py_DECREF` after `__releasebuffer__`
+//! returns, so we don't need to manually decrement the count.
+//!
+//! ## Memory Safety
+//!
+//! The shape and strides arrays are stored as `Box<[isize]>` on the PyData struct
+//! itself. This means their lifetime is tied to the PyData object, which is kept
+//! alive by the `Py_INCREF` call. This avoids the need to leak/free allocations
+//! in `__getbuffer__`/`__releasebuffer__`.
+
 use std::ffi::{c_char, c_void, CStr};
 use std::os::raw::c_int;
 
