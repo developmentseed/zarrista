@@ -3162,6 +3162,7 @@ dependencies = [
  "pyo3-object_store",
  "pythonize",
  "serde_json",
+ "thiserror 2.0.18",
  "zarrs",
  "zarrs_object_store",
 ]
