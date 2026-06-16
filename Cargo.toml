@@ -1,0 +1,27 @@
+[package]
+name = "zarrsita"
+version = "0.1.0"
+authors = ["Kyle Barron <kyle@developmentseed.org>"]
+edition = "2021"
+description = "A small, prototypical zarrita-like Python Zarr implementation on top of zarrs."
+readme = "README.md"
+homepage = "https://developmentseed.org/zarrsita"
+repository = "https://github.com/developmentseed/zarrsita"
+license = "MIT OR Apache-2.0"
+keywords = ["python", "zarr"]
+rust-version = "1.75"
+
+[lib]
+name = "_zarrsita"
+crate-type = ["cdylib"]
+
+[features]
+# Build a single abi3 wheel compatible with Python 3.11+.
+abi3-py311 = ["pyo3/abi3-py311"]
+
+[dependencies]
+pyo3 = { version = "0.29", features = ["macros", "abi3-py311"] }
+
+[profile.release]
+lto = true
+codegen-units = 1

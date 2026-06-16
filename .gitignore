@@ -13,6 +13,21 @@ target
 # Contains mutation testing data
 **/mutants.out*/
 
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/
+.ruff_cache/
+
+# maturin / compiled extension module
+*.so
+*.pyd
+*.dylib
+/python/zarrsita/_zarrsita.*
+dist/
+*.egg-info/
+
 # RustRover
 #  JetBrains specific template is maintained in a separate JetBrains.gitignore that can
 #  be found at https://github.com/github/gitignore/blob/main/Global/JetBrains.gitignore
