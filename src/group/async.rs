@@ -99,9 +99,7 @@ impl PyAsyncGroup {
         let storage = self.storage.clone();
         let path = self.path.join(name).map_err(ZarrsitaError::from)?;
         future_into_py(py, async move {
-            open_node_async(storage, path)
-                .await
-                .map_err(PyErr::from)
+            open_node_async(storage, path).await.map_err(PyErr::from)
         })
     }
 
