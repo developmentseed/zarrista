@@ -3,7 +3,7 @@
 use std::sync::Arc;
 
 use crate::array::{PyArray, PyAsyncArray};
-use crate::error::not_found;
+use crate::error::{ZarrsitaError, ZarrsitaResult};
 use crate::group::{PyAsyncGroup, PyGroup};
 use crate::store::Storage;
 use pyo3::prelude::*;
@@ -25,7 +25,7 @@ pub(crate) enum Node {
 ///
 /// Returns a [`Node`] (Python `Array` or `Group`), or raises `NotFoundError`
 /// if neither exists at the path.
-pub(crate) fn open_node(storage: Storage, path: NodePath) -> PyResult<Node> {
+pub(crate) fn open_node(storage: Storage, path: NodePath) -> ZarrsitaResult<Node> {
     if let Ok(inner) = Array::open(storage.clone(), path.as_str()) {
         return Ok(Node::Array(PyArray::new(inner)));
     }
@@ -33,7 +33,7 @@ pub(crate) fn open_node(storage: Storage, path: NodePath) -> PyResult<Node> {
         return Ok(Node::Group(PyGroup::new(storage, path, inner)));
     }
 
-    Err(not_found(path.as_str()))
+    Err(ZarrsitaError::not_found(path.as_str()))
 }
 
 /// An opened async node: either an array or a group.
@@ -50,7 +50,7 @@ pub(crate) enum AsyncNode {
 pub(crate) async fn open_node_async(
     storage: Arc<dyn AsyncReadableListableStorageTraits>,
     path: NodePath,
-) -> PyResult<AsyncNode> {
+) -> ZarrsitaResult<AsyncNode> {
     if let Ok(inner) = Array::async_open(storage.clone(), path.as_str()).await {
         return Ok(AsyncNode::Array(PyAsyncArray::new(Arc::new(inner))));
     }
@@ -62,5 +62,5 @@ pub(crate) async fn open_node_async(
         )));
     }
 
-    Err(not_found(path.as_str()))
+    Err(ZarrsitaError::not_found(path.as_str()))
 }

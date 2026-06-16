@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
 use super::last_segment;
-use crate::error::to_py_err;
+use crate::error::ZarrsitaError;
 use crate::node::{open_node_async, PyNodePath};
 use pyo3::prelude::*;
 use pyo3_async_runtimes::tokio::future_into_py;
@@ -53,7 +53,7 @@ impl PyAsyncGroup {
         future_into_py(py, async move {
             let inner = Group::async_open(storage.clone(), path.as_str())
                 .await
-                .map_err(to_py_err)?;
+                .map_err(ZarrsitaError::from)?;
             Ok(Self::new(storage, path.into(), Arc::new(inner)))
         })
     }
@@ -68,7 +68,10 @@ impl PyAsyncGroup {
     fn array_keys<'py>(&self, py: Python<'py>) -> PyResult<Bound<'py, PyAny>> {
         let inner = self.inner.clone();
         future_into_py(py, async move {
-            let paths = inner.async_child_array_paths().await.unwrap();
+            let paths = inner
+                .async_child_array_paths()
+                .await
+                .map_err(ZarrsitaError::from)?;
             Ok(paths
                 .iter()
                 .map(|p| last_segment(p.as_str()))
@@ -80,7 +83,10 @@ impl PyAsyncGroup {
     fn group_keys<'py>(&self, py: Python<'py>) -> PyResult<Bound<'py, PyAny>> {
         let inner = self.inner.clone();
         future_into_py(py, async move {
-            let paths = inner.async_child_group_paths().await.unwrap();
+            let paths = inner
+                .async_child_group_paths()
+                .await
+                .map_err(ZarrsitaError::from)?;
             Ok(paths
                 .iter()
                 .map(|p| last_segment(p.as_str()))
@@ -91,8 +97,12 @@ impl PyAsyncGroup {
     /// Open a direct child array or group by name.
     fn open_child_async<'py>(&self, py: Python<'py>, name: &str) -> PyResult<Bound<'py, PyAny>> {
         let storage = self.storage.clone();
-        let path = self.path.join(name).map_err(to_py_err)?;
-        future_into_py(py, async move { open_node_async(storage, path).await })
+        let path = self.path.join(name).map_err(ZarrsitaError::from)?;
+        future_into_py(py, async move {
+            open_node_async(storage, path)
+                .await
+                .map_err(PyErr::from)
+        })
     }
 
     fn __repr__(&self) -> String {

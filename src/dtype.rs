@@ -3,7 +3,7 @@
 
 use std::borrow::Cow;
 
-use crate::error::to_py_err;
+use crate::error::ZarrsitaError;
 use crate::metadata::PyMetadataV3;
 use numpy::prelude::*;
 use numpy::IntoPyArray;
@@ -115,7 +115,7 @@ pub(crate) fn read_region(
 
     macro_rules! arm {
         ($t:ty) => {{
-            let data: Vec<$t> = retrieve_vec(array, region).map_err(to_py_err)?;
+            let data: Vec<$t> = retrieve_vec(array, region).map_err(ZarrsitaError::from)?;
             vec_to_numpy(py, data, out_shape)
         }};
     }

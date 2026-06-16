@@ -1,7 +1,7 @@
 //! Python-facing store types wrapping zarrs storage backends.
 
 use crate::dtype::DynStorage;
-use crate::error::to_py_err;
+use crate::error::ZarrsitaResult;
 use pyo3::exceptions::PyTypeError;
 use pyo3::prelude::*;
 use std::sync::Arc;
@@ -21,8 +21,8 @@ pub struct FilesystemStore {
 impl FilesystemStore {
     /// Open a filesystem store rooted at `path`.
     #[new]
-    fn new(path: &str) -> PyResult<Self> {
-        let store = ZarrsFilesystemStore::new(path).map_err(to_py_err)?;
+    fn new(path: &str) -> ZarrsitaResult<Self> {
+        let store = ZarrsFilesystemStore::new(path)?;
         Ok(Self {
             storage: Arc::new(store),
         })
