@@ -10,6 +10,7 @@ mod store;
 use pyo3::prelude::*;
 
 use crate::array::PyArray;
+use crate::dtype::PyDataType;
 use crate::group::PyGroup;
 use crate::store::{FilesystemStore, MemoryStore};
 
@@ -51,6 +52,7 @@ fn _zarrsita(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<MemoryStore>()?;
     m.add_class::<PyArray>()?;
     m.add_class::<PyGroup>()?;
+    m.add_class::<PyDataType>()?;
     // m.add_function(wrap_pyfunction!(open, m)?)?;
 
     // m.add("ZarrsitaError", m.py().get_type::<ZarrsitaError>())?;
