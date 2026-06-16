@@ -69,12 +69,18 @@ impl From<PyDataType> for DataType {
 /// The store trait object backing every zarrsita array/group.
 pub(crate) type DynStorage = dyn ReadableListableStorageTraits;
 
+// The following helpers back the array-read path (numpy region/chunk reads),
+// which is still commented out in `array/sync.rs`. Allow dead code until those
+// methods are enabled.
+
 /// A region of an array to read: either an explicit subset or a whole chunk.
+#[allow(dead_code)]
 pub(crate) enum Region<'a> {
     Subset(&'a ArraySubset),
     Chunk(&'a [u64]),
 }
 
+#[allow(dead_code)]
 fn retrieve_vec<T: ElementOwned>(
     array: &Array<DynStorage>,
     region: &Region<'_>,
@@ -85,6 +91,7 @@ fn retrieve_vec<T: ElementOwned>(
     }
 }
 
+#[allow(dead_code)]
 fn vec_to_numpy<T: numpy::Element>(
     py: Python<'_>,
     data: Vec<T>,
@@ -97,6 +104,7 @@ fn vec_to_numpy<T: numpy::Element>(
 
 /// Read a region of `array` into a C-order numpy array of the given output
 /// shape. Only fixed-length numeric and boolean dtypes are supported so far.
+#[allow(dead_code)]
 pub(crate) fn read_region(
     py: Python<'_>,
     array: &Array<DynStorage>,
@@ -134,6 +142,7 @@ pub(crate) fn read_region(
 
 /// Convert a fill value (native-endian bytes) into a Python scalar, returning
 /// `None` for dtypes we do not yet interpret.
+#[allow(dead_code)]
 pub(crate) fn fill_value_to_py(
     py: Python<'_>,
     data_type: &DataType,
