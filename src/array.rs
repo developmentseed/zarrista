@@ -1,6 +1,7 @@
 //! The `Array` Python class: metadata accessors and numpy-style reads.
 
 use crate::error::to_py_err;
+use crate::node::PyNodePath;
 use crate::store::extract_storage;
 use pyo3::prelude::*;
 use pyo3::types::PySlice;
@@ -36,10 +37,10 @@ enum Sel {
 impl PyArray {
     /// Open the array stored at `path` in `store`.
     #[staticmethod]
-    #[pyo3(signature = (store, path = "/"))]
-    fn open(store: &Bound<'_, PyAny>, path: &str) -> PyResult<Self> {
+    #[pyo3(signature = (store, path))]
+    fn open(store: &Bound<'_, PyAny>, path: PyNodePath) -> PyResult<Self> {
         let storage = extract_storage(store)?;
-        let inner = Array::open(storage, path).map_err(to_py_err)?;
+        let inner = Array::open(storage, path.as_str()).map_err(to_py_err)?;
         Ok(Self::new(inner))
     }
 

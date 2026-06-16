@@ -7,6 +7,12 @@ use zarrs::node::NodePath;
 /// A [`NodePath`] extractable from a Python string (e.g. `"/group/array"`).
 pub struct PyNodePath(NodePath);
 
+impl PyNodePath {
+    pub fn as_str(&self) -> &str {
+        self.0.as_str()
+    }
+}
+
 impl<'a, 'py> FromPyObject<'a, 'py> for PyNodePath {
     type Error = PyErr;
 
