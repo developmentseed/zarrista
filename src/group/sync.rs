@@ -2,6 +2,7 @@
 
 use std::sync::Arc;
 
+use super::last_segment;
 use crate::error::to_py_err;
 use crate::node::{open_node, PyNodePath};
 use crate::store::extract_storage;
@@ -71,14 +72,4 @@ impl PyGroup {
     fn __repr__(&self) -> String {
         format!("Group(path={:?})", self.path)
     }
-}
-
-/// The final path segment of an absolute node path (`/a/b` -> `b`).
-// TODO: switch to using richer Path type
-fn last_segment(path: &str) -> String {
-    path.trim_end_matches('/')
-        .rsplit('/')
-        .next()
-        .unwrap_or("")
-        .to_string()
 }
