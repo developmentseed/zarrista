@@ -4,7 +4,6 @@ use crate::error::to_py_err;
 use crate::node::PyNodePath;
 use crate::store::extract_storage;
 use pyo3::prelude::*;
-use pyo3::types::PySlice;
 use pythonize::pythonize;
 use pythonize::Result as PythonizeResult;
 use std::borrow::Cow;
@@ -21,16 +20,6 @@ impl PyArray {
     pub(crate) fn new(inner: Array<dyn ReadableListableStorageTraits>) -> Self {
         Self { inner }
     }
-}
-
-/// A single-axis selector after normalization.
-enum Sel {
-    /// An integer index; drops the axis.
-    Index(i64),
-    /// A `slice` object to resolve against the axis length.
-    Slice(Py<PySlice>),
-    /// The whole axis (`:`, trailing axes, or an ellipsis fill).
-    Full,
 }
 
 #[pymethods]

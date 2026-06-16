@@ -18,7 +18,7 @@ pub(crate) fn open_node(py: Python<'_>, storage: Storage, path: NodePath) -> PyR
         return Ok(Py::new(py, PyArray::new(inner))?.into_any());
     }
     if let Ok(inner) = Group::open(storage.clone(), path.as_str()) {
-        return Ok(Py::new(py, PyGroup::new(storage, path.into(), inner))?.into_any());
+        return Ok(Py::new(py, PyGroup::new(storage, path, inner))?.into_any());
     }
 
     Err(not_found(path.as_str()))
