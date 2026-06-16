@@ -3,6 +3,7 @@
 use crate::array::PyArray;
 use crate::error::not_found;
 use crate::group::PyGroup;
+use crate::node::node_path::PyNodePath;
 use crate::store::Storage;
 use pyo3::prelude::*;
 use zarrs::array::Array;
@@ -12,12 +13,12 @@ use zarrs::group::Group;
 ///
 /// Returns a Python `Array` or `Group`, or raises `NotFoundError` if neither
 /// exists at the path.
-pub(crate) fn open_node(py: Python<'_>, storage: Storage, path: &str) -> PyResult<Py<PyAny>> {
+pub(crate) fn open_node(py: Python<'_>, storage: Storage, path: PyNodePath) -> PyResult<Py<PyAny>> {
     if let Ok(inner) = Array::open(storage.clone(), path) {
         return Ok(Py::new(py, PyArray::new(inner))?.into_any());
     }
     if let Ok(inner) = Group::open(storage.clone(), path) {
-        return Ok(Py::new(py, PyGroup::new(storage, path.to_string(), inner))?.into_any());
+        return Ok(Py::new(py, PyGroup::new(storage, path.0, inner))?.into_any());
     }
     Err(not_found(path))
 }
