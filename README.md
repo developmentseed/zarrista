@@ -1,11 +1,11 @@
 # zarrista
 
-A low-level Zarr API for Python, inspired by [zarrita.js], powered from Rust by [Zarrs].
+A low-level Zarr API for Python, inspired by [zarrita.js], powered from Rust by [Zarrs]. Serving up Zarr chunks like your favorite barista!
 
 [zarrita.js]: https://zarrita.dev/
 [Zarrs]: https://zarrs.dev/
 
-This has been _minimally_ vibe-coded (Claude still writes bad Rust code in my opinion).
+This has been _minimally_ vibe-coded: _mostly_ but not fully written by hand. Some areas were prototyped with Claude.
 
 ## Development
 
