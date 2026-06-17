@@ -146,3 +146,10 @@ def test_partial_reads_are_delegated(sharded_zarr_bytes):
     data = array.retrieve_array_subset((slice(0, 2),))
     np.testing.assert_array_equal(data.to_numpy(), np.array([0, 1], dtype="int32"))
     assert store.partial_calls, "expected get_partial_many to be delegated"
+
+
+def test_store_protocols_are_importable():
+    from zarrista import ListableStore, ReadableStore  # noqa: F401
+
+    assert isinstance(ReadOnlyDictStore({}), ReadableStore)
+    assert isinstance(DictStore({}), ListableStore)
