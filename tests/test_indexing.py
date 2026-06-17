@@ -5,7 +5,6 @@ region is compared to the equivalent numpy slice. This doubles as a round-trip
 compatibility check between the two implementations.
 """
 
-import asyncio
 from pathlib import Path
 
 import numpy as np
@@ -107,12 +106,11 @@ def test_float64_dtype(tmp_path):
     np.testing.assert_array_equal(arr[1:3, 0:4].to_numpy(), data[1:3, 0:4])
 
 
-def test_async_getitem_matches_numpy(int32_array: tuple[Path, NDArray[np.int32]]):
+async def test_async_getitem_matches_numpy(int32_array: tuple[Path, NDArray[np.int32]]):
     """The async path (obstore + `await arr[...]`) returns the same region."""
     path, data = int32_array
 
-    async def read():
-        arr = await AsyncArray.open_async(LocalStore(str(path)))
-        return (await arr[0:2, :, 5:7]).to_numpy()
+    arr = await AsyncArray.open_async(LocalStore(str(path)))
+    result = (await arr[0:2, :, 5:7]).to_numpy()
 
-    np.testing.assert_array_equal(asyncio.run(read()), data[0:2, :, 5:7])
+    np.testing.assert_array_equal(result, data[0:2, :, 5:7])

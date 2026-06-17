@@ -31,6 +31,7 @@ dev = [
     "numpy>=2.4.6",
     "obstore>=0.10.1",
     "pytest>=8.0",
+    "pytest-asyncio>=1.4",
     "ruff>=0.6",
     "zarr>=3",
 ]
@@ -44,3 +45,4 @@ select = ["E", "F", "I", "W", "UP", "B"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+asyncio_mode = "auto"
