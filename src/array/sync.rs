@@ -1,8 +1,9 @@
 //! The `Array` Python class: metadata accessors and numpy-style reads.
 
+use crate::array::selection::PySelection;
 use crate::chunks::PyChunkGrid;
 use crate::codec::PyCodecChain;
-use crate::data::{DataInner, PyData};
+use crate::data::{for_each_dtype, DataInner, PyData};
 use crate::dtype::PyDataType;
 use crate::error::ZarristaResult;
 use crate::node::PyNodePath;
@@ -94,12 +95,42 @@ impl PyArray {
         self.inner.path().as_str()
     }
 
+    /// Read a region of the array as `Data`, using numpy-style basic indexing.
+    fn retrieve_array_subset(&self, selection: PySelection) -> ZarristaResult<PyData> {
+        use zarrs::array::data_type::*;
+
+        let array_subset = selection.to_array_subset(self.inner.shape())?;
+        let dtype = self.inner.data_type();
+
+        macro_rules! arm {
+            ($dtype:ty, $variant:ident, $elem:ty) => {
+                if dtype.is::<$dtype>() {
+                    let data = self
+                        .inner
+                        .retrieve_array_subset::<ArrayD<$elem>>(&array_subset)?;
+                    return Ok(PyData::from(DataInner::$variant(data)));
+                }
+            };
+        }
+        for_each_dtype!(arm);
+
+        Err(PyNotImplementedError::new_err(format!(
+            "reading data type {dtype} is not supported yet"
+        ))
+        .into())
+    }
+
+    /// Read a region with numpy-style basic indexing, e.g. `arr[0:10, :, 5]`.
+    fn __getitem__(&self, selection: PySelection) -> ZarristaResult<PyData> {
+        self.retrieve_array_subset(selection)
+    }
+
     fn retrieve_chunk(&self, chunk_indices: Vec<u64>) -> ZarristaResult<PyData> {
         use zarrs::array::data_type::*;
 
         let dtype = self.inner.data_type();
 
-        macro_rules! retrieve {
+        macro_rules! arm {
             ($dtype:ty, $variant:ident, $elem:ty) => {
                 if dtype.is::<$dtype>() {
                     let chunk = self.inner.retrieve_chunk::<ArrayD<$elem>>(&chunk_indices)?;
@@ -107,19 +138,7 @@ impl PyArray {
                 }
             };
         }
-
-        retrieve!(BoolDataType, Bool, bool);
-        retrieve!(Int8DataType, Int8, i8);
-        retrieve!(Int16DataType, Int16, i16);
-        retrieve!(Int32DataType, Int32, i32);
-        retrieve!(Int64DataType, Int64, i64);
-        retrieve!(UInt8DataType, Uint8, u8);
-        retrieve!(UInt16DataType, Uint16, u16);
-        retrieve!(UInt32DataType, Uint32, u32);
-        retrieve!(UInt64DataType, Uint64, u64);
-        retrieve!(Float16DataType, Float16, half::f16);
-        retrieve!(Float32DataType, Float32, f32);
-        retrieve!(Float64DataType, Float64, f64);
+        for_each_dtype!(arm);
 
         Err(PyNotImplementedError::new_err(format!(
             "reading data type {dtype} is not supported yet"
