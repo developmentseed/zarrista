@@ -7,6 +7,30 @@ use zarrs::filesystem::FilesystemStore;
 use zarrs::storage::store::MemoryStore;
 use zarrs::storage::ReadableListableStorageTraits;
 
+pub struct PySyncStorage(Arc<dyn ReadableListableStorageTraits>);
+
+impl FromPyObject<'_, '_> for PySyncStorage {
+    type Error = PyErr;
+
+    fn extract(obj: Borrowed<'_, '_, PyAny>) -> Result<Self, Self::Error> {
+        if let Ok(s) = obj.cast::<PyFilesystemStore>() {
+            return Ok(Self(s.get().storage.clone()));
+        }
+        if let Ok(s) = obj.cast::<PyMemoryStore>() {
+            return Ok(Self(s.get().storage.clone()));
+        }
+
+        // Any other object is treated as a duck-typed custom store.
+        Ok(Self(Arc::new(PyStore::new(&obj))))
+    }
+}
+
+impl From<PySyncStorage> for Arc<dyn ReadableListableStorageTraits> {
+    fn from(s: PySyncStorage) -> Self {
+        s.0
+    }
+}
+
 /// A store backed by a local directory.
 #[pyclass(module = "zarrista", frozen, name = "FilesystemStore")]
 pub struct PyFilesystemStore {
@@ -47,18 +71,4 @@ impl PyMemoryStore {
     fn __repr__(&self) -> String {
         "MemoryStore()".to_string()
     }
-}
-
-/// Pull the inner [`Storage`] out of any zarrista store object.
-pub(crate) fn extract_storage(
-    store: &Bound<'_, PyAny>,
-) -> PyResult<Arc<dyn ReadableListableStorageTraits>> {
-    if let Ok(s) = store.cast::<PyFilesystemStore>() {
-        return Ok(s.get().storage.clone());
-    }
-    if let Ok(s) = store.cast::<PyMemoryStore>() {
-        return Ok(s.get().storage.clone());
-    }
-    // Any other object is treated as a duck-typed custom store.
-    Ok(Arc::new(PyStore::new(store)))
 }
