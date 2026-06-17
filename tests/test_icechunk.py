@@ -75,3 +75,20 @@ async def test_open_group_from_session(
 async def test_non_session_object_rejected():
     with pytest.raises(TypeError):
         await AsyncArray.open_async(object(), "/embeddings")
+
+
+@requires_icechunk_2
+async def test_old_icechunk_version_rejected(
+    monkeypatch: pytest.MonkeyPatch,
+    icechunk_session: tuple[icechunk.Session, NDArray[np.int32]],
+):
+    """An icechunk older than the linked Rust crate fails with a clear message.
+
+    The extension reads `icechunk.__version__` from the live module, so faking an
+    old version exercises the guard without needing an old install.
+    """
+    session, _ = icechunk_session
+    monkeypatch.setattr(icechunk, "__version__", "1.1.21")
+
+    with pytest.raises(ValueError, match="requires icechunk >= 2"):
+        await AsyncArray.open_async(session, "/embeddings")

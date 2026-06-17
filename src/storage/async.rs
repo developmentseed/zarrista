@@ -22,7 +22,10 @@ impl FromPyObject<'_, '_> for PyAsyncStorage {
     type Error = PyErr;
 
     fn extract(obj: Borrowed<'_, '_, PyAny>) -> Result<Self, Self::Error> {
-        if let Ok(store) = obj.extract::<PyAsyncIcechunkStore>() {
+        // Once we know it's an icechunk Session, surface any failure instead of
+        // falling through to the generic error below: the caller meant icechunk.
+        if is_icechunk_session(obj)? {
+            let store = obj.extract::<PyAsyncIcechunkStore>()?;
             return Ok(Self(Arc::new(store.into_inner())));
         }
 
@@ -67,19 +70,38 @@ impl PyAsyncIcechunkStore {
     }
 }
 
+/// Whether `obj` is an `icechunk.session.Session` instance.
+fn is_icechunk_session(obj: Borrowed<'_, '_, PyAny>) -> PyResult<bool> {
+    let class = obj.getattr("__class__")?;
+    let module = class.getattr("__module__")?.extract::<PyBackedStr>()?;
+    let name = class.getattr("__name__")?.extract::<PyBackedStr>()?;
+    Ok(module == "icechunk.session" && name == "Session")
+}
+
 impl FromPyObject<'_, '_> for PyAsyncIcechunkStore {
     type Error = PyErr;
 
     fn extract(obj: Borrowed<'_, '_, PyAny>) -> Result<Self, Self::Error> {
-        let class = obj.getattr("__class__")?;
-
-        let module = class.getattr("__module__")?.extract::<PyBackedStr>()?;
-        let name = class.getattr("__name__")?.extract::<PyBackedStr>()?;
-
-        if module != "icechunk.session" || name != "Session" {
-            return Err(PyTypeError::new_err(format!(
-                "Expected an icechunk session object, got an instance of {}.{}",
-                module, name
+        // The session is bridged across the language boundary by serializing it on the
+        // Python side and deserializing it with the icechunk crate zarrista links
+        // against.
+        // That format is only compatible within a major version, so we require
+        // the installed icechunk to be 2.x (the version we build against) and fail with
+        // an actionable message rather than a cryptic deserialization error.
+        let icechunk_version = obj
+            .py()
+            .import("icechunk")?
+            .getattr("__version__")?
+            .extract::<PyBackedStr>()?;
+        let icechunk_major_version: u32 = icechunk_version
+            .split('.')
+            .next()
+            .and_then(|s| s.parse().ok())
+            .unwrap_or(0);
+        if icechunk_major_version < 2 {
+            return Err(PyValueError::new_err(format!(
+                "zarrista's icechunk support requires icechunk >= 2, but found {icechunk_version}. \
+                 icechunk 2.x requires Python >= 3.12."
             )));
         }
 
@@ -90,12 +112,14 @@ impl FromPyObject<'_, '_> for PyAsyncIcechunkStore {
             .call_method0("as_bytes")?
             .extract::<PyBytes>()?;
 
-        let icechunk_session = icechunk::session::Session::from_bytes(
-            serialized_session.as_slice(),
-        )
-        .map_err(|err| {
-            PyValueError::new_err(format!("Failed to reconstruct icechunk Session: {}", err))
-        })?;
-        Ok(Self(AsyncIcechunkStore::new(icechunk_session)))
+        let session = icechunk::session::Session::from_bytes(serialized_session.as_slice())
+            .map_err(|err| {
+                PyValueError::new_err(format!(
+                    "Failed to reconstruct icechunk Session: {err}.\nThis can happen when the \
+                     installed icechunk is incompatible with the version zarrista was built \
+                     against (2.x)."
+                ))
+            })?;
+        Ok(Self(AsyncIcechunkStore::new(session)))
     }
 }
