@@ -44,7 +44,7 @@ jobs:
           enable-cache: true
 
       - name: uv sync
-        run: uv sync --no-install-package zarrsita
+        run: uv sync --no-install-package zarrista
 
       - name: maturin develop
         run: uv run --no-project maturin develop

@@ -1,7 +1,7 @@
 use pyo3::prelude::*;
 use zarrs::array::ChunkGrid;
 
-#[pyclass(module = "zarrsita", frozen, name = "ChunkGrid")]
+#[pyclass(module = "zarrista", frozen, name = "ChunkGrid")]
 pub struct PyChunkGrid(ChunkGrid);
 
 #[pymethods]

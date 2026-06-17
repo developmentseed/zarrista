@@ -1,4 +1,4 @@
-# zarrsita — read-only zarrs API design
+# zarrista — read-only zarrs API design
 
 **Date:** 2026-06-16
 **Status:** Approved
@@ -11,7 +11,7 @@ simplicity of [zarrita.js](https://github.com/manzt/zarrita.js): construct a
 store, `open` a node, read array regions with numpy-style indexing.
 
 This is the first functional binding step after the hello-world scaffold. An
-official `zarrs-python` binding exists; zarrsita is a deliberately leaner,
+official `zarrs-python` binding exists; zarrista is a deliberately leaner,
 zarrita-flavored take.
 
 ## Decisions
@@ -49,16 +49,16 @@ Each store holds an `Arc<dyn ReadableListableStorageTraits>` internally.
 ### Stores — constructed directly
 
 ```python
-store = zarrsita.FilesystemStore("/data/example.zarr")
-store = zarrsita.MemoryStore()
+store = zarrista.FilesystemStore("/data/example.zarr")
+store = zarrista.MemoryStore()
 ```
 
 ### Opening — free `open()`, auto-detecting array vs group
 
 ```python
-node = zarrsita.open(store, "/temp")            # -> Array | Group
-arr  = zarrsita.open(store, "/temp", kind="array")
-grp  = zarrsita.open(store)                       # path defaults to "/"
+node = zarrista.open(store, "/temp")            # -> Array | Group
+arr  = zarrista.open(store, "/temp", kind="array")
+grp  = zarrista.open(store)                       # path defaults to "/"
 ```
 
 Backed by `Array::open` / `Group::open`. `kind` ("array" | "group") narrows and
@@ -105,7 +105,7 @@ grp.array_keys() / grp.group_keys()      # children names
 
 ## Error handling
 
-`error.rs` defines a `ZarrsitaError` base exception, with a `NotFoundError`
+`error.rs` defines a `ZarristaError` base exception, with a `NotFoundError`
 subclass for missing nodes. zarrs `ArrayCreateError` / `GroupCreateError` /
 `StorageError` / `ArrayError` map onto these.
 

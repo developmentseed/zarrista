@@ -1,18 +1,18 @@
 [package]
-name = "zarrsita"
+name = "zarrista"
 version = "0.1.0"
 authors = ["Kyle Barron <kyle@developmentseed.org>"]
 edition = "2021"
 description = "A small, prototypical zarrita-like Python Zarr implementation on top of zarrs."
 readme = "README.md"
-homepage = "https://developmentseed.org/zarrsita"
-repository = "https://github.com/developmentseed/zarrsita"
+homepage = "https://developmentseed.org/zarrista"
+repository = "https://github.com/developmentseed/zarrista"
 license = "MIT OR Apache-2.0"
 keywords = ["python", "zarr"]
 rust-version = "1.75"
 
 [lib]
-name = "_zarrsita"
+name = "_zarrista"
 crate-type = ["cdylib"]
 
 [features]

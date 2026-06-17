@@ -1,4 +1,4 @@
-# zarrsita
+# zarrista
 
 A small, prototypical zarrita-like Python Zarr implementation on top of
 [zarrs](https://github.com/LDeakin/zarrs).
@@ -25,11 +25,11 @@ uv run pytest
 Quick check that it imports:
 
 ```bash
-uv run python -c "import zarrsita; print(zarrsita.__version__, zarrsita.hello())"
+uv run python -c "import zarrista; print(zarrista.__version__, zarrista.hello())"
 ```
 
 ## Layout
 
-- `src/lib.rs` — the Rust extension module, compiled to `zarrsita._zarrsita`.
-- `python/zarrsita/` — the pure-Python package that re-exports the compiled module.
+- `src/lib.rs` — the Rust extension module, compiled to `zarrista._zarrista`.
+- `python/zarrista/` — the pure-Python package that re-exports the compiled module.
 - `tests/` — pytest smoke tests.

@@ -1,9 +1,9 @@
-//! Error handling for zarrsita.
+//! Error handling for zarrista.
 //!
-//! [`ZarrsitaError`] is a Rust error enum that wraps the various error types
+//! [`ZarristaError`] is a Rust error enum that wraps the various error types
 //! returned by `zarrs` (and a few other crates) and converts cleanly into a
-//! Python exception via `From<ZarrsitaError> for PyErr`. Functions that return
-//! [`ZarrsitaResult`] can therefore use `?` directly on those underlying
+//! Python exception via `From<ZarristaError> for PyErr`. Functions that return
+//! [`ZarristaResult`] can therefore use `?` directly on those underlying
 //! errors instead of sprinkling `.map_err(...)` everywhere.
 
 use pyo3::create_exception;
@@ -18,27 +18,27 @@ use zarrs::node::{NodeCreateError, NodePathError};
 use zarrs::storage::StorageError;
 
 create_exception!(
-    zarrsita,
-    ZarrsitaException,
+    zarrista,
+    ZarristaException,
     PyException,
-    "Base class for all zarrsita errors."
+    "Base class for all zarrista errors."
 );
 create_exception!(
-    zarrsita,
+    zarrista,
     NotFoundError,
-    ZarrsitaException,
+    ZarristaException,
     "Raised when a node (array or group) does not exist at a path."
 );
 
-/// Errors that can occur in zarrsita.
+/// Errors that can occur in zarrista.
 ///
 /// Each variant wraps an error from an upstream crate (or a [`PyErr`] passed
 /// through unchanged). The `#[from]` attributes give us `?` on those errors,
-/// and the `From<ZarrsitaError> for PyErr` impl maps every variant onto an
+/// and the `From<ZarristaError> for PyErr` impl maps every variant onto an
 /// appropriate Python exception.
 #[derive(Debug, Error)]
 #[non_exhaustive]
-pub(crate) enum ZarrsitaError {
+pub(crate) enum ZarristaError {
     /// No array or group exists at the requested path.
     #[error("{0}")]
     NotFound(String),
@@ -74,32 +74,32 @@ pub(crate) enum ZarrsitaError {
     SerdeJson(#[from] serde_json::Error),
 }
 
-impl ZarrsitaError {
-    /// Build a [`ZarrsitaError::NotFound`] for a missing node path.
+impl ZarristaError {
+    /// Build a [`ZarristaError::NotFound`] for a missing node path.
     pub(crate) fn not_found(path: &str) -> Self {
         Self::NotFound(format!("no array or group found at path {path:?}"))
     }
 }
 
-impl From<ZarrsitaError> for PyErr {
-    fn from(error: ZarrsitaError) -> Self {
+impl From<ZarristaError> for PyErr {
+    fn from(error: ZarristaError) -> Self {
         match error {
-            ZarrsitaError::NotFound(msg) => NotFoundError::new_err(msg),
-            ZarrsitaError::Py(err) => err,
-            ZarrsitaError::Pythonize(err) => err.into(),
-            ZarrsitaError::ArrayCreate(err) => ZarrsitaException::new_err(err.to_string()),
-            ZarrsitaError::Array(err) => ZarrsitaException::new_err(err.to_string()),
-            ZarrsitaError::GroupCreate(err) => ZarrsitaException::new_err(err.to_string()),
-            ZarrsitaError::NodeCreate(err) => ZarrsitaException::new_err(err.to_string()),
-            ZarrsitaError::NodePath(err) => ZarrsitaException::new_err(err.to_string()),
-            ZarrsitaError::Storage(err) => ZarrsitaException::new_err(err.to_string()),
-            ZarrsitaError::FilesystemStoreCreate(err) => {
-                ZarrsitaException::new_err(err.to_string())
+            ZarristaError::NotFound(msg) => NotFoundError::new_err(msg),
+            ZarristaError::Py(err) => err,
+            ZarristaError::Pythonize(err) => err.into(),
+            ZarristaError::ArrayCreate(err) => ZarristaException::new_err(err.to_string()),
+            ZarristaError::Array(err) => ZarristaException::new_err(err.to_string()),
+            ZarristaError::GroupCreate(err) => ZarristaException::new_err(err.to_string()),
+            ZarristaError::NodeCreate(err) => ZarristaException::new_err(err.to_string()),
+            ZarristaError::NodePath(err) => ZarristaException::new_err(err.to_string()),
+            ZarristaError::Storage(err) => ZarristaException::new_err(err.to_string()),
+            ZarristaError::FilesystemStoreCreate(err) => {
+                ZarristaException::new_err(err.to_string())
             }
-            ZarrsitaError::SerdeJson(err) => ZarrsitaException::new_err(err.to_string()),
+            ZarristaError::SerdeJson(err) => ZarristaException::new_err(err.to_string()),
         }
     }
 }
 
 /// A `Result` whose error converts into a Python exception.
-pub(crate) type ZarrsitaResult<T> = Result<T, ZarrsitaError>;
+pub(crate) type ZarristaResult<T> = Result<T, ZarristaError>;

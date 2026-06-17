@@ -3,7 +3,7 @@
 
 use std::borrow::Cow;
 
-use crate::error::ZarrsitaError;
+use crate::error::ZarristaError;
 use crate::metadata::PyMetadataV3;
 use numpy::prelude::*;
 use numpy::IntoPyArray;
@@ -15,7 +15,7 @@ use zarrs::array::{ArrayError, ElementOwned};
 use zarrs::array::{DataType, DataTypeSize};
 use zarrs::storage::ReadableListableStorageTraits;
 
-#[pyclass(module = "zarrsita", frozen, name = "DataType")]
+#[pyclass(module = "zarrista", frozen, name = "DataType")]
 pub struct PyDataType {
     pub(crate) inner: DataType,
 }
@@ -66,7 +66,7 @@ impl From<PyDataType> for DataType {
     }
 }
 
-/// The store trait object backing every zarrsita array/group.
+/// The store trait object backing every zarrista array/group.
 pub(crate) type DynStorage = dyn ReadableListableStorageTraits;
 
 // The following helpers back the array-read path (numpy region/chunk reads),
@@ -115,7 +115,7 @@ pub(crate) fn read_region(
 
     macro_rules! arm {
         ($t:ty) => {{
-            let data: Vec<$t> = retrieve_vec(array, region).map_err(ZarrsitaError::from)?;
+            let data: Vec<$t> = retrieve_vec(array, region).map_err(ZarristaError::from)?;
             vec_to_numpy(py, data, out_shape)
         }};
     }

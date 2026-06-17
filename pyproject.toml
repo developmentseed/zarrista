@@ -3,7 +3,7 @@ requires = ["maturin>=1.12,<2.0"]
 build-backend = "maturin"
 
 [project]
-name = "zarrsita"
+name = "zarrista"
 requires-python = ">=3.11"
 readme = "README.md"
 description = "A small, prototypical zarrita-like Python Zarr implementation on top of zarrs."
@@ -21,7 +21,7 @@ dynamic = ["version"]
 
 [tool.maturin]
 features = ["pyo3/extension-module", "abi3-py311"]
-module-name = "zarrsita._zarrsita"
+module-name = "zarrista._zarrista"
 python-source = "python"
 
 [dependency-groups]

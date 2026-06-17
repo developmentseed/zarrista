@@ -141,7 +141,7 @@ jobs:
     runs-on: ubuntu-latest
     environment:
       name: pypi-release
-      url: https://pypi.org/p/zarrsita
+      url: https://pypi.org/p/zarrista
     permissions:
       # IMPORTANT: this permission is mandatory for trusted publishing
       id-token: write

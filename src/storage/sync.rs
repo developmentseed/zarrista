@@ -1,4 +1,4 @@
-use crate::error::ZarrsitaResult;
+use crate::error::ZarristaResult;
 use pyo3::exceptions::PyTypeError;
 use pyo3::prelude::*;
 use std::sync::Arc;
@@ -16,7 +16,7 @@ pub enum SyncStorage {
 }
 
 /// A store backed by a local directory.
-#[pyclass(module = "zarrsita", frozen, name = "FilesystemStore")]
+#[pyclass(module = "zarrista", frozen, name = "FilesystemStore")]
 pub struct PyFilesystemStore {
     pub(crate) storage: Arc<dyn ReadableListableStorageTraits>,
 }
@@ -25,7 +25,7 @@ pub struct PyFilesystemStore {
 impl PyFilesystemStore {
     /// Open a filesystem store rooted at `path`.
     #[new]
-    fn new(path: &str) -> ZarrsitaResult<Self> {
+    fn new(path: &str) -> ZarristaResult<Self> {
         let store = FilesystemStore::new(path)?;
         Ok(Self {
             storage: Arc::new(store),
@@ -38,7 +38,7 @@ impl PyFilesystemStore {
 }
 
 /// An in-memory store, primarily useful for testing.
-#[pyclass(module = "zarrsita", frozen, name = "MemoryStore")]
+#[pyclass(module = "zarrista", frozen, name = "MemoryStore")]
 pub struct PyMemoryStore {
     pub(crate) storage: Arc<dyn ReadableListableStorageTraits>,
 }
@@ -57,7 +57,7 @@ impl PyMemoryStore {
     }
 }
 
-/// Pull the inner [`Storage`] out of any zarrsita store object.
+/// Pull the inner [`Storage`] out of any zarrista store object.
 pub(crate) fn extract_storage(
     store: &Bound<'_, PyAny>,
 ) -> PyResult<Arc<dyn ReadableListableStorageTraits>> {

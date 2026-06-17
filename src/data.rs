@@ -127,7 +127,7 @@ impl DataInner {
     }
 }
 
-#[pyclass(module = "zarrsita", frozen, name = "Data")]
+#[pyclass(module = "zarrista", frozen, name = "Data")]
 pub struct PyData {
     inner: DataInner,
     /// Shape in elements. Cached here so the buffer protocol can hand out a
