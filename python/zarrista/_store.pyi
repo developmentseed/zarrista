@@ -1,7 +1,9 @@
+from pathlib import Path
+
 class FilesystemStore:
     """A store backed by a local directory."""
 
-    def __init__(self, path: str) -> None:
+    def __init__(self, path: str | Path) -> None:
         """Open a filesystem store rooted at `path`."""
     def __repr__(self) -> str: ...
 
