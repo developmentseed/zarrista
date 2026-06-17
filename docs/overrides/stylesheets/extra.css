@@ -1,6 +1,14 @@
 :root,
+[data-md-color-scheme="default"],
+[data-md-color-scheme="slate"] {
+  /* Coffee-brown branding, leaning into the "barista" theme, paired with a
+     muted teal accent (complementary to the warm brown). */
+  --md-accent-fg-color: #2a9d8f;
+  --md-accent-fg-color--transparent: rgba(42, 157, 143, 0.1);
+}
+
+:root,
 [data-md-color-scheme="default"] {
-  /* Coffee-brown branding, leaning into the "barista" theme */
   --md-primary-fg-color: #6f4e37;
   --md-default-fg-color: #3e2f25;
   --boxShadowD: 0px 12px 24px 0px rgba(62, 47, 37, 0.08),
