@@ -18,6 +18,15 @@ import zarr
 from numpy.typing import NDArray
 from zarrista import AsyncArray, AsyncGroup
 
+# The session is serialized with the Python icechunk and reconstructed by the
+# icechunk crate the Rust extension links against (2.x). That bytes bridge is
+# version-coupled, so a session from an older icechunk (1.x, the only build
+# installable on Python < 3.12) cannot be reconstructed. Skip rather than fail.
+requires_icechunk_2 = pytest.mark.skipif(
+    int(icechunk.__version__.split(".")[0]) < 2,
+    reason="icechunk session bridge requires icechunk >= 2 (matching the Rust crate)",
+)
+
 
 @pytest.fixture
 def icechunk_session(tmp_path: Path) -> tuple[icechunk.Session, NDArray[np.int32]]:
@@ -36,6 +45,7 @@ def icechunk_session(tmp_path: Path) -> tuple[icechunk.Session, NDArray[np.int32
     return repo.readonly_session("main"), data
 
 
+@requires_icechunk_2
 async def test_open_array_from_session(
     icechunk_session: tuple[icechunk.Session, NDArray[np.int32]],
 ):
@@ -47,6 +57,7 @@ async def test_open_array_from_session(
     np.testing.assert_array_equal(result, data[0:2, :, 5:7])
 
 
+@requires_icechunk_2
 async def test_open_group_from_session(
     icechunk_session: tuple[icechunk.Session, NDArray[np.int32]],
 ):
