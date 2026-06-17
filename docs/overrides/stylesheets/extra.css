@@ -1,0 +1,42 @@
+:root,
+[data-md-color-scheme="default"] {
+  /* Coffee-brown branding, leaning into the "barista" theme */
+  --md-primary-fg-color: #6f4e37;
+  --md-default-fg-color: #3e2f25;
+  --boxShadowD: 0px 12px 24px 0px rgba(62, 47, 37, 0.08),
+    0px 0px 4px 0px rgba(62, 47, 37, 0.08);
+}
+body {
+  margin: 0;
+  padding: 0;
+}
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--md-heading-font);
+  font-weight: bold;
+}
+.md-typeset h1,
+.md-typeset h2 {
+  font-weight: normal;
+  color: var(--md-default-fg-color);
+}
+.md-typeset h3,
+.md-typeset h4 {
+  font-weight: bold;
+  color: var(--md-default-fg-color);
+}
+.md-button,
+.md-typeset .md-button {
+  font-family: var(--md-heading-font);
+}
+.md-content .supheading {
+  font-family: var(--md-heading-font);
+  text-transform: uppercase;
+  color: var(--md-primary-fg-color);
+  font-size: 0.75rem;
+  font-weight: bold;
+}
