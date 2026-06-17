@@ -70,12 +70,12 @@ impl<'a, 'py> FromPyObject<'a, 'py> for AxisSelector {
 /// A full selection: either a single axis selector (`arr[5]`) or a tuple of them
 /// (`arr[5, 0:10, ...]`). Nested tuples are rejected.
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub(crate) enum PySelectionInput {
+pub(crate) enum PySelection {
     Single(AxisSelector),
     Tuple(Vec<AxisSelector>),
 }
 
-impl PySelectionInput {
+impl PySelection {
     // TODO: this function is vibe coded, come back to this and clean it up.
 
     /// Resolve this selection against a concrete array `shape`, producing the
@@ -85,8 +85,8 @@ impl PySelectionInput {
     pub(crate) fn to_array_subset(&self, shape: &[u64]) -> ZarristaResult<ArraySubset> {
         let ndim = shape.len();
         let selectors: &[AxisSelector] = match self {
-            PySelectionInput::Single(sel) => std::slice::from_ref(sel),
-            PySelectionInput::Tuple(sels) => sels.as_slice(),
+            PySelection::Single(sel) => std::slice::from_ref(sel),
+            PySelection::Tuple(sels) => sels.as_slice(),
         };
 
         let n_ellipsis = selectors
@@ -153,7 +153,7 @@ impl PySelectionInput {
     }
 }
 
-impl<'a, 'py> FromPyObject<'a, 'py> for PySelectionInput {
+impl<'a, 'py> FromPyObject<'a, 'py> for PySelection {
     type Error = PyErr;
 
     fn extract(obj: Borrowed<'a, 'py, PyAny>) -> Result<Self, Self::Error> {
@@ -162,9 +162,9 @@ impl<'a, 'py> FromPyObject<'a, 'py> for PySelectionInput {
             for item in tuple.iter() {
                 axes.push(item.extract::<AxisSelector>()?);
             }
-            return Ok(PySelectionInput::Tuple(axes));
+            return Ok(PySelection::Tuple(axes));
         }
-        Ok(PySelectionInput::Single(obj.extract::<AxisSelector>()?))
+        Ok(PySelection::Single(obj.extract::<AxisSelector>()?))
     }
 }
 
@@ -177,8 +177,8 @@ mod tests {
     fn extracts_integer_index() {
         Python::attach(|py| {
             let obj = py.eval(c"5", None, None).unwrap();
-            let sel: PySelectionInput = obj.extract().unwrap();
-            assert_eq!(sel, PySelectionInput::Single(AxisSelector::Index(5)));
+            let sel: PySelection = obj.extract().unwrap();
+            assert_eq!(sel, PySelection::Single(AxisSelector::Index(5)));
         });
     }
 
@@ -186,8 +186,8 @@ mod tests {
     fn extracts_negative_integer_index() {
         Python::attach(|py| {
             let obj = py.eval(c"-1", None, None).unwrap();
-            let sel: PySelectionInput = obj.extract().unwrap();
-            assert_eq!(sel, PySelectionInput::Single(AxisSelector::Index(-1)));
+            let sel: PySelection = obj.extract().unwrap();
+            assert_eq!(sel, PySelection::Single(AxisSelector::Index(-1)));
         });
     }
 
@@ -195,10 +195,10 @@ mod tests {
     fn extracts_slice_with_start_stop() {
         Python::attach(|py| {
             let obj = py.eval(c"slice(0, 10)", None, None).unwrap();
-            let sel: PySelectionInput = obj.extract().unwrap();
+            let sel: PySelection = obj.extract().unwrap();
             assert_eq!(
                 sel,
-                PySelectionInput::Single(AxisSelector::Slice {
+                PySelection::Single(AxisSelector::Slice {
                     start: Some(0),
                     stop: Some(10),
                     step: None,
@@ -211,10 +211,10 @@ mod tests {
     fn extracts_full_slice() {
         Python::attach(|py| {
             let obj = py.eval(c"slice(None)", None, None).unwrap();
-            let sel: PySelectionInput = obj.extract().unwrap();
+            let sel: PySelection = obj.extract().unwrap();
             assert_eq!(
                 sel,
-                PySelectionInput::Single(AxisSelector::Slice {
+                PySelection::Single(AxisSelector::Slice {
                     start: None,
                     stop: None,
                     step: None,
@@ -227,10 +227,10 @@ mod tests {
     fn extracts_strided_slice() {
         Python::attach(|py| {
             let obj = py.eval(c"slice(1, 20, 2)", None, None).unwrap();
-            let sel: PySelectionInput = obj.extract().unwrap();
+            let sel: PySelection = obj.extract().unwrap();
             assert_eq!(
                 sel,
-                PySelectionInput::Single(AxisSelector::Slice {
+                PySelection::Single(AxisSelector::Slice {
                     start: Some(1),
                     stop: Some(20),
                     step: Some(2),
@@ -243,8 +243,8 @@ mod tests {
     fn extracts_ellipsis() {
         Python::attach(|py| {
             let obj = py.eval(c"...", None, None).unwrap();
-            let sel: PySelectionInput = obj.extract().unwrap();
-            assert_eq!(sel, PySelectionInput::Single(AxisSelector::Ellipsis));
+            let sel: PySelection = obj.extract().unwrap();
+            assert_eq!(sel, PySelection::Single(AxisSelector::Ellipsis));
         });
     }
 
@@ -252,10 +252,10 @@ mod tests {
     fn extracts_tuple_of_mixed() {
         Python::attach(|py| {
             let obj = py.eval(c"(5, slice(0, 4), ...)", None, None).unwrap();
-            let sel: PySelectionInput = obj.extract().unwrap();
+            let sel: PySelection = obj.extract().unwrap();
             assert_eq!(
                 sel,
-                PySelectionInput::Tuple(vec![
+                PySelection::Tuple(vec![
                     AxisSelector::Index(5),
                     AxisSelector::Slice {
                         start: Some(0),
@@ -272,8 +272,8 @@ mod tests {
     fn empty_tuple_is_empty_selection() {
         Python::attach(|py| {
             let obj = py.eval(c"()", None, None).unwrap();
-            let sel: PySelectionInput = obj.extract().unwrap();
-            assert_eq!(sel, PySelectionInput::Tuple(vec![]));
+            let sel: PySelection = obj.extract().unwrap();
+            assert_eq!(sel, PySelection::Tuple(vec![]));
         });
     }
 
@@ -281,7 +281,7 @@ mod tests {
     fn rejects_nested_tuple() {
         Python::attach(|py| {
             let obj = py.eval(c"(5, (0, 1))", None, None).unwrap();
-            let result: PyResult<PySelectionInput> = obj.extract();
+            let result: PyResult<PySelection> = obj.extract();
             assert!(result.is_err());
         });
     }
@@ -290,7 +290,7 @@ mod tests {
     fn rejects_none_as_newaxis() {
         Python::attach(|py| {
             let obj = py.eval(c"None", None, None).unwrap();
-            let err = obj.extract::<PySelectionInput>().unwrap_err();
+            let err = obj.extract::<PySelection>().unwrap_err();
             assert!(err.is_instance_of::<PyNotImplementedError>(py));
         });
     }
@@ -300,7 +300,7 @@ mod tests {
         Python::attach(|py| {
             // `bool` is an `int` subclass; it must not be read as an integer index.
             let obj = py.eval(c"True", None, None).unwrap();
-            let err = obj.extract::<PySelectionInput>().unwrap_err();
+            let err = obj.extract::<PySelection>().unwrap_err();
             assert!(err.is_instance_of::<PyNotImplementedError>(py));
         });
     }
@@ -309,7 +309,7 @@ mod tests {
     fn rejects_list_index() {
         Python::attach(|py| {
             let obj = py.eval(c"[1, 2, 3]", None, None).unwrap();
-            let result: PyResult<PySelectionInput> = obj.extract();
+            let result: PyResult<PySelection> = obj.extract();
             assert!(result.is_err());
         });
     }
@@ -328,7 +328,7 @@ mod tests {
 
     #[test]
     fn resolves_int_with_trailing_axes_full() {
-        let input = PySelectionInput::Single(AxisSelector::Index(5));
+        let input = PySelection::Single(AxisSelector::Index(5));
         assert_eq!(
             input.to_array_subset(SHAPE).unwrap(),
             subset(&[5..6, 0..64, 0..100])
@@ -337,7 +337,7 @@ mod tests {
 
     #[test]
     fn resolves_negative_int() {
-        let input = PySelectionInput::Single(AxisSelector::Index(-1));
+        let input = PySelection::Single(AxisSelector::Index(-1));
         assert_eq!(
             input.to_array_subset(SHAPE).unwrap(),
             subset(&[8..9, 0..64, 0..100])
@@ -347,7 +347,7 @@ mod tests {
     #[test]
     fn resolves_tuple_int_and_slice() {
         let input =
-            PySelectionInput::Tuple(vec![AxisSelector::Index(5), slice(Some(0), Some(4), None)]);
+            PySelection::Tuple(vec![AxisSelector::Index(5), slice(Some(0), Some(4), None)]);
         assert_eq!(
             input.to_array_subset(SHAPE).unwrap(),
             subset(&[5..6, 0..4, 0..100])
@@ -356,7 +356,7 @@ mod tests {
 
     #[test]
     fn resolves_full_slice() {
-        let input = PySelectionInput::Single(slice(None, None, None));
+        let input = PySelection::Single(slice(None, None, None));
         assert_eq!(
             input.to_array_subset(SHAPE).unwrap(),
             subset(&[0..9, 0..64, 0..100])
@@ -365,7 +365,7 @@ mod tests {
 
     #[test]
     fn resolves_negative_slice_start() {
-        let input = PySelectionInput::Single(slice(Some(-2), None, None));
+        let input = PySelection::Single(slice(Some(-2), None, None));
         assert_eq!(
             input.to_array_subset(SHAPE).unwrap(),
             subset(&[7..9, 0..64, 0..100])
@@ -374,7 +374,7 @@ mod tests {
 
     #[test]
     fn resolves_empty_range_slice() {
-        let input = PySelectionInput::Single(slice(Some(5), Some(5), None));
+        let input = PySelection::Single(slice(Some(5), Some(5), None));
         assert_eq!(
             input.to_array_subset(SHAPE).unwrap(),
             subset(&[5..5, 0..64, 0..100])
@@ -383,7 +383,7 @@ mod tests {
 
     #[test]
     fn resolves_ellipsis_in_middle() {
-        let input = PySelectionInput::Tuple(vec![
+        let input = PySelection::Tuple(vec![
             AxisSelector::Index(5),
             AxisSelector::Ellipsis,
             AxisSelector::Index(3),
@@ -396,7 +396,7 @@ mod tests {
 
     #[test]
     fn resolves_single_ellipsis_all_full() {
-        let input = PySelectionInput::Single(AxisSelector::Ellipsis);
+        let input = PySelection::Single(AxisSelector::Ellipsis);
         assert_eq!(
             input.to_array_subset(SHAPE).unwrap(),
             subset(&[0..9, 0..64, 0..100])
@@ -405,7 +405,7 @@ mod tests {
 
     #[test]
     fn resolves_empty_tuple_all_full() {
-        let input = PySelectionInput::Tuple(vec![]);
+        let input = PySelection::Tuple(vec![]);
         assert_eq!(
             input.to_array_subset(SHAPE).unwrap(),
             subset(&[0..9, 0..64, 0..100])
@@ -413,14 +413,14 @@ mod tests {
     }
 
     /// The Python exception produced by a failed resolution, for type checks.
-    fn resolve_err(input: &PySelectionInput) -> PyErr {
+    fn resolve_err(input: &PySelection) -> PyErr {
         input.to_array_subset(SHAPE).unwrap_err().into()
     }
 
     #[test]
     fn out_of_bounds_positive_int_errors() {
         Python::attach(|py| {
-            let input = PySelectionInput::Single(AxisSelector::Index(9)); // len 9 -> max valid 8
+            let input = PySelection::Single(AxisSelector::Index(9)); // len 9 -> max valid 8
             assert!(resolve_err(&input).is_instance_of::<PyIndexError>(py));
         });
     }
@@ -428,7 +428,7 @@ mod tests {
     #[test]
     fn out_of_bounds_negative_int_errors() {
         Python::attach(|py| {
-            let input = PySelectionInput::Single(AxisSelector::Index(-10)); // -10 + 9 = -1
+            let input = PySelection::Single(AxisSelector::Index(-10)); // -10 + 9 = -1
             assert!(resolve_err(&input).is_instance_of::<PyIndexError>(py));
         });
     }
@@ -436,7 +436,7 @@ mod tests {
     #[test]
     fn slice_with_step_errors() {
         Python::attach(|py| {
-            let input = PySelectionInput::Single(slice(None, None, Some(2)));
+            let input = PySelection::Single(slice(None, None, Some(2)));
             assert!(resolve_err(&input).is_instance_of::<PyNotImplementedError>(py));
         });
     }
@@ -444,7 +444,7 @@ mod tests {
     #[test]
     fn too_many_indices_errors() {
         Python::attach(|py| {
-            let input = PySelectionInput::Tuple(vec![
+            let input = PySelection::Tuple(vec![
                 AxisSelector::Index(0),
                 AxisSelector::Index(0),
                 AxisSelector::Index(0),
@@ -458,7 +458,7 @@ mod tests {
     fn double_ellipsis_errors() {
         Python::attach(|py| {
             let input =
-                PySelectionInput::Tuple(vec![AxisSelector::Ellipsis, AxisSelector::Ellipsis]);
+                PySelection::Tuple(vec![AxisSelector::Ellipsis, AxisSelector::Ellipsis]);
             assert!(resolve_err(&input).is_instance_of::<PyIndexError>(py));
         });
     }

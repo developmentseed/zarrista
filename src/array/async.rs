@@ -2,7 +2,7 @@
 
 use std::sync::Arc;
 
-use crate::array::selection::PySelectionInput;
+use crate::array::selection::PySelection;
 use crate::chunks::PyChunkGrid;
 use crate::codec::PyCodecChain;
 use crate::data::{for_each_dtype, DataInner, PyData};
@@ -112,7 +112,7 @@ impl PyAsyncArray {
     fn retrieve_array_subset<'py>(
         &self,
         py: Python<'py>,
-        selection: PySelectionInput,
+        selection: PySelection,
     ) -> PyResult<Bound<'py, PyAny>> {
         use zarrs::array::data_type::*;
 
@@ -145,7 +145,7 @@ impl PyAsyncArray {
     fn __getitem__<'py>(
         &self,
         py: Python<'py>,
-        selection: PySelectionInput,
+        selection: PySelection,
     ) -> PyResult<Bound<'py, PyAny>> {
         self.retrieve_array_subset(py, selection)
     }

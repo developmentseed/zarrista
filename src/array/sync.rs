@@ -1,6 +1,6 @@
 //! The `Array` Python class: metadata accessors and numpy-style reads.
 
-use crate::array::selection::PySelectionInput;
+use crate::array::selection::PySelection;
 use crate::chunks::PyChunkGrid;
 use crate::codec::PyCodecChain;
 use crate::data::{for_each_dtype, DataInner, PyData};
@@ -96,7 +96,7 @@ impl PyArray {
     }
 
     /// Read a region of the array as `Data`, using numpy-style basic indexing.
-    fn retrieve_array_subset(&self, selection: PySelectionInput) -> ZarristaResult<PyData> {
+    fn retrieve_array_subset(&self, selection: PySelection) -> ZarristaResult<PyData> {
         use zarrs::array::data_type::*;
 
         let array_subset = selection.to_array_subset(self.inner.shape())?;
@@ -121,7 +121,7 @@ impl PyArray {
     }
 
     /// Read a region with numpy-style basic indexing, e.g. `arr[0:10, :, 5]`.
-    fn __getitem__(&self, selection: PySelectionInput) -> ZarristaResult<PyData> {
+    fn __getitem__(&self, selection: PySelection) -> ZarristaResult<PyData> {
         self.retrieve_array_subset(selection)
     }
 
