@@ -1,7 +1,7 @@
 //! A custom, duck-typed Python object adapted to the `zarrs` sync storage traits.
 //!
 //! The Python object declares capabilities via `@property` predicates and
-//! implements a small set of methods. [`PyStore`] reads the capability flags
+//! implements a small set of methods. [`PyDuckStore`] reads the capability flags
 //! once at construction and adapts the object to [`ReadableStorageTraits`]
 //! (+ [`ListableStorageTraits`], added in a later task).
 
@@ -15,13 +15,13 @@ use zarrs::storage::{
 
 /// A Python object adapted to the `zarrs` sync storage traits.
 #[derive(Debug)]
-pub(crate) struct PyStore {
+pub(crate) struct PyDuckStore {
     obj: Py<PyAny>,
     supports_get_partial: bool,
     supports_listing: bool,
 }
 
-impl PyStore {
+impl PyDuckStore {
     /// Wrap a duck-typed Python store object, reading its capability flags now.
     pub(crate) fn new(obj: &Bound<'_, PyAny>) -> Self {
         Self {
@@ -64,7 +64,7 @@ fn py_to_storage_error(err: PyErr) -> StorageError {
     StorageError::Other(err.to_string())
 }
 
-impl ReadableStorageTraits for PyStore {
+impl ReadableStorageTraits for PyDuckStore {
     fn get(&self, key: &StoreKey) -> Result<MaybeBytes, StorageError> {
         self.py_get(key)
     }
@@ -126,7 +126,7 @@ impl ReadableStorageTraits for PyStore {
     }
 }
 
-impl PyStore {
+impl PyDuckStore {
     /// Error returned by every listable method when listing is not declared.
     fn require_listing(&self) -> Result<(), StorageError> {
         if self.supports_listing {
@@ -159,7 +159,7 @@ impl PyStore {
     }
 }
 
-impl ListableStorageTraits for PyStore {
+impl ListableStorageTraits for PyDuckStore {
     fn list(&self) -> Result<StoreKeys, StorageError> {
         self.require_listing()?;
         Python::attach(|py| self.py_list_keys(py, "list", ()))

@@ -1,5 +1,5 @@
 use crate::error::ZarristaResult;
-use crate::storage::PyStore;
+use crate::storage::PyDuckStore;
 use pyo3::prelude::*;
 use std::path::PathBuf;
 use std::sync::Arc;
@@ -21,7 +21,7 @@ impl FromPyObject<'_, '_> for PySyncStorage {
         }
 
         // Any other object is treated as a duck-typed custom store.
-        Ok(Self(Arc::new(PyStore::new(&obj))))
+        Ok(Self(Arc::new(PyDuckStore::new(&obj))))
     }
 }
 
