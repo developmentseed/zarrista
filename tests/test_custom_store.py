@@ -8,6 +8,18 @@ import zarr
 from zarrista import Array, Group
 
 
+def _dir_to_mapping(root_dir) -> dict[str, bytes]:
+    """Read every file under `root_dir` into a {relative-key: bytes} mapping."""
+    mapping: dict[str, bytes] = {}
+    for dirpath, _dirs, files in os.walk(root_dir):
+        for name in files:
+            full = os.path.join(dirpath, name)
+            rel = os.path.relpath(full, root_dir).replace(os.sep, "/")
+            with open(full, "rb") as fh:
+                mapping[rel] = fh.read()
+    return mapping
+
+
 @pytest.fixture
 def zarr_bytes(tmp_path):
     """Write a tiny v3 array with zarr-python, return {key: bytes}."""
@@ -15,15 +27,19 @@ def zarr_bytes(tmp_path):
     root = zarr.create_group(store=store)
     arr = root.create_array("a", shape=(4,), chunks=(2,), dtype="int32")
     arr[:] = np.arange(4, dtype="int32")
+    return _dir_to_mapping(tmp_path)
 
-    mapping: dict[str, bytes] = {}
-    for dirpath, _dirs, files in os.walk(tmp_path):
-        for name in files:
-            full = os.path.join(dirpath, name)
-            rel = os.path.relpath(full, tmp_path).replace(os.sep, "/")
-            with open(full, "rb") as fh:
-                mapping[rel] = fh.read()
-    return mapping
+
+@pytest.fixture
+def sharded_zarr_bytes(tmp_path):
+    """Write a sharded v3 array so reads issue byte-range (partial) requests."""
+    store = zarr.storage.LocalStore(str(tmp_path))
+    root = zarr.create_group(store=store)
+    arr = root.create_array(
+        "a", shape=(4,), chunks=(2,), shards=(4,), dtype="int32"
+    )
+    arr[:] = np.arange(4, dtype="int32")
+    return _dir_to_mapping(tmp_path)
 
 
 class ReadOnlyDictStore:
@@ -94,3 +110,39 @@ class BrokenStore(ReadOnlyDictStore):
 def test_store_exception_surfaces_message(zarr_bytes):
     with pytest.raises(Exception, match="boom from store"):
         Array.open(BrokenStore(zarr_bytes), "/a")
+
+
+class PartialStore(DictStore):
+    """Listable store that also serves partial reads and records the ranges."""
+
+    supports_get_partial = True
+
+    def __init__(self, mapping):
+        super().__init__(mapping)
+        self.partial_calls: list[tuple] = []
+
+    def get_partial_many(self, key, ranges):
+        # ranges: list of (kind, offset, length)
+        self.partial_calls.append((key, tuple(ranges)))
+        value = self._mapping.get(key)
+        if value is None:
+            return None
+        out = []
+        for kind, offset, length in ranges:
+            if kind == "suffix":
+                out.append(value[len(value) - length:])
+            elif length is None:
+                out.append(value[offset:])
+            else:
+                out.append(value[offset:offset + length])
+        return out
+
+
+def test_partial_reads_are_delegated(sharded_zarr_bytes):
+    store = PartialStore(sharded_zarr_bytes)
+    array = Array.open(store, "/a")
+    # Read a sub-region of the shard so zarrs partial-decodes it (index +
+    # inner chunk) via byte-range requests rather than fetching the whole shard.
+    data = array.retrieve_array_subset((slice(0, 2),))
+    np.testing.assert_array_equal(data.to_numpy(), np.array([0, 1], dtype="int32"))
+    assert store.partial_calls, "expected get_partial_many to be delegated"

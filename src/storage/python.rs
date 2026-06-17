@@ -64,6 +64,18 @@ fn py_to_storage_error(err: PyErr) -> StorageError {
     StorageError::Other(err.to_string())
 }
 
+/// Encode a `ByteRange` as the Python `(kind, offset, length)` triple.
+///
+/// `kind` is `"start"` (read `length` bytes from `offset`, or to the end when
+/// `length` is `None`) or `"suffix"` (read the last `length` bytes; `offset`
+/// is unused and reported as `0`).
+fn byte_range_to_py(byte_range: &ByteRange) -> (&'static str, u64, Option<u64>) {
+    match byte_range {
+        ByteRange::FromStart(offset, length) => ("start", *offset, *length),
+        ByteRange::Suffix(length) => ("suffix", 0, Some(*length)),
+    }
+}
+
 impl ReadableStorageTraits for PyDuckStore {
     fn get(&self, key: &StoreKey) -> Result<MaybeBytes, StorageError> {
         self.py_get(key)
@@ -74,7 +86,33 @@ impl ReadableStorageTraits for PyDuckStore {
         key: &StoreKey,
         byte_ranges: ByteRangeIterator<'a>,
     ) -> Result<MaybeBytesIterator<'a>, StorageError> {
-        // MVP: fetch the full value and slice each range (mirrors MemoryStore).
+        // When the store declares partial support, delegate to its
+        // `get_partial_many` instead of fetching the whole value.
+        if self.supports_get_partial {
+            let encoded: Vec<(&'static str, u64, Option<u64>)> =
+                byte_ranges.map(|br| byte_range_to_py(&br)).collect();
+            let bytes: Option<Vec<Bytes>> =
+                Python::attach(|py| -> Result<Option<Vec<Bytes>>, StorageError> {
+                    let result = self
+                        .obj
+                        .bind(py)
+                        .call_method1("get_partial_many", (key.as_str(), encoded))
+                        .map_err(py_to_storage_error)?;
+                    if result.is_none() {
+                        return Ok(None);
+                    }
+                    let raw = result
+                        .extract::<Vec<Vec<u8>>>()
+                        .map_err(py_to_storage_error)?;
+                    Ok(Some(raw.into_iter().map(Bytes::from).collect()))
+                })?;
+            return Ok(bytes.map(|v| {
+                Box::new(v.into_iter().map(Ok))
+                    as Box<dyn Iterator<Item = Result<Bytes, StorageError>>>
+            }));
+        }
+
+        // Fallback: fetch the full value and slice each range (mirrors MemoryStore).
         let Some(data) = self.py_get(key)? else {
             return Ok(None);
         };
