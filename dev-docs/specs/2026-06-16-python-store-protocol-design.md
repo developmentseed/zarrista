@@ -127,13 +127,15 @@ child prefixes directly under `prefix`.
 
 ### `ByteRange` representation
 
-`zarrs`'s `ByteRange` is an enum: `FromStart(offset, Option<length>)` **or**
-`FromEnd(offset, Option<length>)` (suffix reads, which sharding uses heavily).
-The Python representation must express both ends — a start-only tuple would
-make suffix reads inexpressible.
+`zarrs`'s `ByteRange` is an enum: `FromStart(offset: u64, Option<length: u64>)`
+**or** `Suffix(length: u64)` (a read of the last `length` bytes, which sharding
+uses heavily). The Python representation must express both — a start-only tuple
+would make suffix reads inexpressible.
 
-Representation: a small object/tuple carrying `(anchor, offset, length)` where
-`anchor` is `"start"` or `"end"` and `length` may be `None` (to end of value).
+Representation: a small object/tuple carrying `(kind, offset, length)` where
+`kind` is `"start"` or `"suffix"` and, for `"start"`, `length` may be `None`
+(read to the end of the value). For `"suffix"`, `offset` is unused and `length`
+is the suffix size.
 The exact concrete form (lightweight dataclass vs. tuple vs. exported pyclass)
 is an implementation choice for the plan; the constraint is that both anchors
 and an optional length round-trip.
