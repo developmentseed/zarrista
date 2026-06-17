@@ -15,7 +15,7 @@ use zarrs::array::{ArrayCreateError, ArrayError};
 use zarrs::filesystem::FilesystemStoreCreateError;
 use zarrs::group::GroupCreateError;
 use zarrs::node::{NodeCreateError, NodePathError};
-use zarrs::storage::StorageError;
+use zarrs::storage::{StorageError, StoreKeyError};
 
 create_exception!(
     zarrista,
@@ -38,7 +38,7 @@ create_exception!(
 /// appropriate Python exception.
 #[derive(Debug, Error)]
 #[non_exhaustive]
-pub(crate) enum ZarristaError {
+pub enum ZarristaError {
     /// No array or group exists at the requested path.
     #[error("{0}")]
     NotFound(String),
@@ -72,6 +72,9 @@ pub(crate) enum ZarristaError {
     /// Failed to (de)serialize JSON.
     #[error(transparent)]
     SerdeJson(#[from] serde_json::Error),
+    /// Store key error
+    #[error(transparent)]
+    StoreKey(#[from] StoreKeyError),
 }
 
 impl ZarristaError {
@@ -97,6 +100,7 @@ impl From<ZarristaError> for PyErr {
                 ZarristaException::new_err(err.to_string())
             }
             ZarristaError::SerdeJson(err) => ZarristaException::new_err(err.to_string()),
+            ZarristaError::StoreKey(err) => ZarristaException::new_err(err.to_string()),
         }
     }
 }
