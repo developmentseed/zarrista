@@ -3,15 +3,14 @@ use std::sync::Arc;
 use super::last_segment;
 use crate::error::ZarristaError;
 use crate::node::{open_node_async, PyNodePath};
+use crate::storage::PyAsyncStorage;
 use pyo3::prelude::*;
 use pyo3_async_runtimes::tokio::future_into_py;
-use pyo3_object_store::AnyObjectStore;
 use pythonize::pythonize;
 use pythonize::Result as PythonizeResult;
 use zarrs::group::Group;
 use zarrs::node::NodePath;
 use zarrs::storage::AsyncReadableListableStorageTraits;
-use zarrs_object_store::AsyncObjectStore;
 
 /// A read-only Zarr group.
 #[pyclass(module = "zarrista", frozen, name = "AsyncGroup")]
@@ -45,11 +44,10 @@ impl PyAsyncGroup {
     )]
     fn open_async<'py>(
         py: Python<'py>,
-        store: AnyObjectStore,
+        store: PyAsyncStorage,
         path: PyNodePath,
     ) -> PyResult<Bound<'py, PyAny>> {
-        let storage: Arc<dyn AsyncReadableListableStorageTraits> =
-            Arc::new(AsyncObjectStore::new(store.into_dyn()));
+        let storage = store.into_inner();
         future_into_py(py, async move {
             let inner = Group::async_open(storage.clone(), path.as_str())
                 .await
