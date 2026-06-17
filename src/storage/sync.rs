@@ -1,20 +1,11 @@
 use crate::error::ZarristaResult;
-use pyo3::exceptions::PyTypeError;
+use crate::storage::PyStore;
 use pyo3::prelude::*;
 use std::path::PathBuf;
 use std::sync::Arc;
 use zarrs::filesystem::FilesystemStore;
 use zarrs::storage::store::MemoryStore;
 use zarrs::storage::ReadableListableStorageTraits;
-
-use zarrs::storage::{ReadableStorageTraits, ReadableWritableStorageTraits, WritableStorageTraits};
-
-#[allow(dead_code)]
-pub enum SyncStorage {
-    Readable(Arc<dyn ReadableStorageTraits>),
-    Writable(Arc<dyn WritableStorageTraits>),
-    ReadableWritable(Arc<dyn ReadableWritableStorageTraits>),
-}
 
 /// A store backed by a local directory.
 #[pyclass(module = "zarrista", frozen, name = "FilesystemStore")]
@@ -68,7 +59,6 @@ pub(crate) fn extract_storage(
     if let Ok(s) = store.cast::<PyMemoryStore>() {
         return Ok(s.get().storage.clone());
     }
-    Err(PyTypeError::new_err(
-        "expected a FilesystemStore or MemoryStore",
-    ))
+    // Any other object is treated as a duck-typed custom store.
+    Ok(Arc::new(PyStore::new(store)))
 }
