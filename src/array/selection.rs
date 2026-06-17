@@ -145,8 +145,8 @@ impl PySelectionInput {
         }
 
         // Pad any remaining trailing axes (when there was no ellipsis).
-        for axis in ranges.len()..ndim {
-            ranges.push(0..shape[axis]);
+        for &len in &shape[ranges.len()..] {
+            ranges.push(0..len);
         }
 
         Ok(ArraySubset::new_with_ranges(&ranges))
