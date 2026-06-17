@@ -84,3 +84,13 @@ def test_listing_raises_when_unsupported(zarr_bytes):
     group = Group.open(ReadOnlyDictStore(zarr_bytes), "/")
     with pytest.raises(Exception, match="does not support listing"):
         group.array_keys()
+
+
+class BrokenStore(ReadOnlyDictStore):
+    def get(self, key: str) -> bytes | None:
+        raise RuntimeError("boom from store")
+
+
+def test_store_exception_surfaces_message(zarr_bytes):
+    with pytest.raises(Exception, match="boom from store"):
+        Array.open(BrokenStore(zarr_bytes), "/a")
