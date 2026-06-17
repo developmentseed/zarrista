@@ -25,10 +25,11 @@ __pycache__/
 .ruff_cache/
 
 # maturin / compiled extension module
+# (the `_zarrista.pyi` stub beside it is committed, so docs can build without
+# compiling the extension)
 *.so
 *.pyd
 *.dylib
-/python/zarrista/_zarrista.*
 dist/
 *.egg-info/
 
