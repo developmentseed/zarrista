@@ -83,6 +83,8 @@ impl FromPyObject<'_, '_> for PyAsyncIcechunkStore {
             )));
         }
 
+        // NOTE: this is a bit hacky. We should make an issue in icechunk to ask for a public,
+        // stable API to create a new rust Session object from a Python Session object.
         let serialized_session = obj
             .getattr("_session")?
             .call_method0("as_bytes")?

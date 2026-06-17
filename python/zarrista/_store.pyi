@@ -1,5 +1,16 @@
 from pathlib import Path
 
+from icechunk import Session
+from obstore.store import ObjectStore
+
+AsyncStore = ObjectStore | Session
+"""A store accepted by the async API.
+
+Either an obstore [`ObjectStore`][obstore.store.ObjectStore] (any object-store
+backend, e.g. S3, GCS, local) or an icechunk [`Session`][icechunk.Session]
+(a transactional, versioned store).
+"""
+
 class FilesystemStore:
     """A store backed by a local directory."""
 

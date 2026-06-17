@@ -1,9 +1,7 @@
 from typing import Any
 
-from obstore.store import ObjectStore
-
 from ._array import Array, AsyncArray
-from ._store import FilesystemStore, MemoryStore
+from ._store import AsyncStore, FilesystemStore, MemoryStore
 
 class Group:
     """A read-only Zarr group."""
@@ -26,8 +24,11 @@ class AsyncGroup:
     """A read-only Zarr group backed by an async store."""
 
     @staticmethod
-    async def open_async(store: ObjectStore, path: str = "/") -> AsyncGroup:
-        """Open the group stored at `path` in `store`."""
+    async def open_async(store: AsyncStore, path: str = "/") -> AsyncGroup:
+        """Open the group stored at `path` in `store`.
+
+        `store` may be an obstore `ObjectStore` or an icechunk `Session`.
+        """
     @property
     def attrs(self) -> dict[str, Any]:
         """The group's user attributes as a dict."""
