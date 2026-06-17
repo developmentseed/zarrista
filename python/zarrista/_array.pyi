@@ -1,3 +1,4 @@
+from types import EllipsisType
 from typing import Any
 
 from obstore.store import ObjectStore
@@ -7,6 +8,16 @@ from ._codec import CodecChain
 from ._data import Data
 from ._dtype import DataType
 from ._store import FilesystemStore, MemoryStore
+
+_AxisSelector = int | slice | EllipsisType
+Selection = _AxisSelector | tuple[_AxisSelector, ...]
+"""A numpy-style basic-indexing selection: what you would write inside `[]`.
+
+Supports integers, step-1 slices, `Ellipsis`, and tuples of those (with fewer
+entries than `ndim` implying full trailing axes). Negative indices and slice
+bounds are normalized. `step != 1`, `None`/newaxis, boolean, and fancy/array
+indexing are not supported.
+"""
 
 class Array:
     """A read-only Zarr array."""
@@ -38,11 +49,22 @@ class Array:
     @property
     def path(self) -> str:
         """The array's path in the store."""
+    def retrieve_array_subset(self, selection: Selection) -> Data:
+        """Read and decode an array region selected with numpy-style basic indexing.
+
+        The result is ndim-preserving (consistent with a zarrs `ArraySubset`): an
+        integer selects a length-1 range and that axis is retained.
+        """
     def retrieve_chunk(self, chunk_indices: list[int]) -> Data:
         """Read and decode the chunk at the given chunk grid indices."""
     @property
     def shape(self) -> list[int]:
         """The array shape."""
+    def __getitem__(self, selection: Selection) -> Data:
+        """Read a region with numpy-style basic indexing, e.g. `arr[0:10, :, 5]`.
+
+        Sugar for `retrieve_array_subset`.
+        """
     def __repr__(self) -> str: ...
 
 class AsyncArray:
@@ -75,9 +97,20 @@ class AsyncArray:
     @property
     def path(self) -> str:
         """The array's path in the store."""
+    async def retrieve_array_subset(self, selection: Selection) -> Data:
+        """Read and decode an array region selected with numpy-style basic indexing.
+
+        The result is ndim-preserving (consistent with a zarrs `ArraySubset`): an
+        integer selects a length-1 range and that axis is retained.
+        """
     async def retrieve_chunk(self, chunk_indices: list[int]) -> Data:
         """Read and decode the chunk at the given chunk grid indices."""
     @property
     def shape(self) -> list[int]:
         """The array shape."""
+    async def __getitem__(self, selection: Selection) -> Data:
+        """Read a region with numpy-style basic indexing: `await arr[0:10, :, 5]`.
+
+        Sugar for `retrieve_array_subset`.
+        """
     def __repr__(self) -> str: ...

@@ -2,9 +2,10 @@
 
 use std::sync::Arc;
 
+use crate::array::selection::PySelectionInput;
 use crate::chunks::PyChunkGrid;
 use crate::codec::PyCodecChain;
-use crate::data::{DataInner, PyData};
+use crate::data::{for_each_dtype, DataInner, PyData};
 use crate::dtype::PyDataType;
 use crate::error::ZarristaError;
 use crate::node::PyNodePath;
@@ -107,6 +108,48 @@ impl PyAsyncArray {
         self.inner.path().as_str()
     }
 
+    /// Read a region of the array as `Data`, using numpy-style basic indexing.
+    fn retrieve_array_subset<'py>(
+        &self,
+        py: Python<'py>,
+        selection: PySelectionInput,
+    ) -> PyResult<Bound<'py, PyAny>> {
+        use zarrs::array::data_type::*;
+
+        let inner = self.inner.clone();
+        let array_subset = selection.to_array_subset(inner.shape())?;
+
+        future_into_py(py, async move {
+            let dtype = inner.data_type();
+
+            macro_rules! arm {
+                ($dtype:ty, $variant:ident, $elem:ty) => {
+                    if dtype.is::<$dtype>() {
+                        let data = inner
+                            .async_retrieve_array_subset::<ArrayD<$elem>>(&array_subset)
+                            .await
+                            .map_err(ZarristaError::from)?;
+                        return Ok(PyData::from(DataInner::$variant(data)));
+                    }
+                };
+            }
+            for_each_dtype!(arm);
+
+            Err(PyNotImplementedError::new_err(format!(
+                "reading data type {dtype} is not supported yet"
+            )))
+        })
+    }
+
+    /// Read a region with numpy-style basic indexing, e.g. `await arr[0:10, :, 5]`.
+    fn __getitem__<'py>(
+        &self,
+        py: Python<'py>,
+        selection: PySelectionInput,
+    ) -> PyResult<Bound<'py, PyAny>> {
+        self.retrieve_array_subset(py, selection)
+    }
+
     fn retrieve_chunk<'py>(
         &self,
         py: Python<'py>,
@@ -119,7 +162,7 @@ impl PyAsyncArray {
         future_into_py(py, async move {
             let dtype = inner.data_type();
 
-            macro_rules! retrieve {
+            macro_rules! arm {
                 ($dtype:ty, $variant:ident, $elem:ty) => {
                     if dtype.is::<$dtype>() {
                         let chunk = inner
@@ -130,19 +173,7 @@ impl PyAsyncArray {
                     }
                 };
             }
-
-            retrieve!(BoolDataType, Bool, bool);
-            retrieve!(Int8DataType, Int8, i8);
-            retrieve!(Int16DataType, Int16, i16);
-            retrieve!(Int32DataType, Int32, i32);
-            retrieve!(Int64DataType, Int64, i64);
-            retrieve!(UInt8DataType, Uint8, u8);
-            retrieve!(UInt16DataType, Uint16, u16);
-            retrieve!(UInt32DataType, Uint32, u32);
-            retrieve!(UInt64DataType, Uint64, u64);
-            retrieve!(Float16DataType, Float16, half::f16);
-            retrieve!(Float32DataType, Float32, f32);
-            retrieve!(Float64DataType, Float64, f64);
+            for_each_dtype!(arm);
 
             Err(PyNotImplementedError::new_err(format!(
                 "reading data type {dtype} is not supported yet"

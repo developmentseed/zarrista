@@ -41,7 +41,7 @@ use pyo3::prelude::*;
 
 /// The decoded data of a chunk, with variants for each supported dtype.
 ///
-/// This is kept separate from `PyData` 1) because Python classes can't be defined as Rust enums and 2) so that we have a clean place to manage data types not supported by numpy.
+/// This is kept separate from `PyData` 1. because Python classes can't be defined as Rust enums and 2. so that we have a clean place to manage data types not supported by numpy.
 pub enum DataInner {
     Bool(ArrayD<bool>),
     Float16(ArrayD<half::f16>),
@@ -56,6 +56,31 @@ pub enum DataInner {
     Uint64(ArrayD<u64>),
     Uint8(ArrayD<u8>),
 }
+
+/// Invoke `$arm!(ZarrsDataType, DataInnerVariant, rust_elem_type)` once per
+/// supported dtype. The caller supplies an `arm!` macro that turns a single
+/// `(dtype, variant, elem)` triple into a retrieval (e.g. `retrieve_chunk` or
+/// `retrieve_array_subset`), keeping the dtype list defined in exactly one place.
+///
+/// The `ZarrsDataType` idents (e.g. `BoolDataType`) and `half::f16` are resolved
+/// in the caller's scope, so callers must have `use zarrs::array::data_type::*`.
+macro_rules! for_each_dtype {
+    ($arm:ident) => {
+        $arm!(BoolDataType, Bool, bool);
+        $arm!(Int8DataType, Int8, i8);
+        $arm!(Int16DataType, Int16, i16);
+        $arm!(Int32DataType, Int32, i32);
+        $arm!(Int64DataType, Int64, i64);
+        $arm!(UInt8DataType, Uint8, u8);
+        $arm!(UInt16DataType, Uint16, u16);
+        $arm!(UInt32DataType, Uint32, u32);
+        $arm!(UInt64DataType, Uint64, u64);
+        $arm!(Float16DataType, Float16, half::f16);
+        $arm!(Float32DataType, Float32, f32);
+        $arm!(Float64DataType, Float64, f64);
+    };
+}
+pub(crate) use for_each_dtype;
 
 /// Run `$body` against the inner `ArrayD`, with `$a` bound to it regardless of
 /// element type. Exhaustive, so a new `DataInner` variant is a compile error.

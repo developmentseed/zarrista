@@ -1,35 +1,29 @@
 # zarrista
 
-A small, prototypical zarrita-like Python Zarr implementation on top of
-[zarrs](https://github.com/LDeakin/zarrs).
+A low-level Zarr API for Python, inspired by [zarrita.js], powered from Rust by [Zarrs].
 
-> **Status:** early prototype. This is currently a hello-world pyo3 scaffold;
-> the `zarrs` bindings are not implemented yet.
+[zarrita.js]: https://zarrita.dev/
+[Zarrs]: https://zarrs.dev/
+
+This has been _minimally_ vibe-coded (Claude still writes bad Rust code in my opinion).
 
 ## Development
 
-Requires a Rust toolchain and Python 3.11+. We use [uv](https://docs.astral.sh/uv/)
-and [maturin](https://www.maturin.rs/).
+Requires a Rust toolchain and Python 3.11+. We use
+[uv](https://docs.astral.sh/uv/) and [maturin](https://www.maturin.rs/).
 
 ```bash
 # Create a dev environment and install the dev dependencies
-uv sync
+uv sync --no-install-package zarrista
 
 # Build the Rust extension and install it into the environment (debug build)
-uv run maturin develop
+uv run --no-project maturin develop --uv
+
+# Or, in release mode:
+uv run --no-project maturin develop --uv --release
 
 # Run the tests
-uv run pytest
+uv run --no-project pytest
 ```
 
-Quick check that it imports:
-
-```bash
-uv run python -c "import zarrista; print(zarrista.__version__, zarrista.hello())"
-```
-
-## Layout
-
-- `src/lib.rs` — the Rust extension module, compiled to `zarrista._zarrista`.
-- `python/zarrista/` — the pure-Python package that re-exports the compiled module.
-- `tests/` — pytest smoke tests.
+The `--no-project` is annoying but unavoidable in our current setup. Otherwise `uv` will try to build the rust library _in release mode, as a dependency of the project_ before reaching `uv sync` or `uv run`.
