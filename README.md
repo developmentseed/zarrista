@@ -13,6 +13,8 @@ A low-level [Zarr] API for Python, inspired by [zarrita.js], powered from Rust b
 
 This has been _minimally_ vibe-coded: _mostly_ but not fully written by hand. Some areas were prototyped with Claude.
 
+This project is for **evaluation**, to consider whether natively binding to [Zarrs] can provide better performance. It is not yet production ready.
+
 ## Documentation
 
 [**Documentation website.**](https://developmentseed.org/zarrista/latest)
