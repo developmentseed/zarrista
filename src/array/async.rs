@@ -6,7 +6,7 @@ use crate::chunks::PyChunkGrid;
 use crate::codec::PyCodecChain;
 use crate::data::{DataInner, PyData};
 use crate::dtype::PyDataType;
-use crate::error::ZarrsitaError;
+use crate::error::ZarristaError;
 use crate::node::PyNodePath;
 use ndarray::ArrayD;
 use pyo3::exceptions::PyNotImplementedError;
@@ -20,7 +20,7 @@ use zarrs::storage::AsyncReadableListableStorageTraits;
 use zarrs_object_store::AsyncObjectStore;
 
 /// A read-only Zarr array.
-#[pyclass(module = "zarrsita", frozen, name = "AsyncArray")]
+#[pyclass(module = "zarrista", frozen, name = "AsyncArray")]
 pub struct PyAsyncArray {
     pub(crate) inner: Arc<Array<dyn AsyncReadableListableStorageTraits>>,
 }
@@ -57,7 +57,7 @@ impl PyAsyncArray {
         future_into_py(py, async move {
             let inner = Array::async_open(storage, path.as_str())
                 .await
-                .map_err(ZarrsitaError::from)?;
+                .map_err(ZarristaError::from)?;
             Ok(Self::new(Arc::new(inner)))
         })
     }
@@ -125,7 +125,7 @@ impl PyAsyncArray {
                         let chunk = inner
                             .async_retrieve_chunk::<ArrayD<$elem>>(&chunk_indices)
                             .await
-                            .map_err(ZarrsitaError::from)?;
+                            .map_err(ZarristaError::from)?;
                         return Ok(PyData::from(DataInner::$variant(chunk)));
                     }
                 };

@@ -1,4 +1,4 @@
-from ._zarrsita import (
+from ._zarrista import (
     Array,
     AsyncArray,
     AsyncGroup,

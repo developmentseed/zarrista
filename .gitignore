@@ -24,7 +24,7 @@ __pycache__/
 *.so
 *.pyd
 *.dylib
-/python/zarrsita/_zarrsita.*
+/python/zarrista/_zarrista.*
 dist/
 *.egg-info/
 

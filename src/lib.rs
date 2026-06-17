@@ -1,4 +1,4 @@
-//! zarrsita: a small, read-only, zarrita-flavored Python binding to zarrs.
+//! zarrista: a small, read-only, zarrita-flavored Python binding to zarrs.
 
 mod array;
 mod chunks;
@@ -18,13 +18,13 @@ use crate::chunks::PyChunkGrid;
 use crate::codec::PyCodecChain;
 use crate::data::PyData;
 use crate::dtype::PyDataType;
-use crate::error::{NotFoundError, ZarrsitaException};
+use crate::error::{NotFoundError, ZarristaException};
 use crate::group::{PyAsyncGroup, PyGroup};
 use crate::storage::{PyFilesystemStore, PyMemoryStore};
 
-/// The compiled core of zarrsita, imported as `zarrsita._zarrsita`.
+/// The compiled core of zarrista, imported as `zarrista._zarrista`.
 #[pymodule]
-fn _zarrsita(m: &Bound<'_, PyModule>) -> PyResult<()> {
+fn _zarrista(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add("__version__", env!("CARGO_PKG_VERSION"))?;
 
     m.add_class::<PyArray>()?;
@@ -38,7 +38,7 @@ fn _zarrsita(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<PyGroup>()?;
     m.add_class::<PyMemoryStore>()?;
 
-    m.add("ZarrsitaError", m.py().get_type::<ZarrsitaException>())?;
+    m.add("ZarristaError", m.py().get_type::<ZarristaException>())?;
     m.add("NotFoundError", m.py().get_type::<NotFoundError>())?;
 
     Ok(())

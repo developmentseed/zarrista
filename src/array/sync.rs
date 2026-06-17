@@ -4,7 +4,7 @@ use crate::chunks::PyChunkGrid;
 use crate::codec::PyCodecChain;
 use crate::data::{DataInner, PyData};
 use crate::dtype::PyDataType;
-use crate::error::ZarrsitaResult;
+use crate::error::ZarristaResult;
 use crate::node::PyNodePath;
 use crate::storage::extract_storage;
 use ndarray::ArrayD;
@@ -16,7 +16,7 @@ use zarrs::array::Array;
 use zarrs::storage::ReadableListableStorageTraits;
 
 /// A read-only Zarr array.
-#[pyclass(module = "zarrsita", frozen, name = "Array")]
+#[pyclass(module = "zarrista", frozen, name = "Array")]
 pub struct PyArray {
     pub(crate) inner: Array<dyn ReadableListableStorageTraits>,
 }
@@ -43,7 +43,7 @@ impl PyArray {
         signature = (store, path = PyNodePath::root()),
         text_signature = "(store, path='/')"
     )]
-    fn open(store: &Bound<'_, PyAny>, path: PyNodePath) -> ZarrsitaResult<Self> {
+    fn open(store: &Bound<'_, PyAny>, path: PyNodePath) -> ZarristaResult<Self> {
         let storage = extract_storage(store)?;
         let inner = Array::open(storage, path.as_str())?;
         Ok(Self::new(inner))
@@ -94,7 +94,7 @@ impl PyArray {
         self.inner.path().as_str()
     }
 
-    fn retrieve_chunk(&self, chunk_indices: Vec<u64>) -> ZarrsitaResult<PyData> {
+    fn retrieve_chunk(&self, chunk_indices: Vec<u64>) -> ZarristaResult<PyData> {
         use zarrs::array::data_type::*;
 
         let dtype = self.inner.data_type();

@@ -5,7 +5,7 @@ use zarrs::array::CodecChain;
 
 use crate::metadata::PyMetadataV3;
 
-#[pyclass(module = "zarrsita", frozen, name = "CodecChain")]
+#[pyclass(module = "zarrista", frozen, name = "CodecChain")]
 pub struct PyCodecChain(Arc<CodecChain>);
 
 #[pymethods]

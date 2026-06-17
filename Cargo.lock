@@ -2943,6 +2943,23 @@ dependencies = [
 ]
 
 [[package]]
+name = "zarrista"
+version = "0.1.0"
+dependencies = [
+ "half",
+ "ndarray",
+ "numpy",
+ "pyo3",
+ "pyo3-async-runtimes",
+ "pyo3-object_store",
+ "pythonize",
+ "serde_json",
+ "thiserror 2.0.18",
+ "zarrs",
+ "zarrs_object_store",
+]
+
+[[package]]
 name = "zarrs"
 version = "0.23.13"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3149,23 +3166,6 @@ dependencies = [
  "itertools",
  "thiserror 2.0.18",
  "unsafe_cell_slice",
-]
-
-[[package]]
-name = "zarrsita"
-version = "0.1.0"
-dependencies = [
- "half",
- "ndarray",
- "numpy",
- "pyo3",
- "pyo3-async-runtimes",
- "pyo3-object_store",
- "pythonize",
- "serde_json",
- "thiserror 2.0.18",
- "zarrs",
- "zarrs_object_store",
 ]
 
 [[package]]

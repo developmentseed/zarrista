@@ -747,7 +747,7 @@ wheels = [
 ]
 
 [[package]]
-name = "zarrsita"
+name = "zarrista"
 source = { editable = "." }
 
 [package.dev-dependencies]

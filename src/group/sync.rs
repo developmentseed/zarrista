@@ -3,7 +3,7 @@
 use std::sync::Arc;
 
 use super::last_segment;
-use crate::error::ZarrsitaResult;
+use crate::error::ZarristaResult;
 use crate::node::{open_node, Node, PyNodePath};
 use crate::storage::extract_storage;
 use pyo3::prelude::*;
@@ -14,7 +14,7 @@ use zarrs::node::NodePath;
 use zarrs::storage::ReadableListableStorageTraits;
 
 /// A read-only Zarr group.
-#[pyclass(module = "zarrsita", frozen, name = "Group")]
+#[pyclass(module = "zarrista", frozen, name = "Group")]
 pub struct PyGroup {
     pub(crate) storage: Arc<dyn ReadableListableStorageTraits>,
     pub(crate) path: NodePath,
@@ -43,7 +43,7 @@ impl PyGroup {
         signature = (store, path = PyNodePath::root()),
         text_signature = "(store, path='/')"
     )]
-    fn open(store: &Bound<'_, PyAny>, path: PyNodePath) -> ZarrsitaResult<Self> {
+    fn open(store: &Bound<'_, PyAny>, path: PyNodePath) -> ZarristaResult<Self> {
         let storage = extract_storage(store)?;
         let inner = Group::open(storage.clone(), path.as_str())?;
         Ok(Self::new(storage, path.into(), inner))
@@ -56,19 +56,19 @@ impl PyGroup {
     }
 
     /// Names of the direct child arrays.
-    fn array_keys(&self) -> ZarrsitaResult<Vec<String>> {
+    fn array_keys(&self) -> ZarristaResult<Vec<String>> {
         let paths = self.inner.child_array_paths()?;
         Ok(paths.iter().map(|p| last_segment(p.as_str())).collect())
     }
 
     /// Names of the direct child groups.
-    fn group_keys(&self) -> ZarrsitaResult<Vec<String>> {
+    fn group_keys(&self) -> ZarristaResult<Vec<String>> {
         let paths = self.inner.child_group_paths()?;
         Ok(paths.iter().map(|p| last_segment(p.as_str())).collect())
     }
 
     /// Open a direct child array or group by name.
-    fn __getitem__(&self, name: &str) -> ZarrsitaResult<Node> {
+    fn __getitem__(&self, name: &str) -> ZarristaResult<Node> {
         open_node(self.storage.clone(), self.path.join(name)?)
     }
 

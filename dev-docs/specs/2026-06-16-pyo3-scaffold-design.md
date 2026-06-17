@@ -1,11 +1,11 @@
-# zarrsita — pyo3 scaffold design
+# zarrista — pyo3 scaffold design
 
 **Date:** 2026-06-16
 **Status:** Approved
 
 ## Goal
 
-Initialize a minimal pyo3 + maturin project setup for `zarrsita`, a prototypical
+Initialize a minimal pyo3 + maturin project setup for `zarrista`, a prototypical
 zarrita-like Python Zarr implementation that will eventually bind to the
 [`zarrs`](https://github.com/LDeakin/zarrs) Rust crate. This first step proves
 the build toolchain end-to-end with a hello-world extension module. The `zarrs`
@@ -25,14 +25,14 @@ private compiled module surfaced through a pure-Python package).
 ## Layout
 
 ```
-zarrsita/
-  Cargo.toml          # single crate, [lib] crate-type=["cdylib"], name="_zarrsita"
+zarrista/
+  Cargo.toml          # single crate, [lib] crate-type=["cdylib"], name="_zarrista"
   pyproject.toml      # maturin backend + dev deps (pytest, ruff)
-  src/lib.rs          # #[pymodule] fn _zarrsita with __version__ + hello()
-  python/zarrsita/
-    __init__.py       # re-exports from ._zarrsita
+  src/lib.rs          # #[pymodule] fn _zarrista with __version__ + hello()
+  python/zarrista/
+    __init__.py       # re-exports from ._zarrista
   tests/
-    test_smoke.py     # import zarrsita; assert version + hello()
+    test_smoke.py     # import zarrista; assert version + hello()
   .gitignore          # extend for Rust/Python/maturin
   README.md           # add build/dev instructions
 ```
@@ -41,10 +41,10 @@ zarrsita/
 
 - **pyo3 0.29** (matches obstore) with the `extension-module` feature, and
   **abi3-py311** so a single wheel covers Python 3.11+. `requires-python = ">=3.11"`.
-- The compiled module is **private** (`_zarrsita`) and surfaced through the
-  `python/zarrsita/__init__.py` pure-Python package, so Python-side code and
+- The compiled module is **private** (`_zarrista`) and surfaced through the
+  `python/zarrista/__init__.py` pure-Python package, so Python-side code and
   stubs can be added later without restructuring.
-- maturin config: `module-name = "zarrsita._zarrsita"`, `python-source = "python"`,
+- maturin config: `module-name = "zarrista._zarrista"`, `python-source = "python"`,
   `features = ["pyo3/extension-module"]`.
 - `src/lib.rs` exposes `__version__` (from `CARGO_PKG_VERSION`) and a trivial
   `hello() -> str` to prove the round-trip.
@@ -53,8 +53,8 @@ zarrsita/
 ## Success criteria
 
 - `maturin develop` builds the extension.
-- `python -c "import zarrsita; print(zarrsita.__version__)"` prints a version.
-- `pytest` passes the smoke test (`import zarrsita`, version is a non-empty
+- `python -c "import zarrista; print(zarrista.__version__)"` prints a version.
+- `pytest` passes the smoke test (`import zarrista`, version is a non-empty
   string, `hello()` returns the expected greeting).
 
 ## Out of scope (deferred)
