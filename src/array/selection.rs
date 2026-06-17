@@ -346,8 +346,7 @@ mod tests {
 
     #[test]
     fn resolves_tuple_int_and_slice() {
-        let input =
-            PySelection::Tuple(vec![AxisSelector::Index(5), slice(Some(0), Some(4), None)]);
+        let input = PySelection::Tuple(vec![AxisSelector::Index(5), slice(Some(0), Some(4), None)]);
         assert_eq!(
             input.to_array_subset(SHAPE).unwrap(),
             subset(&[5..6, 0..4, 0..100])
@@ -457,8 +456,7 @@ mod tests {
     #[test]
     fn double_ellipsis_errors() {
         Python::attach(|py| {
-            let input =
-                PySelection::Tuple(vec![AxisSelector::Ellipsis, AxisSelector::Ellipsis]);
+            let input = PySelection::Tuple(vec![AxisSelector::Ellipsis, AxisSelector::Ellipsis]);
             assert!(resolve_err(&input).is_instance_of::<PyIndexError>(py));
         });
     }
