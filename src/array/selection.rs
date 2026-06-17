@@ -5,10 +5,15 @@
 //! it against a concrete array shape (resolving negatives, expanding `Ellipsis`,
 //! building an `ArraySubset`) is a separate, shape-aware step.
 
-use pyo3::exceptions::PyNotImplementedError;
+use std::ops::Range;
+
+use pyo3::exceptions::{PyIndexError, PyNotImplementedError};
 use pyo3::prelude::*;
 use pyo3::types::{PyBool, PyEllipsis, PySlice, PyTuple};
 use pyo3::Borrowed;
+use zarrs::array::ArraySubset;
+
+use crate::error::ZarristaResult;
 
 /// A selector for a single axis, as written inside `[]`.
 ///
@@ -70,6 +75,84 @@ pub(crate) enum PySelectionInput {
     Tuple(Vec<AxisSelector>),
 }
 
+impl PySelectionInput {
+    // TODO: this function is vibe coded, come back to this and clean it up.
+
+    /// Resolve this selection against a concrete array `shape`, producing the
+    /// `ArraySubset` to read. Negative indices and slice bounds are normalized,
+    /// a single `Ellipsis` (or fewer-than-`ndim` selectors) expands to full
+    /// axes, and an integer selects a length-1 range (the axis is retained).
+    pub(crate) fn to_array_subset(&self, shape: &[u64]) -> ZarristaResult<ArraySubset> {
+        let ndim = shape.len();
+        let selectors: &[AxisSelector] = match self {
+            PySelectionInput::Single(sel) => std::slice::from_ref(sel),
+            PySelectionInput::Tuple(sels) => sels.as_slice(),
+        };
+
+        let n_ellipsis = selectors
+            .iter()
+            .filter(|s| matches!(s, AxisSelector::Ellipsis))
+            .count();
+        if n_ellipsis > 1 {
+            return Err(
+                PyIndexError::new_err("an index can only have a single ellipsis ('...')").into(),
+            );
+        }
+        let n_explicit = selectors.len() - n_ellipsis;
+        if n_explicit > ndim {
+            return Err(PyIndexError::new_err(format!(
+                "too many indices for array: array is {ndim}-dimensional, but {n_explicit} were indexed"
+            ))
+            .into());
+        }
+        let n_fill = ndim - n_explicit;
+
+        let mut ranges: Vec<Range<u64>> = Vec::with_capacity(ndim);
+        for sel in selectors {
+            let axis = ranges.len();
+            match sel {
+                AxisSelector::Ellipsis => {
+                    for d in 0..n_fill {
+                        ranges.push(0..shape[axis + d]);
+                    }
+                }
+                AxisSelector::Index(i) => {
+                    let len = shape[axis] as i64;
+                    let resolved = if *i < 0 { *i + len } else { *i };
+                    if resolved < 0 || resolved >= len {
+                        return Err(PyIndexError::new_err(format!(
+                            "index {i} is out of bounds for axis {axis} with size {}",
+                            shape[axis]
+                        ))
+                        .into());
+                    }
+                    ranges.push(resolved as u64..resolved as u64 + 1);
+                }
+                AxisSelector::Slice { start, stop, step } => {
+                    if step.is_some_and(|s| s != 1) {
+                        return Err(PyNotImplementedError::new_err(
+                            "slices with a step other than 1 are not supported",
+                        )
+                        .into());
+                    }
+                    let len = shape[axis] as i64;
+                    let norm = |v: i64| if v < 0 { (v + len).max(0) } else { v.min(len) };
+                    let lo = start.map_or(0, norm);
+                    let hi = stop.map_or(len, norm).max(lo);
+                    ranges.push(lo as u64..hi as u64);
+                }
+            }
+        }
+
+        // Pad any remaining trailing axes (when there was no ellipsis).
+        for axis in ranges.len()..ndim {
+            ranges.push(0..shape[axis]);
+        }
+
+        Ok(ArraySubset::new_with_ranges(&ranges))
+    }
+}
+
 impl<'a, 'py> FromPyObject<'a, 'py> for PySelectionInput {
     type Error = PyErr;
 
@@ -88,7 +171,7 @@ impl<'a, 'py> FromPyObject<'a, 'py> for PySelectionInput {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use pyo3::exceptions::PyNotImplementedError;
+    use pyo3::exceptions::{PyIndexError, PyNotImplementedError};
 
     #[test]
     fn extracts_integer_index() {
@@ -228,6 +311,155 @@ mod tests {
             let obj = py.eval(c"[1, 2, 3]", None, None).unwrap();
             let result: PyResult<PySelectionInput> = obj.extract();
             assert!(result.is_err());
+        });
+    }
+
+    // --- to_array_subset: shape resolution ---
+
+    const SHAPE: &[u64] = &[9, 64, 100];
+
+    fn subset(ranges: &[Range<u64>]) -> ArraySubset {
+        ArraySubset::new_with_ranges(ranges)
+    }
+
+    fn slice(start: Option<i64>, stop: Option<i64>, step: Option<i64>) -> AxisSelector {
+        AxisSelector::Slice { start, stop, step }
+    }
+
+    #[test]
+    fn resolves_int_with_trailing_axes_full() {
+        let input = PySelectionInput::Single(AxisSelector::Index(5));
+        assert_eq!(
+            input.to_array_subset(SHAPE).unwrap(),
+            subset(&[5..6, 0..64, 0..100])
+        );
+    }
+
+    #[test]
+    fn resolves_negative_int() {
+        let input = PySelectionInput::Single(AxisSelector::Index(-1));
+        assert_eq!(
+            input.to_array_subset(SHAPE).unwrap(),
+            subset(&[8..9, 0..64, 0..100])
+        );
+    }
+
+    #[test]
+    fn resolves_tuple_int_and_slice() {
+        let input =
+            PySelectionInput::Tuple(vec![AxisSelector::Index(5), slice(Some(0), Some(4), None)]);
+        assert_eq!(
+            input.to_array_subset(SHAPE).unwrap(),
+            subset(&[5..6, 0..4, 0..100])
+        );
+    }
+
+    #[test]
+    fn resolves_full_slice() {
+        let input = PySelectionInput::Single(slice(None, None, None));
+        assert_eq!(
+            input.to_array_subset(SHAPE).unwrap(),
+            subset(&[0..9, 0..64, 0..100])
+        );
+    }
+
+    #[test]
+    fn resolves_negative_slice_start() {
+        let input = PySelectionInput::Single(slice(Some(-2), None, None));
+        assert_eq!(
+            input.to_array_subset(SHAPE).unwrap(),
+            subset(&[7..9, 0..64, 0..100])
+        );
+    }
+
+    #[test]
+    fn resolves_empty_range_slice() {
+        let input = PySelectionInput::Single(slice(Some(5), Some(5), None));
+        assert_eq!(
+            input.to_array_subset(SHAPE).unwrap(),
+            subset(&[5..5, 0..64, 0..100])
+        );
+    }
+
+    #[test]
+    fn resolves_ellipsis_in_middle() {
+        let input = PySelectionInput::Tuple(vec![
+            AxisSelector::Index(5),
+            AxisSelector::Ellipsis,
+            AxisSelector::Index(3),
+        ]);
+        assert_eq!(
+            input.to_array_subset(SHAPE).unwrap(),
+            subset(&[5..6, 0..64, 3..4])
+        );
+    }
+
+    #[test]
+    fn resolves_single_ellipsis_all_full() {
+        let input = PySelectionInput::Single(AxisSelector::Ellipsis);
+        assert_eq!(
+            input.to_array_subset(SHAPE).unwrap(),
+            subset(&[0..9, 0..64, 0..100])
+        );
+    }
+
+    #[test]
+    fn resolves_empty_tuple_all_full() {
+        let input = PySelectionInput::Tuple(vec![]);
+        assert_eq!(
+            input.to_array_subset(SHAPE).unwrap(),
+            subset(&[0..9, 0..64, 0..100])
+        );
+    }
+
+    /// The Python exception produced by a failed resolution, for type checks.
+    fn resolve_err(input: &PySelectionInput) -> PyErr {
+        input.to_array_subset(SHAPE).unwrap_err().into()
+    }
+
+    #[test]
+    fn out_of_bounds_positive_int_errors() {
+        Python::attach(|py| {
+            let input = PySelectionInput::Single(AxisSelector::Index(9)); // len 9 -> max valid 8
+            assert!(resolve_err(&input).is_instance_of::<PyIndexError>(py));
+        });
+    }
+
+    #[test]
+    fn out_of_bounds_negative_int_errors() {
+        Python::attach(|py| {
+            let input = PySelectionInput::Single(AxisSelector::Index(-10)); // -10 + 9 = -1
+            assert!(resolve_err(&input).is_instance_of::<PyIndexError>(py));
+        });
+    }
+
+    #[test]
+    fn slice_with_step_errors() {
+        Python::attach(|py| {
+            let input = PySelectionInput::Single(slice(None, None, Some(2)));
+            assert!(resolve_err(&input).is_instance_of::<PyNotImplementedError>(py));
+        });
+    }
+
+    #[test]
+    fn too_many_indices_errors() {
+        Python::attach(|py| {
+            let input = PySelectionInput::Tuple(vec![
+                AxisSelector::Index(0),
+                AxisSelector::Index(0),
+                AxisSelector::Index(0),
+                AxisSelector::Index(0), // 4 indices for a 3-D array
+            ]);
+            assert!(resolve_err(&input).is_instance_of::<PyIndexError>(py));
+        });
+    }
+
+    #[test]
+    fn double_ellipsis_errors() {
+        Python::attach(|py| {
+            let input =
+                PySelectionInput::Tuple(vec![AxisSelector::Ellipsis, AxisSelector::Ellipsis]);
+            assert!(resolve_err(&input).is_instance_of::<PyIndexError>(py));
         });
     }
 }
