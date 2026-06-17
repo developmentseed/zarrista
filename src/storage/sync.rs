@@ -1,6 +1,7 @@
 use crate::error::ZarristaResult;
 use pyo3::exceptions::PyTypeError;
 use pyo3::prelude::*;
+use std::path::PathBuf;
 use std::sync::Arc;
 use zarrs::filesystem::FilesystemStore;
 use zarrs::storage::store::MemoryStore;
@@ -25,7 +26,7 @@ pub struct PyFilesystemStore {
 impl PyFilesystemStore {
     /// Open a filesystem store rooted at `path`.
     #[new]
-    fn new(path: &str) -> ZarristaResult<Self> {
+    fn new(path: PathBuf) -> ZarristaResult<Self> {
         let store = FilesystemStore::new(path)?;
         Ok(Self {
             storage: Arc::new(store),
