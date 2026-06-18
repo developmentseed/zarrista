@@ -44,9 +44,9 @@ impl PyGroup {
         text_signature = "(store, path='/')"
     )]
     fn open(store: PySyncStorage, path: PyNodePath) -> ZarristaResult<Self> {
-        let storage: Arc<dyn ReadableWritableListableStorageTraits> = store.into();
-        let inner = Group::open(storage.clone(), path.as_str())?;
-        Ok(Self::new(storage, path.into(), inner))
+        let store = store.into_inner();
+        let inner = Group::open(store.clone(), path.as_str())?;
+        Ok(Self::new(store, path.into(), inner))
     }
 
     /// The group's user attributes as a dict.
