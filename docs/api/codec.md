@@ -1,5 +1,3 @@
 # CodecChain
 
-::: zarrista.CodecChain
-    options:
-      show_bases: false
+::: zarrista.codec
