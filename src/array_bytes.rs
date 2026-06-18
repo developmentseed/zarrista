@@ -173,6 +173,8 @@ impl From<ArrayBytes<'_>> for ArrayBytesOwned {
 }
 
 /// Wrap a `Cow<[u8]>` as `PyBytes`, moving the allocation when already owned.
-fn cow_to_pybytes(bytes: Cow<'_, [u8]>) -> PyBytes {
+///
+/// A `Cow::Borrowed` is copied once into a fresh allocation.
+pub(crate) fn cow_to_pybytes(bytes: Cow<'_, [u8]>) -> PyBytes {
     PyBytes::from(bytes.into_owned())
 }
