@@ -45,8 +45,7 @@ impl PyArray {
         text_signature = "(store, path='/')"
     )]
     fn open(store: PySyncStorage, path: PyNodePath) -> ZarristaResult<Self> {
-        let storage = store.into();
-        let inner = Array::open(storage, path.as_str())?;
+        let inner = Array::open(store.into(), path.as_str())?;
         Ok(Self::new(inner))
     }
 

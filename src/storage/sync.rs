@@ -10,6 +10,12 @@ use zarrs::storage::ReadableWritableListableStorageTraits;
 /// A zarrista sync store object adapted to the maximal `zarrs` storage trait.
 pub struct PySyncStorage(Arc<dyn ReadableWritableListableStorageTraits>);
 
+impl PySyncStorage {
+    pub fn into_inner(self) -> Arc<dyn ReadableWritableListableStorageTraits> {
+        self.0
+    }
+}
+
 impl FromPyObject<'_, '_> for PySyncStorage {
     type Error = PyErr;
 
