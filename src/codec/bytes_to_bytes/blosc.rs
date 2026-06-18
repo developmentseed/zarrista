@@ -2,8 +2,12 @@ use std::sync::Arc;
 
 use pyo3::exceptions::PyValueError;
 use pyo3::prelude::*;
-use pyo3::{Borrowed, FromPyObject};
-use zarrs::array::codec::{BloscCodec, BloscCompressionLevel, BloscCompressor, BloscShuffleMode};
+use pyo3::pybacked::PyBackedStr;
+use pyo3::{Borrowed, FromPyObject, PyClassInitializer};
+use pythonize::depythonize;
+use zarrs::array::codec::{
+    BloscCodec, BloscCodecConfiguration, BloscCompressionLevel, BloscCompressor, BloscShuffleMode,
+};
 
 use crate::codec::PyBytesToBytesCodec;
 use crate::error::ZarristaResult;
@@ -14,11 +18,11 @@ use crate::error::ZarristaResult;
 /// `"snappy"`, `"zlib"`, or `"zstd"` (case-insensitive).
 pub struct PyBloscCompressor(BloscCompressor);
 
-impl<'a, 'py> FromPyObject<'a, 'py> for PyBloscCompressor {
+impl FromPyObject<'_, '_> for PyBloscCompressor {
     type Error = PyErr;
 
-    fn extract(ob: Borrowed<'a, 'py, PyAny>) -> Result<Self, Self::Error> {
-        let name: String = ob.extract()?;
+    fn extract(ob: Borrowed<'_, '_, PyAny>) -> Result<Self, Self::Error> {
+        let name: PyBackedStr = ob.extract()?;
         let compressor = match name.to_ascii_lowercase().as_str() {
             "blosclz" => BloscCompressor::BloscLZ,
             "lz4" => BloscCompressor::LZ4,
@@ -44,10 +48,10 @@ impl<'a, 'py> FromPyObject<'a, 'py> for PyBloscCompressor {
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
 pub struct PyBloscCompressionLevel(BloscCompressionLevel);
 
-impl<'a, 'py> FromPyObject<'a, 'py> for PyBloscCompressionLevel {
+impl FromPyObject<'_, '_> for PyBloscCompressionLevel {
     type Error = PyErr;
 
-    fn extract(ob: Borrowed<'a, 'py, PyAny>) -> Result<Self, Self::Error> {
+    fn extract(ob: Borrowed<'_, '_, PyAny>) -> Result<Self, Self::Error> {
         let level: u8 = ob.extract()?;
         BloscCompressionLevel::try_from(level)
             .map(Self)
@@ -65,11 +69,11 @@ impl<'a, 'py> FromPyObject<'a, 'py> for PyBloscCompressionLevel {
 /// `"bitshuffle"` (case-insensitive).
 pub struct PyBloscShuffleMode(BloscShuffleMode);
 
-impl<'a, 'py> FromPyObject<'a, 'py> for PyBloscShuffleMode {
+impl FromPyObject<'_, '_> for PyBloscShuffleMode {
     type Error = PyErr;
 
-    fn extract(ob: Borrowed<'a, 'py, PyAny>) -> Result<Self, Self::Error> {
-        let mode: String = ob.extract()?;
+    fn extract(ob: Borrowed<'_, '_, PyAny>) -> Result<Self, Self::Error> {
+        let mode: PyBackedStr = ob.extract()?;
         let shuffle = match mode.to_ascii_lowercase().as_str() {
             "noshuffle" => BloscShuffleMode::NoShuffle,
             "shuffle" => BloscShuffleMode::Shuffle,
