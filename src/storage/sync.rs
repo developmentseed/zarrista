@@ -1,5 +1,5 @@
 use crate::error::ZarristaResult;
-use pyo3::exceptions::PyTypeError;
+use crate::storage::PyDuckStore;
 use pyo3::prelude::*;
 use std::path::PathBuf;
 use std::sync::Arc;
@@ -7,13 +7,28 @@ use zarrs::filesystem::FilesystemStore;
 use zarrs::storage::store::MemoryStore;
 use zarrs::storage::ReadableListableStorageTraits;
 
-use zarrs::storage::{ReadableStorageTraits, ReadableWritableStorageTraits, WritableStorageTraits};
+pub struct PySyncStorage(Arc<dyn ReadableListableStorageTraits>);
 
-#[allow(dead_code)]
-pub enum SyncStorage {
-    Readable(Arc<dyn ReadableStorageTraits>),
-    Writable(Arc<dyn WritableStorageTraits>),
-    ReadableWritable(Arc<dyn ReadableWritableStorageTraits>),
+impl FromPyObject<'_, '_> for PySyncStorage {
+    type Error = PyErr;
+
+    fn extract(obj: Borrowed<'_, '_, PyAny>) -> Result<Self, Self::Error> {
+        if let Ok(s) = obj.cast::<PyFilesystemStore>() {
+            return Ok(Self(s.get().storage.clone()));
+        }
+        if let Ok(s) = obj.cast::<PyMemoryStore>() {
+            return Ok(Self(s.get().storage.clone()));
+        }
+
+        // Any other object is treated as a duck-typed custom store.
+        Ok(Self(Arc::new(PyDuckStore::new(&obj))))
+    }
+}
+
+impl From<PySyncStorage> for Arc<dyn ReadableListableStorageTraits> {
+    fn from(s: PySyncStorage) -> Self {
+        s.0
+    }
 }
 
 /// A store backed by a local directory.
@@ -56,19 +71,4 @@ impl PyMemoryStore {
     fn __repr__(&self) -> String {
         "MemoryStore()".to_string()
     }
-}
-
-/// Pull the inner [`Storage`] out of any zarrista store object.
-pub(crate) fn extract_storage(
-    store: &Bound<'_, PyAny>,
-) -> PyResult<Arc<dyn ReadableListableStorageTraits>> {
-    if let Ok(s) = store.cast::<PyFilesystemStore>() {
-        return Ok(s.get().storage.clone());
-    }
-    if let Ok(s) = store.cast::<PyMemoryStore>() {
-        return Ok(s.get().storage.clone());
-    }
-    Err(PyTypeError::new_err(
-        "expected a FilesystemStore or MemoryStore",
-    ))
 }

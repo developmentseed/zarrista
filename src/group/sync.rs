@@ -5,7 +5,7 @@ use std::sync::Arc;
 use super::last_segment;
 use crate::error::ZarristaResult;
 use crate::node::{open_node, Node, PyNodePath};
-use crate::storage::extract_storage;
+use crate::storage::PySyncStorage;
 use pyo3::prelude::*;
 use pythonize::pythonize;
 use pythonize::Result as PythonizeResult;
@@ -43,10 +43,10 @@ impl PyGroup {
         signature = (store, path = PyNodePath::root()),
         text_signature = "(store, path='/')"
     )]
-    fn open(store: &Bound<'_, PyAny>, path: PyNodePath) -> ZarristaResult<Self> {
-        let storage = extract_storage(store)?;
-        let inner = Group::open(storage.clone(), path.as_str())?;
-        Ok(Self::new(storage, path.into(), inner))
+    fn open(store: PySyncStorage, path: PyNodePath) -> ZarristaResult<Self> {
+        let store: Arc<dyn ReadableListableStorageTraits> = store.into();
+        let inner = Group::open(store.clone(), path.as_str())?;
+        Ok(Self::new(store, path.into(), inner))
     }
 
     /// The group's user attributes as a dict.

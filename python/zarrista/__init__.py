@@ -1,3 +1,4 @@
+from ._protocols import ListableStore, ReadableStore
 from ._zarrista import (
     Array,
     AsyncArray,
@@ -22,6 +23,8 @@ __all__ = [
     "DataType",
     "FilesystemStore",
     "Group",
+    "ListableStore",
     "MemoryStore",
+    "ReadableStore",
     "__version__",
 ]

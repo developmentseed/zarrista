@@ -1,7 +1,8 @@
 mod r#async;
+mod key;
+mod python;
 mod sync;
 
+pub(crate) use python::PyDuckStore;
 pub use r#async::PyAsyncStorage;
-pub(crate) use sync::extract_storage;
-#[allow(unused)]
-pub use sync::{PyFilesystemStore, PyMemoryStore, SyncStorage};
+pub use sync::{PyFilesystemStore, PyMemoryStore, PySyncStorage};
