@@ -1,11 +1,13 @@
 //! zarrista: a small, read-only, zarrita-flavored Python binding to zarrs.
 
 mod array;
+mod array_bytes;
 mod chunks;
 mod codec;
 mod data;
 mod dtype;
 mod error;
+mod fill_value;
 mod group;
 mod metadata;
 mod node;

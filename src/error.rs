@@ -11,7 +11,7 @@ use pyo3::exceptions::PyException;
 use pyo3::prelude::*;
 use pythonize::PythonizeError;
 use thiserror::Error;
-use zarrs::array::{ArrayCreateError, ArrayError};
+use zarrs::array::{ArrayCreateError, ArrayError, CodecError};
 use zarrs::filesystem::FilesystemStoreCreateError;
 use zarrs::group::GroupCreateError;
 use zarrs::node::{NodeCreateError, NodePathError};
@@ -72,6 +72,9 @@ pub(crate) enum ZarristaError {
     /// Failed to (de)serialize JSON.
     #[error(transparent)]
     SerdeJson(#[from] serde_json::Error),
+    /// Codec error
+    #[error(transparent)]
+    Codec(#[from] CodecError),
 }
 
 impl ZarristaError {
@@ -97,6 +100,7 @@ impl From<ZarristaError> for PyErr {
                 ZarristaException::new_err(err.to_string())
             }
             ZarristaError::SerdeJson(err) => ZarristaException::new_err(err.to_string()),
+            ZarristaError::Codec(err) => ZarristaException::new_err(err.to_string()),
         }
     }
 }
