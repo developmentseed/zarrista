@@ -1,6 +1,6 @@
 from typing import Any, Literal
 
-from . import BytesToBytesCodec
+from zarrista.codec._bytes_to_bytes import BytesToBytesCodec
 
 BloscCompressor = Literal["blosclz", "lz4", "lz4hc", "snappy", "zlib", "zstd"]
 """A `blosc` compressor name."""
@@ -28,7 +28,7 @@ class Blosc(BytesToBytesCodec):
         automatically when `blocksize` is `None` or `0`.
         """
     @staticmethod
-    def from_configuration(configuration: dict[str, Any]) -> Blosc:
+    def from_config(config: dict[str, Any]) -> Blosc:
         """Construct a `blosc` codec from a configuration mapping.
 
         For example

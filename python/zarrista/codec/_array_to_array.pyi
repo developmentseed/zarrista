@@ -1,6 +1,6 @@
-from .._array_bytes import ArrayBytes
-from .._dtype import DataType
-from .._fill_value import FillValue
+from zarrista._array_bytes import ArrayBytes
+from zarrista._dtype import DataType
+from zarrista._fill_value import FillValue
 
 class ArrayToArrayCodec:
     """A Zarr v3 array-to-array codec."""
