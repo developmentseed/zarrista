@@ -1,9 +1,9 @@
+from . import codec
 from ._zarrista import (
     Array,
     AsyncArray,
     AsyncGroup,
     ChunkGrid,
-    CodecChain,
     Data,
     DataType,
     FilesystemStore,
@@ -17,11 +17,11 @@ __all__ = [
     "AsyncArray",
     "AsyncGroup",
     "ChunkGrid",
-    "CodecChain",
     "Data",
     "DataType",
     "FilesystemStore",
     "Group",
     "MemoryStore",
     "__version__",
+    "codec",
 ]

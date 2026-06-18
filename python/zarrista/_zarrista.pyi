@@ -1,6 +1,5 @@
 from ._array import Array, AsyncArray
 from ._chunks import ChunkGrid
-from ._codec import CodecChain
 from ._data import Data
 from ._dtype import DataType
 from ._group import AsyncGroup, Group
@@ -13,7 +12,6 @@ __all__ = [
     "AsyncArray",
     "AsyncGroup",
     "ChunkGrid",
-    "CodecChain",
     "Data",
     "DataType",
     "FilesystemStore",
