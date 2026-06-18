@@ -3,8 +3,9 @@
 use std::sync::Arc;
 
 use crate::array::selection::PySelection;
+use crate::array::util::PyChunkIndices;
 use crate::chunks::PyChunkGrid;
-use crate::codec::PyCodecChain;
+use crate::codec::{PyCodecChain, PyCodecOptions};
 use crate::data::{for_each_dtype, DataInner, PyData};
 use crate::dtype::PyDataType;
 use crate::error::ZarristaError;
@@ -14,6 +15,7 @@ use ndarray::ArrayD;
 use pyo3::exceptions::PyNotImplementedError;
 use pyo3::prelude::*;
 use pyo3_async_runtimes::tokio::future_into_py;
+use pyo3_bytes::PyBytes;
 use pythonize::pythonize;
 use pythonize::Result as PythonizeResult;
 use zarrs::array::Array;
@@ -33,6 +35,15 @@ impl PyAsyncArray {
 
 #[pymethods]
 impl PyAsyncArray {
+    /// Read a region with numpy-style basic indexing, e.g. `await arr[0:10, :, 5]`.
+    fn __getitem__<'py>(
+        &self,
+        py: Python<'py>,
+        selection: PySelection,
+    ) -> PyResult<Bound<'py, PyAny>> {
+        self.retrieve_array_subset(py, selection)
+    }
+
     fn __repr__(&self) -> String {
         format!(
             "AsyncArray(shape={:?}, dtype={:?})",
@@ -139,23 +150,19 @@ impl PyAsyncArray {
         })
     }
 
-    /// Read a region with numpy-style basic indexing, e.g. `await arr[0:10, :, 5]`.
-    fn __getitem__<'py>(
-        &self,
-        py: Python<'py>,
-        selection: PySelection,
-    ) -> PyResult<Bound<'py, PyAny>> {
-        self.retrieve_array_subset(py, selection)
-    }
-
+    #[pyo3(signature = (chunk_indices, **codec_options))]
     fn retrieve_chunk<'py>(
         &self,
         py: Python<'py>,
-        chunk_indices: Vec<u64>,
+        chunk_indices: PyChunkIndices,
+        codec_options: Option<PyCodecOptions>,
     ) -> PyResult<Bound<'py, PyAny>> {
         use zarrs::array::data_type::*;
 
         let inner = self.inner.clone();
+        let codec_options = codec_options
+            .map(|opts| opts.into_inner())
+            .unwrap_or_default();
 
         future_into_py(py, async move {
             let dtype = inner.data_type();
@@ -164,7 +171,10 @@ impl PyAsyncArray {
                 ($dtype:ty, $variant:ident, $elem:ty) => {
                     if dtype.is::<$dtype>() {
                         let chunk = inner
-                            .async_retrieve_chunk::<ArrayD<$elem>>(&chunk_indices)
+                            .async_retrieve_chunk_opt::<ArrayD<$elem>>(
+                                chunk_indices.as_ref(),
+                                &codec_options,
+                            )
                             .await
                             .map_err(ZarristaError::from)?;
                         return Ok(PyData::from(DataInner::$variant(chunk)));
@@ -176,6 +186,21 @@ impl PyAsyncArray {
             Err(PyNotImplementedError::new_err(format!(
                 "reading data type {dtype} is not supported yet"
             )))
+        })
+    }
+
+    fn retrieve_encoded_chunk<'py>(
+        &self,
+        py: Python<'py>,
+        chunk_indices: PyChunkIndices,
+    ) -> PyResult<Bound<'py, PyAny>> {
+        let inner = self.inner.clone();
+        future_into_py(py, async move {
+            let encoded = inner
+                .async_retrieve_encoded_chunk(chunk_indices.as_ref())
+                .await
+                .map_err(ZarristaError::from)?;
+            Ok(encoded.map(PyBytes::new))
         })
     }
 

@@ -1,5 +1,7 @@
 from types import EllipsisType
-from typing import Any
+from typing import Any, Unpack
+
+from zarrista.codec import CodecOptions
 
 from ._chunks import ChunkGrid
 from ._codec import CodecChain
@@ -47,14 +49,23 @@ class Array:
     @property
     def path(self) -> str:
         """The array's path in the store."""
-    def retrieve_array_subset(self, selection: Selection) -> Data:
+    def retrieve_array_subset(
+        self, selection: Selection, **codec_options: Unpack[CodecOptions]
+    ) -> Data:
         """Read and decode an array region selected with numpy-style basic indexing.
 
         The result is ndim-preserving (consistent with a zarrs `ArraySubset`): an
         integer selects a length-1 range and that axis is retained.
+
+        Keyword arguments are passed as [`CodecOptions`][zarrista.codec.CodecOptions].
         """
-    def retrieve_chunk(self, chunk_indices: list[int]) -> Data:
-        """Read and decode the chunk at the given chunk grid indices."""
+    def retrieve_chunk(
+        self, chunk_indices: list[int], **codec_options: Unpack[CodecOptions]
+    ) -> Data:
+        """Read and decode the chunk at the given chunk grid indices.
+
+        Keyword arguments are passed as [`CodecOptions`][zarrista.codec.CodecOptions].
+        """
     @property
     def shape(self) -> list[int]:
         """The array shape."""
@@ -98,14 +109,23 @@ class AsyncArray:
     @property
     def path(self) -> str:
         """The array's path in the store."""
-    async def retrieve_array_subset(self, selection: Selection) -> Data:
+    async def retrieve_array_subset(
+        self, selection: Selection, **codec_options: Unpack[CodecOptions]
+    ) -> Data:
         """Read and decode an array region selected with numpy-style basic indexing.
 
         The result is ndim-preserving (consistent with a zarrs `ArraySubset`): an
         integer selects a length-1 range and that axis is retained.
+
+        Keyword arguments are passed as [`CodecOptions`][zarrista.codec.CodecOptions].
         """
-    async def retrieve_chunk(self, chunk_indices: list[int]) -> Data:
-        """Read and decode the chunk at the given chunk grid indices."""
+    async def retrieve_chunk(
+        self, chunk_indices: list[int], **codec_options: Unpack[CodecOptions]
+    ) -> Data:
+        """Read and decode the chunk at the given chunk grid indices.
+
+        Keyword arguments are passed as [`CodecOptions`][zarrista.codec.CodecOptions].
+        """
     @property
     def shape(self) -> list[int]:
         """The array shape."""
