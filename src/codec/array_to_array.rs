@@ -2,12 +2,25 @@ use std::num::NonZeroU64;
 use std::sync::Arc;
 
 use pyo3::prelude::*;
+use zarrs::array::codec::{BitroundCodec, TransposeCodec, TransposeOrder};
 use zarrs::array::{ArrayToArrayCodecTraits, CodecOptions};
 
 use crate::array_bytes::PyArrayBytes;
 use crate::dtype::PyDataType;
 use crate::error::ZarristaResult;
 use crate::fill_value::PyFillValue;
+
+#[pyfunction]
+pub fn transpose(order: Vec<usize>) -> ZarristaResult<PyArrayToArrayCodec> {
+    let codec = TransposeCodec::new(TransposeOrder::new(&order)?);
+    Ok(PyArrayToArrayCodec(Arc::new(codec)))
+}
+
+#[pyfunction]
+pub fn bitround(keepbits: u32) -> PyArrayToArrayCodec {
+    let codec = BitroundCodec::new(keepbits);
+    PyArrayToArrayCodec(Arc::new(codec))
+}
 
 #[pyclass(module = "zarrista", frozen, name = "ArrayToArrayCodec")]
 pub struct PyArrayToArrayCodec(Arc<dyn ArrayToArrayCodecTraits>);

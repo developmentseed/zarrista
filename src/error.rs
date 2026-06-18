@@ -11,6 +11,7 @@ use pyo3::exceptions::PyException;
 use pyo3::prelude::*;
 use pythonize::PythonizeError;
 use thiserror::Error;
+use zarrs::array::codec::TransposeOrderError;
 use zarrs::array::{ArrayCreateError, ArrayError, CodecError};
 use zarrs::filesystem::FilesystemStoreCreateError;
 use zarrs::group::GroupCreateError;
@@ -75,6 +76,9 @@ pub(crate) enum ZarristaError {
     /// Codec error
     #[error(transparent)]
     Codec(#[from] CodecError),
+    /// Transpose order error
+    #[error(transparent)]
+    TransposeOrder(#[from] TransposeOrderError),
 }
 
 impl ZarristaError {
@@ -101,6 +105,7 @@ impl From<ZarristaError> for PyErr {
             }
             ZarristaError::SerdeJson(err) => ZarristaException::new_err(err.to_string()),
             ZarristaError::Codec(err) => ZarristaException::new_err(err.to_string()),
+            ZarristaError::TransposeOrder(err) => ZarristaException::new_err(err.to_string()),
         }
     }
 }
