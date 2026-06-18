@@ -1,5 +1,7 @@
 from ._zarrista.codec import (
     ArrayToArrayCodec,
+    Blosc,
+    BytesToBytesCodec,
     CodecChain,
     bitround,
     transpose,
@@ -7,6 +9,8 @@ from ._zarrista.codec import (
 
 __all__ = [
     "ArrayToArrayCodec",
+    "Blosc",
+    "BytesToBytesCodec",
     "CodecChain",
     "bitround",
     "transpose",
