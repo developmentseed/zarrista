@@ -7,7 +7,7 @@ use zarrs::array::codec::{BloscCodec, BloscCompressionLevel, BloscCompressor, Bl
 
 use crate::error::ZarristaResult;
 
-pub use sealed::Blosc;
+pub use sealed::PyBlosc;
 
 /// The `blosc` compressor.
 ///
@@ -82,8 +82,8 @@ impl FromPyObject<'_, '_> for PyBloscShuffleMode {
     }
 }
 
-/// `Blosc` lives in a private module with a private `()` field, so it can only
-/// be constructed via [`Blosc::new`], enforcing correct submodule instantiation
+/// `PyBlosc` lives in a private module with a private `()` field, so it can only
+/// be constructed via [`PyBlosc::new`], enforcing correct submodule instantiation
 mod sealed {
     use std::sync::Arc;
 
@@ -100,21 +100,21 @@ mod sealed {
     //
     // See https://pyo3.rs/v0.29.0/class.html#inheritance for docs on subclassing in pyo3
     #[pyclass(module = "zarrista.codec", extends = PyBytesToBytesCodec, frozen, name = "Blosc")]
-    pub struct Blosc(());
+    pub struct PyBlosc(());
 
-    impl Blosc {
-        /// Wrap a [`BloscCodec`] as an initializer for the `Blosc` subclass: the
-        /// codec is stored in the [`PyBytesToBytesCodec`] base, with `Blosc`
+    impl PyBlosc {
+        /// Wrap a [`BloscCodec`] as an initializer for the `PyBlosc` subclass: the
+        /// codec is stored in the [`PyBytesToBytesCodec`] base, with `PyBlosc`
         /// itself carrying no extra state.
         pub(super) fn new(codec: BloscCodec) -> PyClassInitializer<Self> {
             PyClassInitializer::from(PyBytesToBytesCodec::new(Arc::new(codec)))
-                .add_subclass(Blosc(()))
+                .add_subclass(PyBlosc(()))
         }
     }
 }
 
 #[pymethods]
-impl Blosc {
+impl PyBlosc {
     /// Create a `blosc` codec from its parameters.
     ///
     /// `typesize` is required (a positive integer) whenever `shuffle_mode` is
