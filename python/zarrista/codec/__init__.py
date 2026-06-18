@@ -1,4 +1,4 @@
-from ._zarrista.codec import (
+from .._zarrista.codec import (
     ArrayToArrayCodec,
     Blosc,
     BytesToBytesCodec,

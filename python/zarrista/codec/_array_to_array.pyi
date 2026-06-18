@@ -1,8 +1,6 @@
-from typing import Any
-
-from ._array_bytes import ArrayBytes
-from ._dtype import DataType
-from ._fill_value import FillValue
+from .._array_bytes import ArrayBytes
+from .._dtype import DataType
+from .._fill_value import FillValue
 
 class ArrayToArrayCodec:
     """A Zarr v3 array-to-array codec."""
@@ -34,14 +32,6 @@ class ArrayToArrayCodec:
     def decoded_shape(self, encoded_shape: list[int]) -> list[int] | None:
         """The chunk shape that decodes to `encoded_shape`, if determinable."""
     def __repr__(self) -> str: ...
-
-class CodecChain:
-    """The ordered chain of codecs used to encode and decode an array's chunks."""
-
-    def __init__(self, metadatas: list[dict[str, Any]]) -> None:
-        """Construct a codec chain from a list of Zarr v3 codec metadata."""
-    def create_metadatas(self) -> list[dict[str, Any]]:
-        """The Zarr v3 metadata for each codec in the chain."""
 
 def transpose(order: list[int]) -> ArrayToArrayCodec:
     """Construct a transpose codec with the given axis order."""
