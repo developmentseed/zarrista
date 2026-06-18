@@ -4,6 +4,8 @@ from zarrista._zarrista.codec import (
     BytesToBytesCodec,
     CodecChain,
     Crc32c,
+    Gzip,
+    Zstd,
     bitround,
     transpose,
 )
@@ -14,6 +16,8 @@ __all__ = [
     "BytesToBytesCodec",
     "CodecChain",
     "Crc32c",
+    "Gzip",
+    "Zstd",
     "bitround",
     "transpose",
 ]
