@@ -3,6 +3,7 @@ from zarrista._zarrista.codec import (
     Blosc,
     BytesToBytesCodec,
     CodecChain,
+    Crc32c,
     bitround,
     transpose,
 )
@@ -12,6 +13,7 @@ __all__ = [
     "Blosc",
     "BytesToBytesCodec",
     "CodecChain",
+    "Crc32c",
     "bitround",
     "transpose",
 ]

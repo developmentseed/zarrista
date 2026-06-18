@@ -1,4 +1,5 @@
 pub(super) mod blosc;
+pub(super) mod crc32c;
 
 use std::borrow::Cow;
 use std::sync::Arc;
