@@ -9,7 +9,7 @@ use pyo3::prelude::*;
 use zarrs::array::Array;
 use zarrs::group::Group;
 use zarrs::node::NodePath;
-use zarrs::storage::{AsyncReadableListableStorageTraits, ReadableListableStorageTraits};
+use zarrs::storage::{AsyncReadableListableStorageTraits, ReadableWritableListableStorageTraits};
 
 /// An opened node: either an array or a group.
 #[derive(IntoPyObject)]
@@ -25,7 +25,7 @@ pub(crate) enum Node {
 /// Returns a [`Node`] (Python `Array` or `Group`), or raises `NotFoundError`
 /// if neither exists at the path.
 pub(crate) fn open_node(
-    storage: Arc<dyn ReadableListableStorageTraits>,
+    storage: Arc<dyn ReadableWritableListableStorageTraits>,
     path: NodePath,
 ) -> ZarristaResult<Node> {
     if let Ok(inner) = Array::open(storage.clone(), path.as_str()) {

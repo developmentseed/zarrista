@@ -5,27 +5,27 @@ use std::sync::Arc;
 use super::last_segment;
 use crate::error::ZarristaResult;
 use crate::node::{open_node, Node, PyNodePath};
-use crate::storage::extract_storage;
+use crate::storage::PySyncStorage;
 use pyo3::prelude::*;
 use pythonize::pythonize;
 use pythonize::Result as PythonizeResult;
 use zarrs::group::Group;
 use zarrs::node::NodePath;
-use zarrs::storage::ReadableListableStorageTraits;
+use zarrs::storage::ReadableWritableListableStorageTraits;
 
-/// A read-only Zarr group.
+/// A Zarr group.
 #[pyclass(module = "zarrista", frozen, name = "Group")]
 pub struct PyGroup {
-    pub(crate) storage: Arc<dyn ReadableListableStorageTraits>,
+    pub(crate) storage: Arc<dyn ReadableWritableListableStorageTraits>,
     pub(crate) path: NodePath,
-    pub(crate) inner: Group<dyn ReadableListableStorageTraits>,
+    pub(crate) inner: Group<dyn ReadableWritableListableStorageTraits>,
 }
 
 impl PyGroup {
     pub(crate) fn new(
-        storage: Arc<dyn ReadableListableStorageTraits>,
+        storage: Arc<dyn ReadableWritableListableStorageTraits>,
         path: NodePath,
-        inner: Group<dyn ReadableListableStorageTraits>,
+        inner: Group<dyn ReadableWritableListableStorageTraits>,
     ) -> Self {
         Self {
             storage,
@@ -43,8 +43,8 @@ impl PyGroup {
         signature = (store, path = PyNodePath::root()),
         text_signature = "(store, path='/')"
     )]
-    fn open(store: &Bound<'_, PyAny>, path: PyNodePath) -> ZarristaResult<Self> {
-        let storage = extract_storage(store)?;
+    fn open(store: PySyncStorage, path: PyNodePath) -> ZarristaResult<Self> {
+        let storage: Arc<dyn ReadableWritableListableStorageTraits> = store.into();
         let inner = Group::open(storage.clone(), path.as_str())?;
         Ok(Self::new(storage, path.into(), inner))
     }
