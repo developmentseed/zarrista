@@ -3,7 +3,7 @@
 use crate::array::selection::PySelection;
 use crate::array::util::PyChunkIndices;
 use crate::chunks::PyChunkGrid;
-use crate::codec::PyCodecChain;
+use crate::codec::{PyCodecChain, PyCodecOptions};
 use crate::data::{for_each_dtype, DataInner, PyData};
 use crate::dtype::PyDataType;
 use crate::error::ZarristaResult;
@@ -126,17 +126,26 @@ impl PyArray {
         .into())
     }
 
-    fn retrieve_chunk(&self, chunk_indices: PyChunkIndices) -> ZarristaResult<PyData> {
+    #[pyo3(signature = (chunk_indices, **codec_options))]
+    fn retrieve_chunk(
+        &self,
+        chunk_indices: PyChunkIndices,
+        codec_options: Option<PyCodecOptions>,
+    ) -> ZarristaResult<PyData> {
         use zarrs::array::data_type::*;
 
         let dtype = self.inner.data_type();
+        let codec_options = codec_options
+            .map(|opts| opts.into_inner())
+            .unwrap_or_default();
 
         macro_rules! arm {
             ($dtype:ty, $variant:ident, $elem:ty) => {
                 if dtype.is::<$dtype>() {
-                    let chunk = self
-                        .inner
-                        .retrieve_chunk::<ArrayD<$elem>>(chunk_indices.as_ref())?;
+                    let chunk = self.inner.retrieve_chunk_opt::<ArrayD<$elem>>(
+                        chunk_indices.as_ref(),
+                        &codec_options,
+                    )?;
                     return Ok(PyData::from(DataInner::$variant(chunk)));
                 }
             };

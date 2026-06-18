@@ -1,6 +1,7 @@
 mod array_to_array;
 mod bytes_to_bytes;
 mod codec_chain;
+mod options;
 
 use pyo3::prelude::*;
 
@@ -11,6 +12,7 @@ pub use bytes_to_bytes::gzip::PyGzip;
 pub use bytes_to_bytes::zstd::PyZstd;
 pub use bytes_to_bytes::PyBytesToBytesCodec;
 pub use codec_chain::PyCodecChain;
+pub use options::PyCodecOptions;
 
 /// Build the `zarrista.codec` submodule and attach it to `parent`.
 ///

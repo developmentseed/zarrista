@@ -5,7 +5,7 @@ use std::sync::Arc;
 use crate::array::selection::PySelection;
 use crate::array::util::PyChunkIndices;
 use crate::chunks::PyChunkGrid;
-use crate::codec::PyCodecChain;
+use crate::codec::{PyCodecChain, PyCodecOptions};
 use crate::data::{for_each_dtype, DataInner, PyData};
 use crate::dtype::PyDataType;
 use crate::error::ZarristaError;
@@ -150,14 +150,19 @@ impl PyAsyncArray {
         })
     }
 
+    #[pyo3(signature = (chunk_indices, **codec_options))]
     fn retrieve_chunk<'py>(
         &self,
         py: Python<'py>,
         chunk_indices: PyChunkIndices,
+        codec_options: Option<PyCodecOptions>,
     ) -> PyResult<Bound<'py, PyAny>> {
         use zarrs::array::data_type::*;
 
         let inner = self.inner.clone();
+        let codec_options = codec_options
+            .map(|opts| opts.into_inner())
+            .unwrap_or_default();
 
         future_into_py(py, async move {
             let dtype = inner.data_type();
@@ -166,7 +171,10 @@ impl PyAsyncArray {
                 ($dtype:ty, $variant:ident, $elem:ty) => {
                     if dtype.is::<$dtype>() {
                         let chunk = inner
-                            .async_retrieve_chunk::<ArrayD<$elem>>(chunk_indices.as_ref())
+                            .async_retrieve_chunk_opt::<ArrayD<$elem>>(
+                                chunk_indices.as_ref(),
+                                &codec_options,
+                            )
                             .await
                             .map_err(ZarristaError::from)?;
                         return Ok(PyData::from(DataInner::$variant(chunk)));
