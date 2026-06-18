@@ -89,27 +89,59 @@ impl FromPyObject<'_, '_> for PyBloscShuffleMode {
     }
 }
 
-/// Create a `blosc` bytes-to-bytes codec.
+/// The `blosc` bytes-to-bytes codec.
 ///
-/// `typesize` is required (a positive integer) whenever `shuffle` is not
-/// `"noshuffle"`. The block size is chosen automatically when `blocksize` is
-/// `None` or `0`.
-#[pyfunction]
-#[pyo3(signature = (
-    cname,
-    clevel,
-    shuffle_mode,
-    *,
-    blocksize = None,
-    typesize = None,
-))]
-pub fn blosc(
-    cname: PyBloscCompressor,
-    clevel: PyBloscCompressionLevel,
-    shuffle_mode: PyBloscShuffleMode,
-    blocksize: Option<usize>,
-    typesize: Option<usize>,
-) -> ZarristaResult<PyBytesToBytesCodec> {
-    let codec = BloscCodec::new(cname.0, clevel.0, blocksize, shuffle_mode.0, typesize)?;
-    Ok(PyBytesToBytesCodec::new(Arc::new(codec)))
+/// A subclass of `BytesToBytesCodec`, so it inherits the codec methods (e.g.
+/// `encode`) while adding `blosc`-specific constructors.
+//
+// See https://pyo3.rs/v0.29.0/class.html#inheritance for docs on subclassing in pyo3
+#[pyclass(module = "zarrista.codec", extends = PyBytesToBytesCodec, frozen, name = "Blosc")]
+pub struct Blosc;
+
+impl Blosc {
+    /// Wrap a [`BloscCodec`] as an initializer for the `Blosc` subclass: the
+    /// codec is stored in the [`PyBytesToBytesCodec`] base, with `Blosc` itself
+    /// carrying no extra state.
+    //
+    // See https://pyo3.rs/v0.29.0/class.html#inheritance for docs on subclassing in pyo3
+    fn init(codec: BloscCodec) -> PyClassInitializer<Self> {
+        PyClassInitializer::from(PyBytesToBytesCodec::new(Arc::new(codec))).add_subclass(Blosc)
+    }
+}
+
+#[pymethods]
+impl Blosc {
+    /// Create a `blosc` codec from its parameters.
+    ///
+    /// `typesize` is required (a positive integer) whenever `shuffle_mode` is
+    /// not `"noshuffle"`. The block size is chosen automatically when
+    /// `blocksize` is `None` or `0`.
+    #[new]
+    #[pyo3(signature = (
+        cname,
+        clevel,
+        shuffle_mode,
+        *,
+        blocksize = None,
+        typesize = None,
+    ))]
+    fn new(
+        cname: PyBloscCompressor,
+        clevel: PyBloscCompressionLevel,
+        shuffle_mode: PyBloscShuffleMode,
+        blocksize: Option<usize>,
+        typesize: Option<usize>,
+    ) -> ZarristaResult<PyClassInitializer<Self>> {
+        let codec = BloscCodec::new(cname.0, clevel.0, blocksize, shuffle_mode.0, typesize)?;
+        Ok(Self::init(codec))
+    }
+
+    /// Create a `blosc` codec from a configuration mapping, e.g.
+    /// `{"cname": "lz4", "clevel": 5, "shuffle": "shuffle", "typesize": 4, "blocksize": 0}`.
+    #[staticmethod]
+    fn from_configuration(configuration: &Bound<'_, PyAny>) -> ZarristaResult<Py<Self>> {
+        let config: BloscCodecConfiguration = depythonize(configuration)?;
+        let codec = BloscCodec::new_with_configuration(&config)?;
+        Ok(Py::new(configuration.py(), Self::init(codec))?)
+    }
 }
