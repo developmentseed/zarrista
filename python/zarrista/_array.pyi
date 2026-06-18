@@ -50,7 +50,7 @@ class Array:
     def path(self) -> str:
         """The array's path in the store."""
     def retrieve_array_subset(
-        self, selection: Selection, **kwargs: Unpack[CodecOptions]
+        self, selection: Selection, **codec_options: Unpack[CodecOptions]
     ) -> Data:
         """Read and decode an array region selected with numpy-style basic indexing.
 
@@ -60,7 +60,7 @@ class Array:
         Keyword arguments are passed as [`CodecOptions`][zarrista.codec.CodecOptions].
         """
     def retrieve_chunk(
-        self, chunk_indices: list[int], **kwargs: Unpack[CodecOptions]
+        self, chunk_indices: list[int], **codec_options: Unpack[CodecOptions]
     ) -> Data:
         """Read and decode the chunk at the given chunk grid indices.
 
@@ -110,7 +110,7 @@ class AsyncArray:
     def path(self) -> str:
         """The array's path in the store."""
     async def retrieve_array_subset(
-        self, selection: Selection, **kwargs: Unpack[CodecOptions]
+        self, selection: Selection, **codec_options: Unpack[CodecOptions]
     ) -> Data:
         """Read and decode an array region selected with numpy-style basic indexing.
 
@@ -120,7 +120,7 @@ class AsyncArray:
         Keyword arguments are passed as [`CodecOptions`][zarrista.codec.CodecOptions].
         """
     async def retrieve_chunk(
-        self, chunk_indices: list[int], **kwargs: Unpack[CodecOptions]
+        self, chunk_indices: list[int], **codec_options: Unpack[CodecOptions]
     ) -> Data:
         """Read and decode the chunk at the given chunk grid indices.
 
