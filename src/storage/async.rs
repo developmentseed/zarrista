@@ -6,14 +6,14 @@ use pyo3::prelude::*;
 use pyo3::pybacked::PyBackedStr;
 use pyo3_bytes::PyBytes;
 use pyo3_object_store::AnyObjectStore;
-use zarrs::storage::AsyncReadableListableStorageTraits;
+use zarrs::storage::AsyncReadableWritableListableStorageTraits;
 use zarrs_icechunk::AsyncIcechunkStore;
 use zarrs_object_store::AsyncObjectStore;
 
-pub struct PyAsyncStorage(Arc<dyn AsyncReadableListableStorageTraits>);
+pub struct PyAsyncStorage(Arc<dyn AsyncReadableWritableListableStorageTraits>);
 
 impl PyAsyncStorage {
-    pub fn into_inner(self) -> Arc<dyn AsyncReadableListableStorageTraits> {
+    pub fn into_inner(self) -> Arc<dyn AsyncReadableWritableListableStorageTraits> {
         self.0
     }
 }
@@ -39,7 +39,7 @@ impl FromPyObject<'_, '_> for PyAsyncStorage {
     }
 }
 
-impl From<PyAsyncStorage> for Arc<dyn AsyncReadableListableStorageTraits> {
+impl From<PyAsyncStorage> for Arc<dyn AsyncReadableWritableListableStorageTraits> {
     fn from(s: PyAsyncStorage) -> Self {
         s.0
     }

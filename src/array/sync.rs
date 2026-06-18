@@ -7,23 +7,23 @@ use crate::data::{for_each_dtype, DataInner, PyData};
 use crate::dtype::PyDataType;
 use crate::error::ZarristaResult;
 use crate::node::PyNodePath;
-use crate::storage::extract_storage;
+use crate::storage::PySyncStorage;
 use ndarray::ArrayD;
 use pyo3::exceptions::PyNotImplementedError;
 use pyo3::prelude::*;
 use pythonize::pythonize;
 use pythonize::Result as PythonizeResult;
 use zarrs::array::Array;
-use zarrs::storage::ReadableListableStorageTraits;
+use zarrs::storage::ReadableWritableListableStorageTraits;
 
-/// A read-only Zarr array.
+/// A Zarr array.
 #[pyclass(module = "zarrista", frozen, name = "Array")]
 pub struct PyArray {
-    pub(crate) inner: Array<dyn ReadableListableStorageTraits>,
+    pub(crate) inner: Array<dyn ReadableWritableListableStorageTraits>,
 }
 
 impl PyArray {
-    pub(crate) fn new(inner: Array<dyn ReadableListableStorageTraits>) -> Self {
+    pub(crate) fn new(inner: Array<dyn ReadableWritableListableStorageTraits>) -> Self {
         Self { inner }
     }
 }
@@ -44,9 +44,8 @@ impl PyArray {
         signature = (store, path = PyNodePath::root()),
         text_signature = "(store, path='/')"
     )]
-    fn open(store: &Bound<'_, PyAny>, path: PyNodePath) -> ZarristaResult<Self> {
-        let storage = extract_storage(store)?;
-        let inner = Array::open(storage, path.as_str())?;
+    fn open(store: PySyncStorage, path: PyNodePath) -> ZarristaResult<Self> {
+        let inner = Array::open(store.into(), path.as_str())?;
         Ok(Self::new(inner))
     }
 
