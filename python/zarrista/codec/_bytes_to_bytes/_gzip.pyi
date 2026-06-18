@@ -13,4 +13,4 @@ class Gzip(BytesToBytesCodec):
         """
     @staticmethod
     def from_config(config: dict[str, Any]) -> Gzip:
-        """Construct a `gzip` codec from a configuration mapping, e.g. `{"level": 5}`."""
+        """Construct a `gzip` codec from a config mapping, e.g. `{"level": 5}`."""

@@ -31,6 +31,6 @@ class Blosc(BytesToBytesCodec):
     def from_config(config: dict[str, Any]) -> Blosc:
         """Construct a `blosc` codec from a configuration mapping.
 
-        For example
-        `{"cname": "lz4", "clevel": 5, "shuffle": "shuffle", "typesize": 4, "blocksize": 0}`.
+        For example `{"cname": "lz4", "clevel": 5, "shuffle": "shuffle",
+        "typesize": 4, "blocksize": 0}`.
         """
