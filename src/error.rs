@@ -16,6 +16,7 @@ use zarrs::array::{ArrayCreateError, ArrayError, CodecError};
 use zarrs::filesystem::FilesystemStoreCreateError;
 use zarrs::group::GroupCreateError;
 use zarrs::node::{NodeCreateError, NodePathError};
+use zarrs::plugin::PluginCreateError;
 use zarrs::storage::StorageError;
 
 create_exception!(
@@ -79,6 +80,9 @@ pub(crate) enum ZarristaError {
     /// Transpose order error
     #[error(transparent)]
     TransposeOrder(#[from] TransposeOrderError),
+    /// Failed to create a codec (or other plugin) from its configuration.
+    #[error(transparent)]
+    PluginCreate(#[from] PluginCreateError),
 }
 
 impl ZarristaError {
@@ -106,6 +110,7 @@ impl From<ZarristaError> for PyErr {
             ZarristaError::SerdeJson(err) => ZarristaException::new_err(err.to_string()),
             ZarristaError::Codec(err) => ZarristaException::new_err(err.to_string()),
             ZarristaError::TransposeOrder(err) => ZarristaException::new_err(err.to_string()),
+            ZarristaError::PluginCreate(err) => ZarristaException::new_err(err.to_string()),
         }
     }
 }

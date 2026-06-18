@@ -1,9 +1,15 @@
 mod array_to_array;
+mod bytes_to_bytes;
 mod codec_chain;
 
 use pyo3::prelude::*;
 
 pub use array_to_array::{bitround, transpose, PyArrayToArrayCodec};
+pub use bytes_to_bytes::blosc::PyBlosc;
+pub use bytes_to_bytes::crc32c::PyCrc32c;
+pub use bytes_to_bytes::gzip::PyGzip;
+pub use bytes_to_bytes::zstd::PyZstd;
+pub use bytes_to_bytes::PyBytesToBytesCodec;
 pub use codec_chain::PyCodecChain;
 
 /// Build the `zarrista.codec` submodule and attach it to `parent`.
@@ -16,6 +22,11 @@ pub fn register_codec_module(parent: &Bound<'_, PyModule>) -> PyResult<()> {
     let codec = PyModule::new(py, "codec")?;
 
     codec.add_class::<PyArrayToArrayCodec>()?;
+    codec.add_class::<PyBytesToBytesCodec>()?;
+    codec.add_class::<PyBlosc>()?;
+    codec.add_class::<PyCrc32c>()?;
+    codec.add_class::<PyGzip>()?;
+    codec.add_class::<PyZstd>()?;
     codec.add_class::<PyCodecChain>()?;
     codec.add_function(wrap_pyfunction!(transpose, &codec)?)?;
     codec.add_function(wrap_pyfunction!(bitround, &codec)?)?;
