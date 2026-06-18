@@ -2,8 +2,9 @@ use std::num::NonZeroU64;
 use std::sync::Arc;
 
 use pyo3::prelude::*;
-use zarrs::array::ArrayToArrayCodecTraits;
+use zarrs::array::{ArrayToArrayCodecTraits, CodecOptions};
 
+use crate::array_bytes::PyArrayBytes;
 use crate::dtype::PyDataType;
 use crate::error::ZarristaResult;
 use crate::fill_value::PyFillValue;
@@ -28,8 +29,38 @@ impl PyArrayToArrayCodec {
             .into())
     }
 
-    fn encode(&self) {
-        self.0.encode(bytes, shape, data_type, fill_value, options)
+    fn encode(
+        &self,
+        bytes: &PyArrayBytes,
+        shape: Vec<NonZeroU64>,
+        data_type: &PyDataType,
+        fill_value: &PyFillValue,
+    ) -> ZarristaResult<PyArrayBytes> {
+        let encoded = self.0.encode(
+            bytes.as_array_bytes()?,
+            &shape,
+            data_type.inner(),
+            fill_value.inner(),
+            &CodecOptions::default(),
+        )?;
+        Ok(PyArrayBytes::from_zarrs(encoded))
+    }
+
+    fn decode(
+        &self,
+        bytes: &PyArrayBytes,
+        shape: Vec<NonZeroU64>,
+        data_type: &PyDataType,
+        fill_value: &PyFillValue,
+    ) -> ZarristaResult<PyArrayBytes> {
+        let decoded = self.0.decode(
+            bytes.as_array_bytes()?,
+            &shape,
+            data_type.inner(),
+            fill_value.inner(),
+            &CodecOptions::default(),
+        )?;
+        Ok(PyArrayBytes::from_zarrs(decoded))
     }
 
     fn encoded_shape(&self, decoded_shape: Vec<NonZeroU64>) -> ZarristaResult<Vec<NonZeroU64>> {

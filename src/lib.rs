@@ -16,6 +16,7 @@ mod storage;
 use pyo3::prelude::*;
 
 use crate::array::{PyArray, PyAsyncArray};
+use crate::array_bytes::PyArrayBytes;
 use crate::chunks::PyChunkGrid;
 use crate::codec::PyCodecChain;
 use crate::data::PyData;
@@ -30,6 +31,7 @@ fn _zarrista(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add("__version__", env!("CARGO_PKG_VERSION"))?;
 
     m.add_class::<PyArray>()?;
+    m.add_class::<PyArrayBytes>()?;
     m.add_class::<PyAsyncArray>()?;
     m.add_class::<PyAsyncGroup>()?;
     m.add_class::<PyChunkGrid>()?;
