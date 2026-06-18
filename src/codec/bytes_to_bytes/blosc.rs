@@ -1,16 +1,13 @@
-use std::sync::Arc;
-
 use pyo3::exceptions::PyValueError;
 use pyo3::prelude::*;
 use pyo3::pybacked::PyBackedStr;
 use pyo3::{Borrowed, FromPyObject, PyClassInitializer};
 use pythonize::depythonize;
-use zarrs::array::codec::{
-    BloscCodec, BloscCodecConfiguration, BloscCompressionLevel, BloscCompressor, BloscShuffleMode,
-};
+use zarrs::array::codec::{BloscCodec, BloscCompressionLevel, BloscCompressor, BloscShuffleMode};
 
-use crate::codec::PyBytesToBytesCodec;
 use crate::error::ZarristaResult;
+
+pub use sealed::Blosc;
 
 /// The `blosc` compressor.
 ///
@@ -89,23 +86,34 @@ impl FromPyObject<'_, '_> for PyBloscShuffleMode {
     }
 }
 
-/// The `blosc` bytes-to-bytes codec.
-///
-/// A subclass of `BytesToBytesCodec`, so it inherits the codec methods (e.g.
-/// `encode`) while adding `blosc`-specific constructors.
-//
-// See https://pyo3.rs/v0.29.0/class.html#inheritance for docs on subclassing in pyo3
-#[pyclass(module = "zarrista.codec", extends = PyBytesToBytesCodec, frozen, name = "Blosc")]
-pub struct Blosc;
+/// `Blosc` lives in a private module with a private `()` field, so it can only
+/// be constructed via [`Blosc::new`], enforcing correct submodule instantiation
+mod sealed {
+    use std::sync::Arc;
 
-impl Blosc {
-    /// Wrap a [`BloscCodec`] as an initializer for the `Blosc` subclass: the
-    /// codec is stored in the [`PyBytesToBytesCodec`] base, with `Blosc` itself
-    /// carrying no extra state.
+    use pyo3::prelude::*;
+    use pyo3::PyClassInitializer;
+    use zarrs::array::codec::BloscCodec;
+
+    use crate::codec::PyBytesToBytesCodec;
+
+    /// The `blosc` bytes-to-bytes codec.
+    ///
+    /// A subclass of `BytesToBytesCodec`, so it inherits the codec methods (e.g.
+    /// `encode`) while adding `blosc`-specific constructors.
     //
     // See https://pyo3.rs/v0.29.0/class.html#inheritance for docs on subclassing in pyo3
-    fn init(codec: BloscCodec) -> PyClassInitializer<Self> {
-        PyClassInitializer::from(PyBytesToBytesCodec::new(Arc::new(codec))).add_subclass(Blosc)
+    #[pyclass(module = "zarrista.codec", extends = PyBytesToBytesCodec, frozen, name = "Blosc")]
+    pub struct Blosc(());
+
+    impl Blosc {
+        /// Wrap a [`BloscCodec`] as an initializer for the `Blosc` subclass: the
+        /// codec is stored in the [`PyBytesToBytesCodec`] base, with `Blosc`
+        /// itself carrying no extra state.
+        pub(super) fn new(codec: BloscCodec) -> PyClassInitializer<Self> {
+            PyClassInitializer::from(PyBytesToBytesCodec::new(Arc::new(codec)))
+                .add_subclass(Blosc(()))
+        }
     }
 }
 
@@ -125,7 +133,7 @@ impl Blosc {
         blocksize = None,
         typesize = None,
     ))]
-    fn new(
+    fn py_new(
         cname: PyBloscCompressor,
         clevel: PyBloscCompressionLevel,
         shuffle_mode: PyBloscShuffleMode,
@@ -133,15 +141,14 @@ impl Blosc {
         typesize: Option<usize>,
     ) -> ZarristaResult<PyClassInitializer<Self>> {
         let codec = BloscCodec::new(cname.0, clevel.0, blocksize, shuffle_mode.0, typesize)?;
-        Ok(Self::init(codec))
+        Ok(Self::new(codec))
     }
 
     /// Create a `blosc` codec from a configuration mapping, e.g.
     /// `{"cname": "lz4", "clevel": 5, "shuffle": "shuffle", "typesize": 4, "blocksize": 0}`.
     #[staticmethod]
-    fn from_configuration(configuration: &Bound<'_, PyAny>) -> ZarristaResult<Py<Self>> {
-        let config: BloscCodecConfiguration = depythonize(configuration)?;
-        let codec = BloscCodec::new_with_configuration(&config)?;
-        Ok(Py::new(configuration.py(), Self::init(codec))?)
+    fn from_config(config: &Bound<'_, PyAny>) -> ZarristaResult<Py<Self>> {
+        let codec = BloscCodec::new_with_configuration(&depythonize(config)?)?;
+        Ok(Py::new(config.py(), Self::new(codec))?)
     }
 }
