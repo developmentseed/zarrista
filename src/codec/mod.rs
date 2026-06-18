@@ -1,4 +1,5 @@
 mod array_to_array;
+mod bytes_to_bytes;
 mod codec_chain;
 
 use pyo3::prelude::*;
