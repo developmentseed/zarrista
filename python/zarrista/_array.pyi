@@ -1,13 +1,11 @@
 from types import EllipsisType
 from typing import Any
 
-from obstore.store import ObjectStore
-
 from ._chunks import ChunkGrid
 from ._codec import CodecChain
 from ._data import Data
 from ._dtype import DataType
-from ._store import FilesystemStore, MemoryStore
+from ._store import AsyncStore, FilesystemStore, MemoryStore
 
 _AxisSelector = int | slice | EllipsisType
 Selection = _AxisSelector | tuple[_AxisSelector, ...]
@@ -71,8 +69,11 @@ class AsyncArray:
     """A read-only Zarr array backed by an async store."""
 
     @staticmethod
-    async def open_async(store: ObjectStore, path: str = "/") -> AsyncArray:
-        """Open the array stored at `path` in `store`."""
+    async def open_async(store: AsyncStore, path: str = "/") -> AsyncArray:
+        """Open the array stored at `path` in `store`.
+
+        `store` may be an obstore `ObjectStore` or an icechunk `Session`.
+        """
     @property
     def attrs(self) -> dict[str, Any]:
         """The array's user attributes as a dict."""

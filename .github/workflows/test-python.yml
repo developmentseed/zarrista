@@ -20,6 +20,26 @@ jobs:
       # Use ruff-action so we get annotations in the GitHub UI.
       - uses: astral-sh/ruff-action@v3
 
+  docs:
+    name: Build docs
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+        with:
+          enable-cache: true
+
+      # The docs build relies only on the `.pyi` type stubs (allow_inspection:
+      # false), so we don't need to compile the Rust extension.
+      - name: Install docs dependencies
+        run: uv sync --no-install-package zarrista --group docs
+
+      # Ensure docs build without warnings.
+      - name: Build docs (strict)
+        run: uv run --no-project mkdocs build --strict
+
   pytest:
     name: Pytest
     runs-on: ubuntu-latest
