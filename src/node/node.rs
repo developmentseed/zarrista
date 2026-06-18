@@ -9,7 +9,9 @@ use pyo3::prelude::*;
 use zarrs::array::Array;
 use zarrs::group::Group;
 use zarrs::node::NodePath;
-use zarrs::storage::{AsyncReadableListableStorageTraits, ReadableWritableListableStorageTraits};
+use zarrs::storage::{
+    AsyncReadableWritableListableStorageTraits, ReadableWritableListableStorageTraits,
+};
 
 /// An opened node: either an array or a group.
 #[derive(IntoPyObject)]
@@ -50,7 +52,7 @@ pub(crate) enum AsyncNode {
 /// Returns an [`AsyncNode`] (Python `AsyncArray` or `AsyncGroup`), or raises
 /// `NotFoundError` if neither exists at the path.
 pub(crate) async fn open_node_async(
-    storage: Arc<dyn AsyncReadableListableStorageTraits>,
+    storage: Arc<dyn AsyncReadableWritableListableStorageTraits>,
     path: NodePath,
 ) -> ZarristaResult<AsyncNode> {
     if let Ok(inner) = Array::async_open(storage.clone(), path.as_str()).await {

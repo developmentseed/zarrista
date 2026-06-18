@@ -10,21 +10,21 @@ use pythonize::pythonize;
 use pythonize::Result as PythonizeResult;
 use zarrs::group::Group;
 use zarrs::node::NodePath;
-use zarrs::storage::AsyncReadableListableStorageTraits;
+use zarrs::storage::AsyncReadableWritableListableStorageTraits;
 
-/// A read-only Zarr group.
+/// A Zarr group.
 #[pyclass(module = "zarrista", frozen, name = "AsyncGroup")]
 pub struct PyAsyncGroup {
-    pub(crate) storage: Arc<dyn AsyncReadableListableStorageTraits>,
+    pub(crate) storage: Arc<dyn AsyncReadableWritableListableStorageTraits>,
     pub(crate) path: NodePath,
-    pub(crate) inner: Arc<Group<dyn AsyncReadableListableStorageTraits>>,
+    pub(crate) inner: Arc<Group<dyn AsyncReadableWritableListableStorageTraits>>,
 }
 
 impl PyAsyncGroup {
     pub(crate) fn new(
-        storage: Arc<dyn AsyncReadableListableStorageTraits>,
+        storage: Arc<dyn AsyncReadableWritableListableStorageTraits>,
         path: NodePath,
-        inner: Arc<Group<dyn AsyncReadableListableStorageTraits>>,
+        inner: Arc<Group<dyn AsyncReadableWritableListableStorageTraits>>,
     ) -> Self {
         Self {
             storage,

@@ -17,16 +17,16 @@ use pyo3_async_runtimes::tokio::future_into_py;
 use pythonize::pythonize;
 use pythonize::Result as PythonizeResult;
 use zarrs::array::Array;
-use zarrs::storage::AsyncReadableListableStorageTraits;
+use zarrs::storage::AsyncReadableWritableListableStorageTraits;
 
-/// A read-only Zarr array.
+/// A Zarr array.
 #[pyclass(module = "zarrista", frozen, name = "AsyncArray")]
 pub struct PyAsyncArray {
-    pub(crate) inner: Arc<Array<dyn AsyncReadableListableStorageTraits>>,
+    pub(crate) inner: Arc<Array<dyn AsyncReadableWritableListableStorageTraits>>,
 }
 
 impl PyAsyncArray {
-    pub(crate) fn new(inner: Arc<Array<dyn AsyncReadableListableStorageTraits>>) -> Self {
+    pub(crate) fn new(inner: Arc<Array<dyn AsyncReadableWritableListableStorageTraits>>) -> Self {
         Self { inner }
     }
 }
