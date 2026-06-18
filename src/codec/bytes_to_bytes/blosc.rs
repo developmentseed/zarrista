@@ -19,7 +19,7 @@ impl FromPyObject<'_, '_> for PyBloscCompressor {
     type Error = PyErr;
 
     fn extract(ob: Borrowed<'_, '_, PyAny>) -> Result<Self, Self::Error> {
-        let name: PyBackedStr = ob.extract()?;
+        let name = ob.extract::<PyBackedStr>()?;
         let compressor = match name.to_ascii_lowercase().as_str() {
             "blosclz" => BloscCompressor::BloscLZ,
             "lz4" => BloscCompressor::LZ4,
@@ -49,14 +49,10 @@ impl FromPyObject<'_, '_> for PyBloscCompressionLevel {
     type Error = PyErr;
 
     fn extract(ob: Borrowed<'_, '_, PyAny>) -> Result<Self, Self::Error> {
-        let level: u8 = ob.extract()?;
-        BloscCompressionLevel::try_from(level)
-            .map(Self)
-            .map_err(|level| {
-                PyValueError::new_err(format!(
-                    "blosc compression level must be between 0 and 9, got {level}"
-                ))
-            })
+        let compression_level = ob.extract::<u8>()?.try_into().map_err(|_| {
+            PyValueError::new_err("blosc compression level must be between 0 and 9")
+        })?;
+        Ok(Self(compression_level))
     }
 }
 
@@ -70,7 +66,7 @@ impl FromPyObject<'_, '_> for PyBloscShuffleMode {
     type Error = PyErr;
 
     fn extract(ob: Borrowed<'_, '_, PyAny>) -> Result<Self, Self::Error> {
-        let mode: PyBackedStr = ob.extract()?;
+        let mode = ob.extract::<PyBackedStr>()?;
         let shuffle = match mode.to_ascii_lowercase().as_str() {
             "noshuffle" => BloscShuffleMode::NoShuffle,
             "shuffle" => BloscShuffleMode::Shuffle,
