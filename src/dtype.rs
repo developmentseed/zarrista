@@ -17,7 +17,13 @@ use zarrs::storage::ReadableListableStorageTraits;
 
 #[pyclass(module = "zarrista", frozen, name = "DataType")]
 pub struct PyDataType {
-    pub(crate) inner: DataType,
+    inner: DataType,
+}
+
+impl PyDataType {
+    pub(crate) fn inner(&self) -> &DataType {
+        &self.inner
+    }
 }
 
 #[pymethods]
