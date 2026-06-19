@@ -57,6 +57,25 @@ def test_fixed_dtype_returns_tensor(int32_array: tuple[Path, NDArray[np.int32]])
     np.testing.assert_array_equal(from_buffer, expected)
 
 
+def test_dlpack_roundtrips(int32_array: tuple[Path, NDArray[np.int32]]):
+    """A `Tensor` exports via DLPack; `np.from_dlpack` yields the same N-D array.
+
+    Unlike the buffer-protocol path, DLPack carries the shape natively, so the
+    result is already N-D (no reshape needed)."""
+    path, data = int32_array
+    arr = Array.open(FilesystemStore(path))
+
+    tensor = arr.retrieve_array_subset((slice(0, 2), slice(None), slice(5, 7)))
+    assert isinstance(tensor, Tensor)
+
+    result = np.from_dlpack(tensor)
+    expected = data[0:2, :, 5:7]
+    assert result.shape == expected.shape
+    assert result.dtype == data.dtype
+    np.testing.assert_array_equal(result, expected)
+    np.testing.assert_array_equal(result, tensor.to_numpy())
+
+
 def test_getitem_matches_retrieve_array_subset(
     int32_array: tuple[Path, NDArray[np.int32]],
 ):
