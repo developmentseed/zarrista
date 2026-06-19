@@ -6,7 +6,7 @@ use crate::array::selection::PySelection;
 use crate::array::util::PyChunkIndices;
 use crate::chunks::PyChunkGrid;
 use crate::codec::{PyCodecChain, PyCodecOptions};
-use crate::data::DecodedArray;
+use crate::decoded_array::DecodedArray;
 use crate::dtype::PyDataType;
 use crate::error::ZarristaError;
 use crate::node::PyNodePath;
