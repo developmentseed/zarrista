@@ -23,10 +23,12 @@ use std::borrow::Cow;
 use std::ffi::c_void;
 
 use bytes::Bytes;
-use dlpark::ffi::Device;
+use dlpark::ffi::{Device, DeviceType};
 use dlpark::traits::{RowMajorCompactLayout, TensorLike};
+use dlpark::SafeManagedTensor;
 use pyo3::exceptions::{PyNotImplementedError, PyValueError};
 use pyo3::prelude::*;
+use pyo3::types::PyDict;
 use pyo3::IntoPyObjectExt;
 use pyo3_bytes::PyBytes;
 use zarrs::array::{ArrayBytes, ArrayError, DataType, FromArrayBytes};
@@ -38,7 +40,8 @@ use crate::error::{ZarristaError, ZarristaResult};
 ///
 /// We don't use the upstream `Tensor` type because its bytes are not reference counted, and thus
 /// don't play nicely with buffer protocol export
-#[pyclass(module = "zarrista", frozen, name = "Tensor")]
+#[derive(Clone)]
+#[pyclass(module = "zarrista", frozen, name = "Tensor", skip_from_py_object)]
 pub struct PyTensor {
     bytes: Bytes,
     data_type: DataType,
@@ -78,6 +81,21 @@ impl PyTensor {
         let np = py.import("numpy")?;
         let flat = np.call_method1("frombuffer", (self.buffer(), name.into_owned()))?;
         flat.call_method1("reshape", (&self.shape,))
+    }
+
+    /// Export via the DLPack protocol so consumers (e.g. `np.from_dlpack`) can
+    /// import this data zero-copy.
+    #[pyo3(signature = (**_kwargs))]
+    fn __dlpack__<'py>(
+        &self,
+        _kwargs: Option<Bound<'py, PyDict>>,
+    ) -> ZarristaResult<SafeManagedTensor> {
+        SafeManagedTensor::new(self.clone())
+    }
+
+    /// The DLPack device this data lives on: `(device_type, device_id)`. Always CPU.
+    fn __dlpack_device__(&self) -> (i32, i32) {
+        (DeviceType::Cpu as i32, 0)
     }
 }
 
