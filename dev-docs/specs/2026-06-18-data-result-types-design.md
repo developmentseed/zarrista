@@ -108,9 +108,11 @@ Sync and async `retrieve_array_subset` / `retrieve_chunk` each become a single
 
 ## Faces: now vs. later
 
-- **Now:** buffer protocol + `to_numpy` on `Tensor`. The other three classes are
-  skeletons carrying `shape`/`dtype` (piped through so the type hierarchy exists),
-  with `to_numpy` raising `NotImplementedError`.
+- **Now:** buffer protocol + `to_numpy` on `Tensor`. The other three classes
+  carry their full decoded payload (values bytes + offsets and/or mask via
+  `ArrayBytes`/`Optional` `into_parts()`) plus `shape`/`dtype`, but don't yet
+  expose it to numpy — `to_numpy` raises `NotImplementedError`. (Offsets are
+  currently copied to `Vec<usize>`; zarrs#406 tracks avoiding that.)
 - **Later (own specs):** Arrow `__arrow_c_array__` on all four (variable-length and
   masked are where Arrow earns its keep — zero-copy `String`/`Binary` + validity
   bitmaps); DLPack `__dlpack__` on `Tensor`/`MaskedTensor`.
