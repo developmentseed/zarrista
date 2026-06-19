@@ -68,6 +68,9 @@ ignore = [
 ]
 
 [tool.ruff.lint.per-file-ignores]
+"*.pyi" = [
+    "A002", # Function argument `bytes` is shadowing a Python builtin
+]
 "tests/*" = [
     "ANN001",  # annotation in function argument
     "ANN201",  # return type annotation
