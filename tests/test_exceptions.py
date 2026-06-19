@@ -1,7 +1,11 @@
 """The zarrista.exceptions hierarchy: a base class with one subclass per
 underlying zarrs error category, all importable from zarrista.exceptions."""
 
+from pathlib import Path
+
 import pytest
+import zarr
+from zarrista import FilesystemStore, Group
 from zarrista import exceptions as exc
 
 LEAF_EXCEPTIONS = [
@@ -40,3 +44,22 @@ def test_importable_by_name():
         NotFoundError,
         ZarristaError,
     )
+
+
+def _make_group(tmp_path: Path) -> Path:
+    """Create an empty Zarr v3 group with zarr-python; return its store path."""
+    path = tmp_path / "g.zarr"
+    zarr.open_group(str(path), mode="w")
+    return path
+
+
+def test_missing_child_raises_not_found(tmp_path: Path):
+    group = Group.open(FilesystemStore(str(_make_group(tmp_path))))
+    with pytest.raises(exc.NotFoundError):
+        group["does_not_exist"]
+
+
+def test_base_catches_subclass(tmp_path: Path):
+    group = Group.open(FilesystemStore(str(_make_group(tmp_path))))
+    with pytest.raises(exc.ZarristaError):
+        group["does_not_exist"]
