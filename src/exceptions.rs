@@ -62,12 +62,6 @@ create_exception!(
 );
 create_exception!(
     zarrista.exceptions,
-    FilesystemStoreCreateError,
-    ZarristaError,
-    "Raised when a filesystem store cannot be opened."
-);
-create_exception!(
-    zarrista.exceptions,
     CodecError,
     ZarristaError,
     "Raised on a codec encode/decode error."
@@ -109,10 +103,6 @@ pub fn register_exceptions_module(parent: &Bound<'_, PyModule>) -> PyResult<()> 
     exceptions.add("NodeCreateError", py.get_type::<NodeCreateError>())?;
     exceptions.add("NodePathError", py.get_type::<NodePathError>())?;
     exceptions.add("StorageError", py.get_type::<StorageError>())?;
-    exceptions.add(
-        "FilesystemStoreCreateError",
-        py.get_type::<FilesystemStoreCreateError>(),
-    )?;
     exceptions.add("CodecError", py.get_type::<CodecError>())?;
     exceptions.add("TransposeOrderError", py.get_type::<TransposeOrderError>())?;
     exceptions.add("PluginCreateError", py.get_type::<PluginCreateError>())?;

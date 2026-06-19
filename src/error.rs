@@ -91,7 +91,7 @@ impl From<ZarristaError> for PyErr {
             ZarristaError::NodePath(err) => exc::NodePathError::new_err(err.to_string()),
             ZarristaError::Storage(err) => exc::StorageError::new_err(err.to_string()),
             ZarristaError::FilesystemStoreCreate(err) => {
-                exc::FilesystemStoreCreateError::new_err(err.to_string())
+                exc::StorageError::new_err(err.to_string())
             }
             ZarristaError::Pythonize(err) => exc::SerializationError::new_err(err.to_string()),
             ZarristaError::SerdeJson(err) => exc::SerializationError::new_err(err.to_string()),

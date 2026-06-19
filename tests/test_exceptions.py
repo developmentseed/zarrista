@@ -16,7 +16,6 @@ LEAF_EXCEPTIONS = [
     "NodeCreateError",
     "NodePathError",
     "StorageError",
-    "FilesystemStoreCreateError",
     "CodecError",
     "TransposeOrderError",
     "PluginCreateError",
@@ -44,6 +43,13 @@ def test_importable_by_name():
         NotFoundError,
         ZarristaError,
     )
+
+
+def test_filesystem_store_create_folds_into_storage_error():
+    # Filesystem-store creation failures surface as StorageError; there is no
+    # dedicated FilesystemStoreCreateError class.
+    assert not hasattr(exc, "FilesystemStoreCreateError")
+    assert "FilesystemStoreCreateError" not in exc.__all__
 
 
 def _make_group(tmp_path: Path) -> Path:

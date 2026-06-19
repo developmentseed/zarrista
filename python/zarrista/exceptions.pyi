@@ -20,10 +20,10 @@ class NodePathError(ZarristaError):
     """Raised when a node path is invalid."""
 
 class StorageError(ZarristaError):
-    """Raised on an error from the underlying storage backend."""
+    """Raised on an error from the underlying storage backend.
 
-class FilesystemStoreCreateError(ZarristaError):
-    """Raised when a filesystem store cannot be opened."""
+    This also covers failures opening a filesystem store.
+    """
 
 class CodecError(ZarristaError):
     """Raised on a codec encode/decode error."""
@@ -41,7 +41,6 @@ __all__ = [
     "ArrayCreateError",
     "ArrayError",
     "CodecError",
-    "FilesystemStoreCreateError",
     "GroupCreateError",
     "NodeCreateError",
     "NodePathError",

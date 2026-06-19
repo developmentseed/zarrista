@@ -28,7 +28,6 @@ ZarristaError                       (base)
 ├── NodeCreateError
 ├── NodePathError
 ├── StorageError
-├── FilesystemStoreCreateError
 ├── CodecError
 ├── TransposeOrderError
 ├── PluginCreateError
@@ -64,7 +63,7 @@ dedicated exception:
 | `NodeCreate`              | `NodeCreateError`             |
 | `NodePath`                | `NodePathError`               |
 | `Storage`                 | `StorageError`                |
-| `FilesystemStoreCreate`   | `FilesystemStoreCreateError`  |
+| `FilesystemStoreCreate`   | `StorageError`                |
 | `Codec`                   | `CodecError`                  |
 | `TransposeOrder`          | `TransposeOrderError`         |
 | `PluginCreate`            | `PluginCreateError`           |
