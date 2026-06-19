@@ -26,6 +26,7 @@ python-source = "python"
 
 [dependency-groups]
 dev = [
+    "arro3-core>=0.6",
     "icechunk>=1.1.21",
     "ipykernel>=7.3.0",
     "maturin>=1.12",
