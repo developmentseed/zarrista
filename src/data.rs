@@ -1,4 +1,4 @@
-//! DecodedArray array data exposed to Python.
+//! Decoded array data exposed to Python.
 //!
 //! SPIKE: instead of decoding into a typed `ndarray::ArrayD<T>` (which copies
 //! every buffer via `bytemuck::pod_collect_to_vec`), we retrieve the raw

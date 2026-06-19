@@ -17,9 +17,6 @@ from ._zarrista import (
     __version__,
 )
 
-DataArray = Tensor | VariableArray | MaskedTensor | MaskedVariableArray
-"""The result of a read: one of the four decoded array layouts."""
-
 __all__ = [
     "Array",
     "ArrayBytes",
@@ -27,7 +24,6 @@ __all__ = [
     "AsyncGroup",
     "ChunkGrid",
     "DataType",
-    "DataArray",
     "FillValue",
     "FilesystemStore",
     "Group",

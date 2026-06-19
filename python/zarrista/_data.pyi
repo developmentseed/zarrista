@@ -77,7 +77,7 @@ class MaskedVariableArray:
     def to_numpy(self) -> NDArray[Any]:
         """Not yet implemented: raises `NotImplementedError`."""
 
-DataArray: TypeAlias = Tensor | VariableArray | MaskedTensor | MaskedVariableArray
+DecodedArray: TypeAlias = Tensor | VariableArray | MaskedTensor | MaskedVariableArray
 """The result of a read: one of the four decoded array layouts.
 
 Which one is returned depends on the dtype's byte layout (fixed vs. variable, and
