@@ -5,7 +5,7 @@ from zarrista.codec import CodecOptions
 
 from ._chunks import ChunkGrid
 from ._codec import CodecChain
-from ._data import Data
+from ._decoded_array import DecodedArray
 from ._dtype import DataType
 from ._store import AsyncStore, FilesystemStore, MemoryStore
 
@@ -51,7 +51,7 @@ class Array:
         """The array's path in the store."""
     def retrieve_array_subset(
         self, selection: Selection, **codec_options: Unpack[CodecOptions]
-    ) -> Data:
+    ) -> DecodedArray:
         """Read and decode an array region selected with numpy-style basic indexing.
 
         The result is ndim-preserving (consistent with a zarrs `ArraySubset`): an
@@ -61,7 +61,7 @@ class Array:
         """
     def retrieve_chunk(
         self, chunk_indices: list[int], **codec_options: Unpack[CodecOptions]
-    ) -> Data:
+    ) -> DecodedArray:
         """Read and decode the chunk at the given chunk grid indices.
 
         Keyword arguments are passed as [`CodecOptions`][zarrista.codec.CodecOptions].
@@ -69,7 +69,7 @@ class Array:
     @property
     def shape(self) -> list[int]:
         """The array shape."""
-    def __getitem__(self, selection: Selection) -> Data:
+    def __getitem__(self, selection: Selection) -> DecodedArray:
         """Read a region with numpy-style basic indexing, e.g. `arr[0:10, :, 5]`.
 
         Sugar for `retrieve_array_subset`.
@@ -111,7 +111,7 @@ class AsyncArray:
         """The array's path in the store."""
     async def retrieve_array_subset(
         self, selection: Selection, **codec_options: Unpack[CodecOptions]
-    ) -> Data:
+    ) -> DecodedArray:
         """Read and decode an array region selected with numpy-style basic indexing.
 
         The result is ndim-preserving (consistent with a zarrs `ArraySubset`): an
@@ -121,7 +121,7 @@ class AsyncArray:
         """
     async def retrieve_chunk(
         self, chunk_indices: list[int], **codec_options: Unpack[CodecOptions]
-    ) -> Data:
+    ) -> DecodedArray:
         """Read and decode the chunk at the given chunk grid indices.
 
         Keyword arguments are passed as [`CodecOptions`][zarrista.codec.CodecOptions].
@@ -129,7 +129,7 @@ class AsyncArray:
     @property
     def shape(self) -> list[int]:
         """The array shape."""
-    async def __getitem__(self, selection: Selection) -> Data:
+    async def __getitem__(self, selection: Selection) -> DecodedArray:
         """Read a region with numpy-style basic indexing: `await arr[0:10, :, 5]`.
 
         Sugar for `retrieve_array_subset`.

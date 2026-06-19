@@ -1,7 +1,7 @@
 from ._array import Array, AsyncArray
 from ._array_bytes import ArrayBytes
 from ._chunks import ChunkGrid
-from ._data import Data
+from ._decoded_array import MaskedTensor, MaskedVariableArray, Tensor, VariableArray
 from ._dtype import DataType
 from ._fill_value import FillValue
 from ._group import AsyncGroup, Group
@@ -15,11 +15,14 @@ __all__ = [
     "AsyncArray",
     "AsyncGroup",
     "ChunkGrid",
-    "Data",
     "DataType",
     "FillValue",
     "FilesystemStore",
     "Group",
+    "MaskedTensor",
+    "MaskedVariableArray",
     "MemoryStore",
+    "Tensor",
+    "VariableArray",
     "__version__",
 ]
