@@ -60,7 +60,7 @@ def test_fixed_dtype_returns_tensor(int32_array: tuple[Path, NDArray[np.int32]])
 def test_getitem_matches_retrieve_array_subset(
     int32_array: tuple[Path, NDArray[np.int32]],
 ):
-    path, data = int32_array
+    path, _data = int32_array
     arr = Array.open(FilesystemStore(path))
 
     key = (slice(0, 2), slice(None), slice(5, 7))
