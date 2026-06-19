@@ -6,7 +6,7 @@ use crate::array::selection::PySelection;
 use crate::array::util::PyChunkIndices;
 use crate::chunks::PyChunkGrid;
 use crate::codec::{PyCodecChain, PyCodecOptions};
-use crate::data::Decoded;
+use crate::data::DecodedArray;
 use crate::dtype::PyDataType;
 use crate::error::ZarristaError;
 use crate::node::PyNodePath;
@@ -126,7 +126,7 @@ impl PyAsyncArray {
 
         future_into_py(py, async move {
             let decoded = inner
-                .async_retrieve_array_subset::<Decoded>(&array_subset)
+                .async_retrieve_array_subset::<DecodedArray>(&array_subset)
                 .await
                 .map_err(ZarristaError::from)?;
             Ok(decoded)
@@ -147,7 +147,7 @@ impl PyAsyncArray {
 
         future_into_py(py, async move {
             let decoded = inner
-                .async_retrieve_chunk_opt::<Decoded>(chunk_indices.as_ref(), &codec_options)
+                .async_retrieve_chunk_opt::<DecodedArray>(chunk_indices.as_ref(), &codec_options)
                 .await
                 .map_err(ZarristaError::from)?;
             Ok(decoded)

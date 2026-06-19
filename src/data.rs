@@ -1,10 +1,10 @@
-//! Decoded array data exposed to Python.
+//! DecodedArray array data exposed to Python.
 //!
 //! SPIKE: instead of decoding into a typed `ndarray::ArrayD<T>` (which copies
 //! every buffer via `bytemuck::pod_collect_to_vec`), we retrieve the raw
 //! post-codec [`ArrayBytes`] and wrap it zero-copy. Retrieval is a single
-//! generic call (`retrieve::<Decoded>`) — no per-dtype macro — because we
-//! implement [`FromArrayBytes`] on our own [`Decoded`] type.
+//! generic call (`retrieve::<DecodedArray>`) — no per-dtype macro — because we
+//! implement [`FromArrayBytes`] on our own [`DecodedArray`] type.
 //!
 //! `ArrayBytes` has three layouts (`Fixed`, `Variable`, `Optional`), which we
 //! surface as four concrete Python classes so each exposes exactly the faces it
@@ -174,14 +174,14 @@ impl PyMaskedVariableArray {
 /// Internal decoded result, produced by our [`FromArrayBytes`] impl. Carries the
 /// post-codec bytes (zero-copy), the data type, and the region shape (which
 /// zarrs hands us, so we never have to re-derive it).
-pub enum Decoded {
+pub enum DecodedArray {
     Tensor(PyTensor),
     Variable(PyVariableArray),
     MaskedTensor(PyMaskedTensor),
     MaskedVariable(PyMaskedVariableArray),
 }
 
-impl FromArrayBytes for Decoded {
+impl FromArrayBytes for DecodedArray {
     fn from_array_bytes(
         bytes: ArrayBytes<'static>,
         shape: &[u64],
@@ -190,14 +190,14 @@ impl FromArrayBytes for Decoded {
         let shape = shape.to_vec();
         let data_type = data_type.clone();
         Ok(match bytes {
-            ArrayBytes::Fixed(bytes) => Decoded::Tensor(PyTensor {
+            ArrayBytes::Fixed(bytes) => DecodedArray::Tensor(PyTensor {
                 bytes: cow_to_bytes(bytes),
                 data_type,
                 shape,
             }),
             ArrayBytes::Variable(v) => {
                 let (buf, offsets) = v.into_parts();
-                Decoded::Variable(PyVariableArray {
+                DecodedArray::Variable(PyVariableArray {
                     bytes: cow_to_bytes(buf),
                     // Ideally in the future we'll avoid a copy:
                     // https://github.com/zarrs/zarrs/issues/406
@@ -209,7 +209,7 @@ impl FromArrayBytes for Decoded {
             ArrayBytes::Optional(optional) => {
                 let (data, mask) = optional.into_parts();
                 match *data {
-                    ArrayBytes::Fixed(fixed) => Decoded::MaskedTensor(PyMaskedTensor {
+                    ArrayBytes::Fixed(fixed) => DecodedArray::MaskedTensor(PyMaskedTensor {
                         bytes: cow_to_bytes(fixed),
                         mask: cow_to_bytes(mask),
                         data_type,
@@ -217,7 +217,7 @@ impl FromArrayBytes for Decoded {
                     }),
                     ArrayBytes::Variable(variable) => {
                         let (buf, offsets) = variable.into_parts();
-                        Decoded::MaskedVariable(PyMaskedVariableArray {
+                        DecodedArray::MaskedVariable(PyMaskedVariableArray {
                             bytes: cow_to_bytes(buf),
                             // Ideally in the future we'll avoid a copy:
                             // https://github.com/zarrs/zarrs/issues/406
@@ -236,17 +236,17 @@ impl FromArrayBytes for Decoded {
     }
 }
 
-impl<'py> IntoPyObject<'py> for Decoded {
+impl<'py> IntoPyObject<'py> for DecodedArray {
     type Target = PyAny;
     type Output = Bound<'py, PyAny>;
     type Error = PyErr;
 
     fn into_pyobject(self, py: Python<'py>) -> Result<Self::Output, Self::Error> {
         match self {
-            Decoded::Tensor(py_tensor) => py_tensor.into_bound_py_any(py),
-            Decoded::Variable(py_variable_array) => py_variable_array.into_bound_py_any(py),
-            Decoded::MaskedTensor(py_masked_tensor) => py_masked_tensor.into_bound_py_any(py),
-            Decoded::MaskedVariable(py_masked_variable_array) => {
+            DecodedArray::Tensor(py_tensor) => py_tensor.into_bound_py_any(py),
+            DecodedArray::Variable(py_variable_array) => py_variable_array.into_bound_py_any(py),
+            DecodedArray::MaskedTensor(py_masked_tensor) => py_masked_tensor.into_bound_py_any(py),
+            DecodedArray::MaskedVariable(py_masked_variable_array) => {
                 py_masked_variable_array.into_bound_py_any(py)
             }
         }

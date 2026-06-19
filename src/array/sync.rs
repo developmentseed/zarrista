@@ -4,7 +4,7 @@ use crate::array::selection::PySelection;
 use crate::array::util::PyChunkIndices;
 use crate::chunks::PyChunkGrid;
 use crate::codec::{PyCodecChain, PyCodecOptions};
-use crate::data::Decoded;
+use crate::data::DecodedArray;
 use crate::dtype::PyDataType;
 use crate::error::{ZarristaError, ZarristaResult};
 use crate::node::PyNodePath;
@@ -31,7 +31,7 @@ impl PyArray {
 #[pymethods]
 impl PyArray {
     /// Read a region with numpy-style basic indexing, e.g. `arr[0:10, :, 5]`.
-    fn __getitem__(&self, selection: PySelection) -> ZarristaResult<Decoded> {
+    fn __getitem__(&self, selection: PySelection) -> ZarristaResult<DecodedArray> {
         self.retrieve_array_subset(selection)
     }
 
@@ -103,11 +103,11 @@ impl PyArray {
     ///
     /// Returns one of the decoded result classes (`Tensor`, `VariableArray`,
     /// `MaskedTensor`, `MaskedVariableArray`) depending on the dtype layout.
-    fn retrieve_array_subset(&self, selection: PySelection) -> ZarristaResult<Decoded> {
+    fn retrieve_array_subset(&self, selection: PySelection) -> ZarristaResult<DecodedArray> {
         let array_subset = selection.to_array_subset(self.inner.shape())?;
         let decoded = self
             .inner
-            .retrieve_array_subset::<Decoded>(&array_subset)
+            .retrieve_array_subset::<DecodedArray>(&array_subset)
             .map_err(ZarristaError::from)?;
         Ok(decoded)
     }
@@ -117,13 +117,13 @@ impl PyArray {
         &self,
         chunk_indices: PyChunkIndices,
         codec_options: Option<PyCodecOptions>,
-    ) -> ZarristaResult<Decoded> {
+    ) -> ZarristaResult<DecodedArray> {
         let codec_options = codec_options
             .map(|opts| opts.into_inner())
             .unwrap_or_default();
         let decoded = self
             .inner
-            .retrieve_chunk_opt::<Decoded>(chunk_indices.as_ref(), &codec_options)
+            .retrieve_chunk_opt::<DecodedArray>(chunk_indices.as_ref(), &codec_options)
             .map_err(ZarristaError::from)?;
         Ok(decoded)
     }
