@@ -6,7 +6,7 @@ use crate::chunks::PyChunkGrid;
 use crate::codec::{PyCodecChain, PyCodecOptions};
 use crate::data::DecodedArray;
 use crate::dtype::PyDataType;
-use crate::error::{ZarristaError, ZarristaResult};
+use crate::error::ZarristaResult;
 use crate::node::PyNodePath;
 use crate::storage::PySyncStorage;
 use pyo3::prelude::*;
@@ -105,11 +105,7 @@ impl PyArray {
     /// `MaskedTensor`, `MaskedVariableArray`) depending on the dtype layout.
     fn retrieve_array_subset(&self, selection: PySelection) -> ZarristaResult<DecodedArray> {
         let array_subset = selection.to_array_subset(self.inner.shape())?;
-        let decoded = self
-            .inner
-            .retrieve_array_subset::<DecodedArray>(&array_subset)
-            .map_err(ZarristaError::from)?;
-        Ok(decoded)
+        Ok(self.inner.retrieve_array_subset(&array_subset)?)
     }
 
     #[pyo3(signature = (chunk_indices, **codec_options))]
@@ -121,11 +117,9 @@ impl PyArray {
         let codec_options = codec_options
             .map(|opts| opts.into_inner())
             .unwrap_or_default();
-        let decoded = self
+        Ok(self
             .inner
-            .retrieve_chunk_opt::<DecodedArray>(chunk_indices.as_ref(), &codec_options)
-            .map_err(ZarristaError::from)?;
-        Ok(decoded)
+            .retrieve_chunk_opt(chunk_indices.as_ref(), &codec_options)?)
     }
 
     fn retrieve_encoded_chunk(
@@ -141,38 +135,4 @@ impl PyArray {
     fn shape(&self) -> &[u64] {
         self.inner.shape()
     }
-
-    // /// The chunk shape (size of a chunk along each dimension).
-    // #[getter]
-    // fn chunks(&self) -> PyResult<Vec<u64>> {
-    //     // TODO: review
-    //     let origin = vec![0u64; self.inner.shape().len()];
-    //     let chunk_shape = self.inner.chunk_shape(&origin).map_err(to_py_err)?;
-    //     Ok(chunk_shape.iter().map(|n| n.get()).collect())
-    // }
-
-    // /// The fill value as a Python scalar (or `None` if not interpretable).
-    // #[getter]
-    // fn fill_value(&self, py: Python<'_>) -> PyResult<PyObject> {
-    //     dtype::fill_value_to_py(
-    //         py,
-    //         self.inner.data_type(),
-    //         self.inner.fill_value().as_ne_bytes(),
-    //     )
-    // }
-
-    // /// Read a region with numpy-style basic indexing.
-    // fn __getitem__(&self, py: Python<'_>, key: &Bound<'_, PyAny>) -> PyResult<PyObject> {
-    //     let shape = self.inner.shape().to_vec();
-    //     let (ranges, out_shape) = parse_index(py, key, &shape)?;
-    //     let subset = ArraySubset::new_with_ranges(&ranges);
-    //     dtype::read_region(py, &self.inner, &Region::Subset(&subset), &out_shape)
-    // }
-
-    // /// Read a single chunk by its chunk coordinates.
-    // fn get_chunk(&self, py: Python<'_>, chunk_coords: Vec<u64>) -> PyResult<PyObject> {
-    //     let chunk_shape = self.inner.chunk_shape(&chunk_coords).map_err(to_py_err)?;
-    //     let out_shape: Vec<usize> = chunk_shape.iter().map(|n| n.get() as usize).collect();
-    //     dtype::read_region(py, &self.inner, &Region::Chunk(&chunk_coords), &out_shape)
-    // }
 }
