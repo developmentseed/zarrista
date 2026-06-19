@@ -1,3 +1,5 @@
+"""Exceptions."""
+
 from zarrista._zarrista.exceptions import (
     ArrayCreateError,
     ArrayError,
