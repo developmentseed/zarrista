@@ -181,15 +181,6 @@ pub enum Decoded {
     MaskedVariable(PyMaskedVariableArray),
 }
 
-/// Move a `'static` `Cow<[u8]>` into `bytes::Bytes`. Owned is a zero-copy move;
-/// borrowed (rare for retrieval) copies.
-fn cow_to_bytes(cow: Cow<'static, [u8]>) -> Bytes {
-    match cow {
-        Cow::Owned(v) => Bytes::from(v),
-        Cow::Borrowed(b) => Bytes::copy_from_slice(b),
-    }
-}
-
 impl FromArrayBytes for Decoded {
     fn from_array_bytes(
         bytes: ArrayBytes<'static>,
@@ -259,5 +250,14 @@ impl<'py> IntoPyObject<'py> for Decoded {
                 py_masked_variable_array.into_bound_py_any(py)
             }
         }
+    }
+}
+
+/// Move a `'static` `Cow<[u8]>` into `bytes::Bytes`. Owned is a zero-copy move;
+/// borrowed (rare for retrieval) copies.
+fn cow_to_bytes(cow: Cow<'static, [u8]>) -> Bytes {
+    match cow {
+        Cow::Owned(v) => Bytes::from(v),
+        Cow::Borrowed(b) => Bytes::copy_from_slice(b),
     }
 }
