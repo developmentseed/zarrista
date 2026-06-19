@@ -77,26 +77,108 @@ impl PyTensor {
     }
 }
 
+/// Variable-length data (string/bytes). Skeleton: carries metadata only for now.
+#[pyclass(module = "zarrista", frozen, name = "VariableArray")]
+pub struct PyVariableArray {
+    #[expect(dead_code)]
+    bytes: Bytes,
+    #[expect(dead_code)]
+    offsets: Vec<usize>,
+    data_type: DataType,
+    shape: Vec<u64>,
+}
+
+#[pymethods]
+impl PyVariableArray {
+    #[getter]
+    fn shape(&self) -> &[u64] {
+        &self.shape
+    }
+
+    #[getter]
+    fn dtype(&self) -> PyDataType {
+        self.data_type.clone().into()
+    }
+
+    fn to_numpy(&self) -> PyResult<()> {
+        Err(PyNotImplementedError::new_err(
+            "variable-length data is not yet exposed to numpy",
+        ))
+    }
+}
+
+/// Fixed-width data with a validity mask. Skeleton.
+#[pyclass(module = "zarrista", frozen, name = "MaskedTensor")]
+pub struct PyMaskedTensor {
+    #[expect(dead_code)]
+    bytes: Bytes,
+    /// The mask is 1 byte per element where 0 = invalid/missing, non-zero = valid/present.
+    #[expect(dead_code)]
+    mask: Bytes,
+    data_type: DataType,
+    shape: Vec<u64>,
+}
+
+#[pymethods]
+impl PyMaskedTensor {
+    #[getter]
+    fn shape(&self) -> &[u64] {
+        &self.shape
+    }
+
+    #[getter]
+    fn dtype(&self) -> PyDataType {
+        self.data_type.clone().into()
+    }
+
+    fn to_numpy(&self) -> PyResult<()> {
+        Err(PyNotImplementedError::new_err(
+            "masked data is not yet exposed to numpy",
+        ))
+    }
+}
+
+/// Variable-length data with a validity mask. Skeleton.
+#[pyclass(module = "zarrista", frozen, name = "MaskedVariableArray")]
+pub struct PyMaskedVariableArray {
+    #[expect(dead_code)]
+    bytes: Bytes,
+    #[expect(dead_code)]
+    offsets: Vec<usize>,
+    /// The mask is 1 byte per element where 0 = invalid/missing, non-zero = valid/present.
+    #[expect(dead_code)]
+    mask: Bytes,
+    data_type: DataType,
+    shape: Vec<u64>,
+}
+
+#[pymethods]
+impl PyMaskedVariableArray {
+    #[getter]
+    fn shape(&self) -> &[u64] {
+        &self.shape
+    }
+
+    #[getter]
+    fn dtype(&self) -> PyDataType {
+        self.data_type.clone().into()
+    }
+
+    fn to_numpy(&self) -> PyResult<()> {
+        Err(PyNotImplementedError::new_err(
+            "masked variable-length data is not yet exposed to numpy",
+        ))
+    }
+}
+
 /// Internal decoded result, produced by our [`FromArrayBytes`] impl. Carries the
 /// post-codec bytes (zero-copy), the data type, and the region shape (which
 /// zarrs hands us, so we never have to re-derive it).
 pub enum Decoded {
     Tensor(PyTensor),
-    Variable {
-        bytes: ArrayBytes<'static>,
-        data_type: DataType,
-        shape: Vec<u64>,
-    },
-    MaskedTensor {
-        bytes: ArrayBytes<'static>,
-        data_type: DataType,
-        shape: Vec<u64>,
-    },
-    MaskedVariable {
-        bytes: ArrayBytes<'static>,
-        data_type: DataType,
-        shape: Vec<u64>,
-    },
+    Variable(PyVariableArray),
+    MaskedTensor(PyMaskedTensor),
+    MaskedVariable(PyMaskedVariableArray),
 }
 
 /// Move a `'static` `Cow<[u8]>` into `bytes::Bytes`. Owned is a zero-copy move;
@@ -117,32 +199,45 @@ impl FromArrayBytes for Decoded {
         let shape = shape.to_vec();
         let data_type = data_type.clone();
         Ok(match bytes {
-            ArrayBytes::Fixed(b) => Decoded::Tensor(PyTensor {
-                bytes: cow_to_bytes(b),
+            ArrayBytes::Fixed(bytes) => Decoded::Tensor(PyTensor {
+                bytes: cow_to_bytes(bytes),
                 data_type,
                 shape,
             }),
-            ArrayBytes::Variable(v) => Decoded::Variable {
-                bytes: ArrayBytes::Variable(v),
-                data_type,
-                shape,
-            },
-            ArrayBytes::Optional(o) => {
-                // Peek at the inner layout to pick the masked class, then move
-                // the value back into an owned `ArrayBytes`.
-                let inner_is_variable = matches!(o.data(), ArrayBytes::Variable(_));
-                let bytes = ArrayBytes::Optional(o);
-                if inner_is_variable {
-                    Decoded::MaskedVariable {
-                        bytes,
+            ArrayBytes::Variable(v) => {
+                let (buf, offsets) = v.into_parts();
+                Decoded::Variable(PyVariableArray {
+                    bytes: cow_to_bytes(buf),
+                    // Ideally in the future we'll avoid a copy:
+                    // https://github.com/zarrs/zarrs/issues/406
+                    offsets: offsets.to_vec(),
+                    data_type,
+                    shape,
+                })
+            }
+            ArrayBytes::Optional(optional) => {
+                let (data, mask) = optional.into_parts();
+                match *data {
+                    ArrayBytes::Fixed(fixed) => Decoded::MaskedTensor(PyMaskedTensor {
+                        bytes: cow_to_bytes(fixed),
+                        mask: cow_to_bytes(mask),
                         data_type,
                         shape,
+                    }),
+                    ArrayBytes::Variable(variable) => {
+                        let (buf, offsets) = variable.into_parts();
+                        Decoded::MaskedVariable(PyMaskedVariableArray {
+                            bytes: cow_to_bytes(buf),
+                            // Ideally in the future we'll avoid a copy:
+                            // https://github.com/zarrs/zarrs/issues/406
+                            offsets: offsets.to_vec(),
+                            mask: cow_to_bytes(mask),
+                            data_type,
+                            shape,
+                        })
                     }
-                } else {
-                    Decoded::MaskedTensor {
-                        bytes,
-                        data_type,
-                        shape,
+                    ArrayBytes::Optional(_) => {
+                        unreachable!("nested optional is not a valid layout")
                     }
                 }
             }
@@ -150,105 +245,19 @@ impl FromArrayBytes for Decoded {
     }
 }
 
-/// Convert into the appropriate concrete Python result class. Implemented as
-/// `IntoPyObject` so both the sync and async retrieve paths can simply return
-/// `Decoded` and let pyo3 build the Python object once the GIL is held.
 impl<'py> IntoPyObject<'py> for Decoded {
     type Target = PyAny;
     type Output = Bound<'py, PyAny>;
     type Error = PyErr;
 
     fn into_pyobject(self, py: Python<'py>) -> Result<Self::Output, Self::Error> {
-        let obj = match self {
-            Decoded::Tensor(py_tensor) => return py_tensor.into_bound_py_any(py),
-            Decoded::Variable {
-                data_type, shape, ..
-            } => Bound::new(py, PyVariableArray { data_type, shape })?.into_any(),
-            Decoded::MaskedTensor {
-                data_type, shape, ..
-            } => Bound::new(py, PyMaskedTensor { data_type, shape })?.into_any(),
-            Decoded::MaskedVariable {
-                data_type, shape, ..
-            } => Bound::new(py, PyMaskedVariableArray { data_type, shape })?.into_any(),
-        };
-        Ok(obj)
-    }
-}
-
-/// Variable-length data (string/bytes). Skeleton: carries metadata only for now.
-#[pyclass(module = "zarrista", frozen, name = "VariableArray")]
-pub struct PyVariableArray {
-    data_type: DataType,
-    shape: Vec<u64>,
-}
-
-#[pymethods]
-impl PyVariableArray {
-    #[getter]
-    fn shape(&self) -> Vec<u64> {
-        self.shape.clone()
-    }
-
-    #[getter]
-    fn dtype(&self) -> PyDataType {
-        self.data_type.clone().into()
-    }
-
-    fn to_numpy(&self) -> PyResult<()> {
-        Err(PyNotImplementedError::new_err(
-            "variable-length data is not yet exposed to numpy",
-        ))
-    }
-}
-
-/// Fixed-width data with a validity mask. Skeleton.
-#[pyclass(module = "zarrista", frozen, name = "MaskedTensor")]
-pub struct PyMaskedTensor {
-    data_type: DataType,
-    shape: Vec<u64>,
-}
-
-#[pymethods]
-impl PyMaskedTensor {
-    #[getter]
-    fn shape(&self) -> Vec<u64> {
-        self.shape.clone()
-    }
-
-    #[getter]
-    fn dtype(&self) -> PyDataType {
-        self.data_type.clone().into()
-    }
-
-    fn to_numpy(&self) -> PyResult<()> {
-        Err(PyNotImplementedError::new_err(
-            "masked data is not yet exposed to numpy",
-        ))
-    }
-}
-
-/// Variable-length data with a validity mask. Skeleton.
-#[pyclass(module = "zarrista", frozen, name = "MaskedVariableArray")]
-pub struct PyMaskedVariableArray {
-    data_type: DataType,
-    shape: Vec<u64>,
-}
-
-#[pymethods]
-impl PyMaskedVariableArray {
-    #[getter]
-    fn shape(&self) -> Vec<u64> {
-        self.shape.clone()
-    }
-
-    #[getter]
-    fn dtype(&self) -> PyDataType {
-        self.data_type.clone().into()
-    }
-
-    fn to_numpy(&self) -> PyResult<()> {
-        Err(PyNotImplementedError::new_err(
-            "masked variable-length data is not yet exposed to numpy",
-        ))
+        match self {
+            Decoded::Tensor(py_tensor) => py_tensor.into_bound_py_any(py),
+            Decoded::Variable(py_variable_array) => py_variable_array.into_bound_py_any(py),
+            Decoded::MaskedTensor(py_masked_tensor) => py_masked_tensor.into_bound_py_any(py),
+            Decoded::MaskedVariable(py_masked_variable_array) => {
+                py_masked_variable_array.into_bound_py_any(py)
+            }
+        }
     }
 }
