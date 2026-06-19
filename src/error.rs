@@ -6,8 +6,6 @@
 //! [`ZarristaResult`] can therefore use `?` directly on those underlying
 //! errors instead of sprinkling `.map_err(...)` everywhere.
 
-use pyo3::create_exception;
-use pyo3::exceptions::PyException;
 use pyo3::prelude::*;
 use pythonize::PythonizeError;
 use thiserror::Error;
@@ -19,18 +17,7 @@ use zarrs::node::{NodeCreateError, NodePathError};
 use zarrs::plugin::PluginCreateError;
 use zarrs::storage::StorageError;
 
-create_exception!(
-    zarrista,
-    ZarristaException,
-    PyException,
-    "Base class for all zarrista errors."
-);
-create_exception!(
-    zarrista,
-    NotFoundError,
-    ZarristaException,
-    "Raised when a node (array or group) does not exist at a path."
-);
+use crate::exceptions as exc;
 
 /// Errors that can occur in zarrista.
 ///
@@ -95,22 +82,24 @@ impl ZarristaError {
 impl From<ZarristaError> for PyErr {
     fn from(error: ZarristaError) -> Self {
         match error {
-            ZarristaError::NotFound(msg) => NotFoundError::new_err(msg),
+            ZarristaError::NotFound(msg) => exc::NotFoundError::new_err(msg),
             ZarristaError::Py(err) => err,
-            ZarristaError::Pythonize(err) => err.into(),
-            ZarristaError::ArrayCreate(err) => ZarristaException::new_err(err.to_string()),
-            ZarristaError::Array(err) => ZarristaException::new_err(err.to_string()),
-            ZarristaError::GroupCreate(err) => ZarristaException::new_err(err.to_string()),
-            ZarristaError::NodeCreate(err) => ZarristaException::new_err(err.to_string()),
-            ZarristaError::NodePath(err) => ZarristaException::new_err(err.to_string()),
-            ZarristaError::Storage(err) => ZarristaException::new_err(err.to_string()),
+            ZarristaError::ArrayCreate(err) => exc::ArrayCreateError::new_err(err.to_string()),
+            ZarristaError::Array(err) => exc::ArrayError::new_err(err.to_string()),
+            ZarristaError::GroupCreate(err) => exc::GroupCreateError::new_err(err.to_string()),
+            ZarristaError::NodeCreate(err) => exc::NodeCreateError::new_err(err.to_string()),
+            ZarristaError::NodePath(err) => exc::NodePathError::new_err(err.to_string()),
+            ZarristaError::Storage(err) => exc::StorageError::new_err(err.to_string()),
             ZarristaError::FilesystemStoreCreate(err) => {
-                ZarristaException::new_err(err.to_string())
+                exc::FilesystemStoreCreateError::new_err(err.to_string())
             }
-            ZarristaError::SerdeJson(err) => ZarristaException::new_err(err.to_string()),
-            ZarristaError::Codec(err) => ZarristaException::new_err(err.to_string()),
-            ZarristaError::TransposeOrder(err) => ZarristaException::new_err(err.to_string()),
-            ZarristaError::PluginCreate(err) => ZarristaException::new_err(err.to_string()),
+            ZarristaError::Pythonize(err) => exc::SerializationError::new_err(err.to_string()),
+            ZarristaError::SerdeJson(err) => exc::SerializationError::new_err(err.to_string()),
+            ZarristaError::Codec(err) => exc::CodecError::new_err(err.to_string()),
+            ZarristaError::TransposeOrder(err) => {
+                exc::TransposeOrderError::new_err(err.to_string())
+            }
+            ZarristaError::PluginCreate(err) => exc::PluginCreateError::new_err(err.to_string()),
         }
     }
 }
