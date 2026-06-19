@@ -24,4 +24,3 @@ class ArrayBytes:
     @property
     def mask(self) -> Buffer | None:
         """The validity mask (1 byte per element), or `None` if not optional."""
-    def __repr__(self) -> str: ...

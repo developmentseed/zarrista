@@ -24,7 +24,7 @@ def array_path(tmp_path: Path) -> Path:
 def test_filesystem_store_opens_and_reads(array_path: Path):
     array = Array.open(FilesystemStore(str(array_path)))
     np.testing.assert_array_equal(
-        array.retrieve_chunk([0]).to_numpy(), np.array([0, 1], dtype="int32")
+        array.retrieve_chunk([0]).to_numpy(), np.array([0, 1], dtype="int32"),
     )
 
 

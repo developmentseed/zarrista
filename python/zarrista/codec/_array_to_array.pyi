@@ -8,7 +8,9 @@ class ArrayToArrayCodec:
     def encoded_data_type(self, decoded_data_type: DataType) -> DataType:
         """The data type produced by encoding `decoded_data_type`."""
     def encoded_fill_value(
-        self, decoded_data_type: DataType, decoded_fill_value: FillValue
+        self,
+        decoded_data_type: DataType,
+        decoded_fill_value: FillValue,
     ) -> FillValue:
         """The fill value produced by encoding `decoded_fill_value`."""
     def encode(
@@ -31,7 +33,6 @@ class ArrayToArrayCodec:
         """The chunk shape produced by encoding `decoded_shape`."""
     def decoded_shape(self, encoded_shape: list[int]) -> list[int] | None:
         """The chunk shape that decodes to `encoded_shape`, if determinable."""
-    def __repr__(self) -> str: ...
 
 def transpose(order: list[int]) -> ArrayToArrayCodec:
     """Construct a transpose codec with the given axis order."""

@@ -32,13 +32,13 @@ requires_icechunk_2 = pytest.mark.skipif(
 def icechunk_session(tmp_path: Path) -> tuple[icechunk.Session, NDArray[np.int32]]:
     """A read-only session holding a (9, 64, 100) int32 array at `/embeddings`."""
     repo = icechunk.Repository.create(
-        icechunk.local_filesystem_storage(str(tmp_path / "repo"))
+        icechunk.local_filesystem_storage(str(tmp_path / "repo")),
     )
     session = repo.writable_session("main")
     data = np.arange(9 * 64 * 100, dtype="int32").reshape(9, 64, 100)
     root = zarr.group(store=session.store)
     z = root.create_array(
-        "embeddings", shape=data.shape, chunks=(3, 16, 50), dtype=data.dtype
+        "embeddings", shape=data.shape, chunks=(3, 16, 50), dtype=data.dtype,
     )
     z[:] = data
     session.commit("write embeddings")

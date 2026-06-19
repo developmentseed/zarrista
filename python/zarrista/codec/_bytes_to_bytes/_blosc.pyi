@@ -1,11 +1,11 @@
-from typing import Any, Literal
+from typing import Any, Literal, TypeAlias
 
 from zarrista.codec._bytes_to_bytes import BytesToBytesCodec
 
-BloscCompressor = Literal["blosclz", "lz4", "lz4hc", "snappy", "zlib", "zstd"]
+BloscCompressor: TypeAlias = Literal["blosclz", "lz4", "lz4hc", "snappy", "zlib", "zstd"]
 """A `blosc` compressor name."""
 
-BloscShuffle = Literal["noshuffle", "shuffle", "bitshuffle"]
+BloscShuffle: TypeAlias = Literal["noshuffle", "shuffle", "bitshuffle"]
 """A `blosc` shuffle mode."""
 
 class Blosc(BytesToBytesCodec):
