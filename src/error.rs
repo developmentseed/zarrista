@@ -6,12 +6,11 @@
 //! [`ZarristaResult`] can therefore use `?` directly on those underlying
 //! errors instead of sprinkling `.map_err(...)` everywhere.
 
-use pyo3::exceptions::PyNotImplementedError;
 use pyo3::prelude::*;
 use pythonize::PythonizeError;
 use thiserror::Error;
 use zarrs::array::codec::TransposeOrderError;
-use zarrs::array::{ArrayCreateError, ArrayError, CodecError, TensorError};
+use zarrs::array::{ArrayCreateError, ArrayError, CodecError};
 use zarrs::filesystem::FilesystemStoreCreateError;
 use zarrs::group::GroupCreateError;
 use zarrs::node::{NodeCreateError, NodePathError};
@@ -71,9 +70,6 @@ pub enum ZarristaError {
     /// Failed to create a codec (or other plugin) from its configuration.
     #[error(transparent)]
     PluginCreate(#[from] PluginCreateError),
-    /// A data type unsupported by a tensor export (e.g. DLPack).
-    #[error(transparent)]
-    Tensor(#[from] TensorError),
 }
 
 impl ZarristaError {
@@ -104,7 +100,6 @@ impl From<ZarristaError> for PyErr {
                 exc::TransposeOrderError::new_err(err.to_string())
             }
             ZarristaError::PluginCreate(err) => exc::PluginCreateError::new_err(err.to_string()),
-            ZarristaError::Tensor(err) => PyNotImplementedError::new_err(err.to_string()),
         }
     }
 }
