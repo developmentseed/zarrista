@@ -24,6 +24,7 @@ use std::borrow::Cow;
 use bytes::Bytes;
 use pyo3::exceptions::PyNotImplementedError;
 use pyo3::prelude::*;
+use pyo3::IntoPyObjectExt;
 use pyo3_bytes::PyBytes;
 use zarrs::array::{ArrayBytes, ArrayError, DataType, FromArrayBytes};
 
@@ -80,11 +81,7 @@ impl PyTensor {
 /// post-codec bytes (zero-copy), the data type, and the region shape (which
 /// zarrs hands us, so we never have to re-derive it).
 pub enum Decoded {
-    Tensor {
-        bytes: Bytes,
-        data_type: DataType,
-        shape: Vec<u64>,
-    },
+    Tensor(PyTensor),
     Variable {
         bytes: ArrayBytes<'static>,
         data_type: DataType,
@@ -120,11 +117,11 @@ impl FromArrayBytes for Decoded {
         let shape = shape.to_vec();
         let data_type = data_type.clone();
         Ok(match bytes {
-            ArrayBytes::Fixed(b) => Decoded::Tensor {
+            ArrayBytes::Fixed(b) => Decoded::Tensor(PyTensor {
                 bytes: cow_to_bytes(b),
                 data_type,
                 shape,
-            },
+            }),
             ArrayBytes::Variable(v) => Decoded::Variable {
                 bytes: ArrayBytes::Variable(v),
                 data_type,
@@ -163,19 +160,7 @@ impl<'py> IntoPyObject<'py> for Decoded {
 
     fn into_pyobject(self, py: Python<'py>) -> Result<Self::Output, Self::Error> {
         let obj = match self {
-            Decoded::Tensor {
-                bytes,
-                data_type,
-                shape,
-            } => Bound::new(
-                py,
-                PyTensor {
-                    bytes,
-                    data_type,
-                    shape,
-                },
-            )?
-            .into_any(),
+            Decoded::Tensor(py_tensor) => return py_tensor.into_bound_py_any(py),
             Decoded::Variable {
                 data_type, shape, ..
             } => Bound::new(py, PyVariableArray { data_type, shape })?.into_any(),
