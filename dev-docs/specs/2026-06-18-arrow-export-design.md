@@ -1,44 +1,57 @@
-# zarrista — Arrow export face for `Data`
+# zarrista — Arrow export faces for the decoded result types
 
 **Date:** 2026-06-18
-**Status:** Approved
+**Status:** Approved (architecture realigned to the
+[decoded result types](2026-06-18-data-result-types-design.md) spike)
 
-## Framing: `Data` is format-neutral
+## Framing: Arrow is one face on the result types
 
-`Data` is a **format-neutral decoded payload**. Consumers reach it through thin,
-**co-equal export faces** — today the buffer protocol (`to_numpy`), with this spec
-adding **Arrow** (the PyCapsule interface), and **DLPack** a likely future face. No
-core decision about `Data` is made to serve one format; each face adapts to `Data`,
-not the reverse.
+Reads no longer return a single `Data` object. Per
+[decoded result types](2026-06-18-data-result-types-design.md), a read returns one
+of **four concrete classes** built from the raw post-codec `ArrayBytes`, each
+holding `bytes::Bytes` (refcounted, zero-copy):
+
+| class | `ArrayBytes` layout | payload held |
+|---|---|---|
+| `Tensor` | `Fixed` | values |
+| `VariableArray` | `Variable` | values + offsets |
+| `MaskedTensor` | `Optional(Fixed)` | values + mask |
+| `MaskedVariableArray` | `Optional(Variable)` | values + offsets + mask |
+
+These are **format-neutral payloads**; consumers reach them through thin,
+**co-equal export faces** — today the buffer protocol (`to_numpy`/`buffer()` on
+`Tensor`), with this spec adding **Arrow** (the PyCapsule interface), and **DLPack**
+a likely future face. No decision about the result types is made to serve one
+format; each face adapts to the payload, not the reverse.
 
 This matters because **no single interchange format covers all Zarr dtypes** (see
-the coverage matrix below). Arrow uniquely expresses variable-length and nested data
-the buffer protocol can't; DLPack uniquely expresses exotic numerics (complex,
-bfloat16) Arrow can't; the buffer protocol is the universal fixed-width baseline. So
-several faces are a necessity, not a luxury — and none is privileged.
+the coverage matrix). Arrow uniquely expresses the variable-length and masked
+layouts the buffer protocol can't; DLPack uniquely expresses exotic numerics
+(complex, bfloat16) Arrow can't; the buffer protocol is the universal fixed-width
+baseline. Several faces are a necessity, not a luxury — and none is privileged.
 
-Arrow specifically is an **additive, exploratory** face: it is not a strong pull in
-the zarr-nd community, and it is not the organizing principle of the library. Its
-concrete future payoff is the **zero-copy variable-length** path (strings/bytes); for
-the current fixed-width dtypes it is a convenience alongside the buffer protocol.
+Arrow specifically is **additive and exploratory**: not a strong pull in the
+zarr-nd community, not the organizing principle of the library. Its concrete payoff
+is the **zero-copy variable-length / masked** path, where the buffer protocol simply
+cannot represent the data.
 
 ## Goal
 
 Implement the Arrow PyCapsule interface (`__arrow_c_array__` / `__arrow_c_schema__`)
-on `Data` so a decoded chunk/subset can be handed to pyarrow, polars, arro3,
-datafusion, etc. This round covers the **fixed-width numeric dtypes `Data` already
-supports**, and designs — without building — the variable-length path so strings and
-bytes can re-enter as its first consumers later.
+on the result classes so a decoded chunk/subset can be handed to pyarrow, polars,
+arro3, datafusion, etc. **`Tensor` first** (the dtypes that already round-trip);
+`VariableArray` and the masked classes follow as their dtypes land, but their Arrow
+mapping is designed here because they're where Arrow earns its keep.
 
 ## Coverage matrix (why several faces)
 
 The full zarrs dtype set is: bool; int 8/16/32/64 + int2/int4; uint 8/16/32/64 +
 uint2/uint4; float 16/32/64 + subfloat (float8); complex64/128; raw_bits;
-fixed_length_utf32; string; bytes; datetime64 / timedelta64. Notably there is **no
+fixed_length_utf32; string; bytes; datetime64 / timedelta64. There is **no
 struct/compound and no dictionary/categorical dtype** — Zarr v2's compound dtypes are
 only a v3 *extension* point (zarrs models the closest, opaque case as `raw_bits` =
 numpy `void`), and "categorical" in Zarr is a *codec/filter* (`numcodecs.Categorize`)
-that yields an integer array, not a dtype. So Arrow's nested/`Struct`/`Dictionary`
+yielding an integer array, not a dtype. So Arrow's nested/`Struct`/`Dictionary`
 strengths have nothing to map *from* in Zarr today.
 
 | Zarr dtype | buffer protocol | Arrow | DLPack (future) |
@@ -47,185 +60,158 @@ strengths have nothing to map *from* in Zarr today.
 | float16 | ✅ | ✅ `Float16` | ✅ |
 | bool | ✅ (1 byte) | ✅ `arrow.bool8` | ✅ |
 | datetime64 / timedelta64 | ✅ (as int64) | ⚠️ `Timestamp`/`Duration` — zero-copy only for s/ms/us/ns without NaT (see note) | ✅ |
-| variable-length string/bytes | ❌ | ✅ `String`/`Binary` | ❌ |
+| variable-length string/bytes | ❌ | ✅ `Utf8`/`Binary` | ❌ |
 | complex64/128 | ✅ (2 floats) | ❌ no native complex | ✅ |
 | subfloat (float8) / bfloat16 | ⚠️ no PEP-3118 code | ❌ | ✅ |
 | int2/4, uint2/4 (sub-byte) | ❌ | ❌ | ❌ (awkward everywhere) |
 
-For Zarr's actual dtypes, Arrow's unique value is **variable-length string/bytes**,
-plus a **semantic** bonus on the temporal types; DLPack uniquely covers the exotic
-numerics (complex, float8/bfloat16); the buffer protocol is the universal fixed-width
-baseline. This spec implements the Arrow column for the fixed-width numeric rows.
+For Zarr's actual dtypes, Arrow's unique value is **variable-length string/bytes** and
+**masked** data, plus a **semantic** bonus on the temporal types; DLPack uniquely
+covers the exotic numerics; the buffer protocol is the universal fixed-width baseline.
 
-## Decisions (settled in brainstorming)
+## Per-class Arrow mapping
 
-- **Side-channel shape.** Arrow arrays are logically 1-D. `Data` exposes its data as
-  a **flat, length-`prod(shape)` Arrow array**, plus a public **`Data.shape`**
-  property carrying the N-D shape. Consumers reshape if they care. We deliberately do
-  **not** use the `arrow.fixed_shape_tensor` extension type — its semantics are
-  "batch of tensors" (leading dim = batch), an awkward fit for a single chunk.
-- **pyo3-arrow.** Use [`pyo3-arrow`](https://crates.io/crates/pyo3-arrow) to build the
-  Arrow arrays and expose the PyCapsules. No pyarrow dependency in Rust.
-- **`bool` via `arrow.bool8`, zero-copy.** Use the
-  [`arrow.bool8` canonical extension](https://arrow.apache.org/docs/format/CanonicalExtensions.html#bit-boolean)
-  (int8 storage, 0=false / nonzero=true) — exactly our 1-byte-per-bool in-memory
-  layout. So bool is **zero-copy** like every other fixed-width dtype; no bit-packing,
-  no exception. Consumers that don't understand the extension degrade gracefully to
-  the int8 storage.
-- **Contiguity is NOT a core invariant** of `Data` (see below).
-- **Strings on hold.** The variable-length dtype work is paused; it re-enters as the
-  first consumer of the Arrow variable-length path designed below.
-- **DLPack is a future, co-equal face** (see below).
+The result class (set by the `ArrayBytes` layout) determines the Arrow array kind;
+the dtype refines it. Values are always **zero-copy** (a `bytes::Bytes` clone);
+only the small side buffers (offsets, validity) are ever copied.
 
-## Strides and contiguity — not a `Data` constraint
+| class | Arrow array | values | offsets | validity |
+|---|---|---|---|---|
+| `Tensor` | primitive (+ `arrow.bool8` for bool) | zero-copy | — | — |
+| `VariableArray` | `Utf8`/`LargeUtf8` (string) or `Binary`/`LargeBinary` (bytes) | zero-copy | `usize` → `i32`/`i64` (copy) | — |
+| `MaskedTensor` | primitive **+ validity bitmap** | zero-copy | — | byte-mask → bitmap (copy) |
+| `MaskedVariableArray` | `Utf8`/`Binary` **+ validity bitmap** | zero-copy | `usize` → `i32`/`i64` (copy) | byte-mask → bitmap (copy) |
 
-Arrow primitive arrays have no strides: a buffer is contiguous or it is copied. But
-**requiring `Data` to be contiguous would privilege Arrow** and could collide with a
-future `retrieve_*_into` that decodes directly into a strided destination (a dask
-block, a sub-region of a larger output). So `Data` makes **no contiguity guarantee**.
+Two layout conversions are intrinsic to Arrow and unavoidable (but cheap — side
+buffers, not bulk data):
 
-Instead, each face adapts:
+- **Offsets.** zarrs hands variable-length offsets as `usize` (currently materialized
+  to `Vec<usize>`; zarrs#406 tracks avoiding that). Arrow needs `i32` (`Utf8`/`Binary`)
+  or `i64` (`LargeUtf8`/`LargeBinary`). Pick the `Large` variant when the last offset
+  exceeds `i32::MAX`, else `i32`; either way it's a copy of the small offsets array.
+- **Validity.** zarrs `Optional` carries a mask of **1 byte per element** (0 = invalid,
+  non-zero = valid). Arrow validity is **1 bit per element** (1 = valid). So masked
+  export **bit-packs** the byte-mask into a validity bitmap — `bit[i] = mask[i] != 0` —
+  a small copy, and derives `null_count`. (This is the inverse of the `bool8` case,
+  where Arrow happens to match our byte layout and *no* packing is needed.)
 
-- **Buffer protocol** emits strides (already does) — handles any layout.
-- **DLPack** (future) carries shape + strides natively — handles any layout.
-- **Arrow** is the only stride-intolerant face, so **Arrow alone** compacts to
-  contiguous *when needed*, paying that cost itself: in `__arrow_c_array__`, if the
-  backing array `is_standard_layout()` wrap it zero-copy; otherwise materialize a
-  contiguous copy (`as_standard_layout()`) for the export.
+### `bool` via `arrow.bool8` (zero-copy)
 
-Today every `Data` is a fresh, owned, C-order `retrieve_*_ndarray`, so the contiguous
-branch always hits and Arrow export is **zero-copy in practice today** — but the type
-does not forbid strided `Data`, so we are not boxed in.
+`Tensor` of `bool` uses the
+[`arrow.bool8` canonical extension](https://arrow.apache.org/docs/format/CanonicalExtensions.html#bit-boolean)
+(int8 storage, 0=false / non-zero=true) — exactly our 1-byte-per-bool layout. So bool
+values export **zero-copy**, no bit-packing. Consumers that don't understand the
+extension degrade gracefully to the int8 storage. (Note the asymmetry: a `bool`
+*value* column needs no packing via `bool8`, but a *validity mask* always bit-packs,
+because Arrow validity is defined as a bitmap.)
 
-(Native endianness: zarrs decodes to native endianness; Arrow's C Data Interface
-requires little-endian, which coincides on all targets (x86-64, aarch64). Big-endian
-hosts are out of scope.)
+### `Tensor` dtype mapping (first round)
 
-## Zero-copy mechanism
-
-For a contiguous fixed-width dtype, build an arrow-rs array over `Data`'s existing
-buffer without copying via `Buffer::from_custom_allocation`: wrap the raw
-`(ptr, len)` with a release callback owning a `Py<Data>` reference. This is the same
-lifetime trick `__getbuffer__` already uses — the Arrow array's release callback
-drops the `Py<Data>` when the consumer is done, keeping the buffer alive exactly as
-long as the exported array. pyo3-arrow wraps the result in the PyCapsule.
-
-## Dtype mapping (fixed-width, this round)
-
-| `Data` dtype | Arrow type |
+| dtype | Arrow type |
 |---|---|
 | int8/16/32/64 | `Int8/16/32/64` |
 | uint8/16/32/64 | `UInt8/16/32/64` |
 | float32/64 | `Float32/64` |
 | float16 | `Float16` |
-| bool | `Int8` + `arrow.bool8` extension |
+| bool | `Int8` + `arrow.bool8` |
 
-All zero-copy when contiguous (the current reality).
+## Zero-copy mechanism (simpler now, thanks to `bytes::Bytes`)
+
+Because the payload is `bytes::Bytes` (refcounted), the values buffer needs **no
+`Py_INCREF`/release-callback dance**. Build the arrow-rs `Buffer` over the bytes via
+`Buffer::from_custom_allocation(ptr, len, owner)`, where `owner` is a cloned
+`bytes::Bytes` (an `Arc`-like handle) — the Arrow buffer keeps the allocation alive by
+holding its own refcount, dropped when the consumer releases the Arrow array.
+`pyo3-arrow` wraps the resulting array in the PyCapsule. One allocation backs the
+buffer protocol, `to_numpy`, and Arrow simultaneously via cheap `Bytes` clones.
+
+## Contiguity & alignment
+
+The values payload is a single contiguous `bytes::Bytes` blob in C-order — so unlike
+the old `ArrayD<T>` design there is **no stride/non-contiguity case to handle**;
+Arrow's contiguity requirement is always satisfied for the values buffer.
+
+The live concern is **alignment**, and the decision (from the result-types spec) is
+**stay unaligned**: the bytes come straight from the decode allocator, contractually
+1-byte aligned (de-facto 16 from malloc). Consequences for Arrow:
+
+- **Correctness:** unaffected. Arrow's C Data Interface treats 64-byte alignment as
+  *advisory* (≈8-byte floor).
+- **Performance:** a SIMD kernel or strict validator (some pyarrow paths) may silently
+  **re-copy to realign**, turning a zero-copy export into one consumer-side copy.
+- **Owning consumers** (`pa.array(...)` that materializes, compute kernels) pay any
+  realign copy as part of work they were already doing — we never pay a *dedicated*
+  alignment copy.
+
+If it ever bites, expose an explicit aligned-copy path rather than aligning every
+read (the result-types spec's lazy-alignment stance).
+
+## Side-channel shape
+
+Arrow arrays are logically 1-D. Each result class exposes its data as a **flat,
+length-`prod(shape)` Arrow array** plus its existing **`shape`** property; consumers
+reshape if they care. We deliberately do **not** use `arrow.fixed_shape_tensor` (its
+semantics are "batch of tensors", leading dim = batch — wrong for a single chunk).
 
 ## API surface
 
-On `Data`:
+On each result class (`Tensor` first):
 
 ```python
-data.__arrow_c_array__(requested_schema=None) -> (schema_capsule, array_capsule)
-data.__arrow_c_schema__() -> schema_capsule
-data.shape -> tuple[int, ...]   # N-D shape; the Arrow array is flat length prod(shape)
-
-# zero-copy introspection (per face)
-data.contiguous -> bool             # backing buffer is C-contiguous (strided = not this)
-data.arrow_copy -> bool             # will Arrow export copy the bulk data?
-data.buffer_protocol_copy -> bool   # will to_numpy / buffer protocol copy?
+obj.__arrow_c_array__(requested_schema=None) -> (schema_capsule, array_capsule)
+obj.__arrow_c_schema__() -> schema_capsule
+obj.shape  # already present; the Arrow array is flat length prod(shape)
 ```
 
-`pa.array(data)`, `pl.Series(data)`, `arro3.core.Array.from_arrow(data)` all work via
-the capsule protocol. To recover N-D structure, a consumer combines the flat Arrow
-array with `data.shape`. `Data.shape` is promoted from the internal `shape` field
-(already stored for the buffer protocol) to a public, documented property.
+`pa.array(obj)`, `pl.Series(obj)`, `arro3.core.Array.from_arrow(obj)` all work via the
+capsule protocol; recover N-D structure by combining with `obj.shape`.
 
-### Zero-copy introspection
+**Optional introspection** (revisit when implementing): a per-class `arrow_copy: bool`
+could advertise whether an export copies bulk data. With the `bytes::Bytes` design the
+values are always zero-copy, so this would only ever flag alignment realign risk or
+the (always-copied) side buffers — lower value than under the old design, so it's
+deferred rather than specified.
 
-Each face's copy cost is made *visible* rather than folklore, so a consumer can check
-before a large export:
+## Tooling
 
-| getter | meaning | this round (fixed-width) |
-|---|---|---|
-| `contiguous` | backing buffer is C-contiguous | usually `True` (fresh retrievals) |
-| `arrow_copy` | Arrow export copies the bulk data | `not contiguous` |
-| `buffer_protocol_copy` | `to_numpy` / buffer protocol copies | always `False` |
-
-`buffer_protocol_copy` becomes `True` only for the future variable-length dtypes that
-have no buffer-protocol representation. For variable-length dtypes, `arrow_copy`
-reflects the **bulk/values** data (zero-copy); the small offsets array is always
-copied regardless.
-
-## Variable-length, designed not built
-
-The motivating future win; must not be foreclosed. zarrs hands back variable-length
-data as **(values blob, offsets)** — exactly Arrow `String`/`LargeString` (UTF-8) and
-`Binary`/`LargeBinary`. Future path:
-
-- New `DataInner` variant(s) holding `(values: bytes, offsets, shape)` from a
-  variable-length `retrieve_*::<ArrayBytes>()`.
-- `__arrow_c_array__` wraps the values buffer **zero-copy** and the offsets buffer
-  (converting zarrs `usize` offsets to Arrow `i32`/`i64` — a cheap copy of the small
-  offsets array, not the data).
-- These variants have **no buffer-protocol representation**, so Arrow becomes their
-  primary zero-copy face — the whole point.
-
-Keep the dtype dispatch and `DataInner` open to non-`ArrayD<T>` variants so this
-slots in without restructuring.
-
-## DLPack (future, co-equal face)
-
-`__dlpack__` / `__dlpack_device__` is the other zero-copy face worth adding, and a
-co-equal one — not subordinate to Arrow. It carries **ND shape and strides natively**
-(so it needs no `shape` side-channel and tolerates non-contiguous `Data`) and has
-**dtype codes Arrow lacks** (complex, bfloat16), making it the natural face for the
-exotic-numeric and GPU/torch/jax interchange cases. It is lower-level C-struct work
-(`DLManagedTensor`) with no pyo3-arrow-equivalent ergonomics, so it is deferred and
-noted here only to keep the multi-face design coherent.
+Use [`pyo3-arrow`](https://crates.io/crates/pyo3-arrow) to build the Arrow arrays and
+expose the capsules — no pyarrow dependency in Rust. (Separately, `dlpark`'s pyo3
+feature pins pyo3 0.25 vs our 0.29 — see the result-types spec — but that's a DLPack
+concern, not Arrow.)
 
 ## Testing
 
-- **Round-trip vs. zarr-python** (extends the existing harness): write numeric arrays
-  with zarr-python, read with zarrista, assert the Arrow export matches — e.g.
-  `pa.array(data)` (or arro3) reshaped via `data.shape` equals the zarr-python numpy
-  array. Cover every numeric dtype and `bool` (verifying `arrow.bool8` round-trips),
-  plus a multi-dim chunk to exercise flat-array + `shape`.
-- **Zero-copy assertion:** confirm the Arrow buffer pointer equals the `Data` buffer
-  pointer for a non-bool contiguous dtype, and that keeping the Arrow array alive
-  after dropping the Python `Data` reference is safe (release-callback lifetime
-  holds).
-- **Tooling:** `maturin develop` after Rust changes; `uv run --no-project pytest`.
+- **Round-trip vs. zarr-python** (extends the existing harness): write numeric arrays,
+  read with zarrista, assert the Arrow export of `Tensor` matches — e.g.
+  `pa.array(tensor)` (or arro3) reshaped via `tensor.shape` equals the zarr-python
+  numpy array. Cover every numeric dtype and `bool` (verifying `arrow.bool8`), plus a
+  multi-dim chunk for flat-array + `shape`.
+- **Zero-copy assertion:** the Arrow values buffer pointer equals `tensor.buffer()`'s
+  pointer (no copy), and the Arrow array outlives a dropped Python reference (the
+  `Bytes` refcount holds).
+- **When variable/masked land:** assert `VariableArray` → `Utf8`/`Binary` with correct
+  offsets, and masked → correct validity bitmap + `null_count` from the byte-mask.
+- **Tooling:** `maturin develop`; `uv run --no-project pytest`.
 
 ## Out of scope (deferred)
 
-- Variable-length `String`/`Binary` export (designed above; lands with the
-  string/bytes dtype work).
-- DLPack export.
+- `VariableArray` / masked Arrow export (designed above; lands with the
+  variable-length and nullable dtype work).
+- DLPack export (co-equal future face; covers complex/bfloat16 Arrow can't).
 - Arrow *import* / writing.
 - complex / float8 / bfloat16 dtypes (no Arrow representation — DLPack territory).
-- temporal dtypes (datetime64 / timedelta64 → Arrow `Timestamp`/`Duration`) — a
-  natural Arrow follow-up, but not part of this fixed-width-numeric round, and **not
-  uniformly zero-copy**: both are int64/LE/epoch-based so the values buffer matches,
-  but (1) Arrow supports only s/ms/us/ns — calendar/other units (D/h/m/W/M/Y/sub-ns)
-  need a unit cast and W/M/Y have no faithful Arrow representation; and (2) numpy
-  encodes NaT as the `INT64_MIN` sentinel while Arrow uses a validity bitmap, so any
-  NaT (a valid Zarr fill value) forces an O(n) scan to build a bitmap. Zero-copy only
-  holds for unit ∈ {s, ms, us, ns} with no NaT.
+- temporal dtypes (datetime64 / timedelta64 → `Timestamp`/`Duration`) — a natural
+  Arrow follow-up, but **not uniformly zero-copy**: both are int64/LE/epoch-based so
+  the values buffer matches, but (1) Arrow supports only s/ms/us/ns — calendar/other
+  units (D/h/m/W/M/Y/sub-ns) need a unit cast and W/M/Y have no faithful Arrow
+  representation; and (2) numpy encodes NaT as the `INT64_MIN` sentinel while Arrow
+  uses a validity bitmap, so any NaT (a valid Zarr fill value) forces an O(n) scan to
+  build a bitmap. Zero-copy only holds for unit ∈ {s, ms, us, ns} with no NaT.
 
 ## Risks
 
-- **Buffer alignment.** Arrow *recommends* (does not require) 64-byte buffer
-  alignment; the C Data Interface treats it as advisory with an ~8-byte floor. Our
-  buffer is an ndarray `Vec<T>`, aligned only to `align_of::<T>()` (8 for `f64`), so
-  `from_custom_allocation` hands Arrow a buffer that meets the floor but is almost
-  never 64-byte aligned. **Correctness is unaffected**; the cost is that a SIMD-heavy
-  kernel or strict validator (some pyarrow paths) may silently **re-copy to realign**,
-  turning our zero-copy export into one consumer-side copy. `to_numpy` is unaffected
-  (the buffer protocol has no alignment requirement). Fallback if it bites: allocate
-  the decode buffer 64-byte aligned up front rather than reusing the `Vec`.
-- **`arrow.bool8` consumer support.** It is a relatively recent canonical extension;
-  older consumers see the int8 storage rather than a boolean. Acceptable (graceful
-  degradation), but worth noting.
-- **pyo3-arrow / arrow-rs version coupling.** Pin deliberately.
+- **Buffer alignment.** As above: correctness fine, possible silent consumer-side
+  realign copy; `to_numpy` unaffected (buffer protocol has no alignment requirement).
+- **`arrow.bool8` consumer support.** A relatively recent canonical extension; older
+  consumers see int8 storage rather than boolean. Acceptable (graceful degradation).
+- **`pyo3-arrow` / arrow-rs version coupling.** Pin deliberately.
