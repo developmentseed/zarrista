@@ -20,15 +20,19 @@
 //! pays the alignment copy as part of the copy it was already doing.
 
 use std::borrow::Cow;
+use std::ffi::c_void;
 
 use bytes::Bytes;
+use dlpark::ffi::Device;
+use dlpark::traits::{RowMajorCompactLayout, TensorLike};
 use pyo3::exceptions::PyNotImplementedError;
 use pyo3::prelude::*;
 use pyo3::IntoPyObjectExt;
 use pyo3_bytes::PyBytes;
-use zarrs::array::{ArrayBytes, ArrayError, DataType, FromArrayBytes};
+use zarrs::array::{ArrayBytes, ArrayError, DataType, FromArrayBytes, TensorError};
 
 use crate::dtype::PyDataType;
+use crate::error::{ZarristaError, ZarristaResult};
 
 /// Fixed-width, dense decoded data.
 ///
@@ -74,6 +78,75 @@ impl PyTensor {
         let np = py.import("numpy")?;
         let flat = np.call_method1("frombuffer", (self.buffer(), name.into_owned()))?;
         flat.call_method1("reshape", (&self.shape,))
+    }
+}
+
+/// Convert a zarrs [`DataType`] to a [`dlpark::ffi::DataType`].
+///
+/// # Errors
+/// Returns [`TensorError::UnsupportedDataType`] if the data type is not supported.
+fn data_type_to_dlpack(data_type: &DataType) -> ZarristaResult<dlpark::ffi::DataType> {
+    use zarrs::array::data_type::*;
+
+    let type_id = data_type.as_any().type_id();
+    // https://github.com/rust-lang/rust/issues/70861 for match?
+    if type_id == TypeId::of::<BoolDataType>() {
+        Ok(dlpark::ffi::DataType::BOOL)
+    } else if type_id == TypeId::of::<Int8DataType>() {
+        Ok(dlpark::ffi::DataType::I8)
+    } else if type_id == TypeId::of::<Int16DataType>() {
+        Ok(dlpark::ffi::DataType::I16)
+    } else if type_id == TypeId::of::<Int32DataType>() {
+        Ok(dlpark::ffi::DataType::I32)
+    } else if type_id == TypeId::of::<Int64DataType>() {
+        Ok(dlpark::ffi::DataType::I64)
+    } else if type_id == TypeId::of::<UInt8DataType>() {
+        Ok(dlpark::ffi::DataType::U8)
+    } else if type_id == TypeId::of::<UInt16DataType>() {
+        Ok(dlpark::ffi::DataType::U16)
+    } else if type_id == TypeId::of::<UInt32DataType>() {
+        Ok(dlpark::ffi::DataType::U32)
+    } else if type_id == TypeId::of::<UInt64DataType>() {
+        Ok(dlpark::ffi::DataType::U64)
+    } else if type_id == TypeId::of::<Float16DataType>() {
+        Ok(dlpark::ffi::DataType::F16)
+    } else if type_id == TypeId::of::<Float32DataType>() {
+        Ok(dlpark::ffi::DataType::F32)
+    } else if type_id == TypeId::of::<Float64DataType>() {
+        Ok(dlpark::ffi::DataType::F64)
+    } else if type_id == TypeId::of::<BFloat16DataType>() {
+        Ok(dlpark::ffi::DataType::BF16)
+    } else {
+        Err(TensorError::UnsupportedDataType(data_type.clone())).map_err(ZarristaError::from)
+    }
+}
+
+impl TensorLike<RowMajorCompactLayout> for PyTensor {
+    type Error = ZarristaError;
+
+    fn data_ptr(&self) -> *mut c_void {
+        self.bytes.as_ptr().cast::<c_void>().cast_mut()
+    }
+
+    fn memory_layout(&self) -> RowMajorCompactLayout {
+        let shape = self
+            .shape()
+            .iter()
+            .map(|s| i64::try_from(*s).expect("overflow converting shape to i64"))
+            .collect();
+        RowMajorCompactLayout::new(shape)
+    }
+
+    fn byte_offset(&self) -> u64 {
+        0
+    }
+
+    fn device(&self) -> Result<Device, Self::Error> {
+        Ok(Device::CPU)
+    }
+
+    fn data_type(&self) -> Result<dlpark::ffi::DataType, Self::Error> {
+        data_type_to_dlpack(&self.data_type)
     }
 }
 
