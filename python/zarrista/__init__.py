@@ -1,4 +1,4 @@
-from . import codec
+from . import codec, exceptions
 from ._zarrista import (
     Array,
     ArrayBytes,
@@ -28,4 +28,5 @@ __all__ = [
     "MemoryStore",
     "__version__",
     "codec",
+    "exceptions",
 ]

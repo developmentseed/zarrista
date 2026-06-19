@@ -7,6 +7,7 @@ mod codec;
 mod data;
 mod dtype;
 mod error;
+mod exceptions;
 mod fill_value;
 mod group;
 mod metadata;
@@ -21,7 +22,7 @@ use crate::chunks::PyChunkGrid;
 use crate::codec::register_codec_module;
 use crate::data::PyData;
 use crate::dtype::PyDataType;
-use crate::error::{NotFoundError, ZarristaException};
+use crate::exceptions::register_exceptions_module;
 use crate::fill_value::PyFillValue;
 use crate::group::{PyAsyncGroup, PyGroup};
 use crate::storage::{PyFilesystemStore, PyMemoryStore};
@@ -44,9 +45,7 @@ fn _zarrista(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<PyMemoryStore>()?;
 
     register_codec_module(m)?;
-
-    m.add("ZarristaError", m.py().get_type::<ZarristaException>())?;
-    m.add("NotFoundError", m.py().get_type::<NotFoundError>())?;
+    register_exceptions_module(m)?;
 
     Ok(())
 }
