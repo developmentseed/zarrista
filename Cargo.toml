@@ -28,7 +28,7 @@ dlpark = { git = "https://github.com/kylebarron/dlpark", rev = "31c6f49c064e6343
     "pyo3",
 ] }
 half = "2"
-icechunk = "2.0.0"
+icechunk = { version = "2.0.0", default-features = false }
 ndarray = "0.17.2"
 numpy = { version = "0.29", features = ["half"] }
 object_store = "0.13.2"
