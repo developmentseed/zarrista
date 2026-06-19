@@ -25,11 +25,11 @@ use std::ffi::c_void;
 use bytes::Bytes;
 use dlpark::ffi::Device;
 use dlpark::traits::{RowMajorCompactLayout, TensorLike};
-use pyo3::exceptions::PyNotImplementedError;
+use pyo3::exceptions::{PyNotImplementedError, PyValueError};
 use pyo3::prelude::*;
 use pyo3::IntoPyObjectExt;
 use pyo3_bytes::PyBytes;
-use zarrs::array::{ArrayBytes, ArrayError, DataType, FromArrayBytes, TensorError};
+use zarrs::array::{ArrayBytes, ArrayError, DataType, FromArrayBytes};
 
 use crate::dtype::PyDataType;
 use crate::error::{ZarristaError, ZarristaResult};
@@ -88,36 +88,34 @@ impl PyTensor {
 fn data_type_to_dlpack(data_type: &DataType) -> ZarristaResult<dlpark::ffi::DataType> {
     use zarrs::array::data_type::*;
 
-    let type_id = data_type.as_any().type_id();
-    // https://github.com/rust-lang/rust/issues/70861 for match?
-    if type_id == TypeId::of::<BoolDataType>() {
+    if data_type.is::<BoolDataType>() {
         Ok(dlpark::ffi::DataType::BOOL)
-    } else if type_id == TypeId::of::<Int8DataType>() {
+    } else if data_type.is::<Int8DataType>() {
         Ok(dlpark::ffi::DataType::I8)
-    } else if type_id == TypeId::of::<Int16DataType>() {
+    } else if data_type.is::<Int16DataType>() {
         Ok(dlpark::ffi::DataType::I16)
-    } else if type_id == TypeId::of::<Int32DataType>() {
+    } else if data_type.is::<Int32DataType>() {
         Ok(dlpark::ffi::DataType::I32)
-    } else if type_id == TypeId::of::<Int64DataType>() {
+    } else if data_type.is::<Int64DataType>() {
         Ok(dlpark::ffi::DataType::I64)
-    } else if type_id == TypeId::of::<UInt8DataType>() {
+    } else if data_type.is::<UInt8DataType>() {
         Ok(dlpark::ffi::DataType::U8)
-    } else if type_id == TypeId::of::<UInt16DataType>() {
+    } else if data_type.is::<UInt16DataType>() {
         Ok(dlpark::ffi::DataType::U16)
-    } else if type_id == TypeId::of::<UInt32DataType>() {
+    } else if data_type.is::<UInt32DataType>() {
         Ok(dlpark::ffi::DataType::U32)
-    } else if type_id == TypeId::of::<UInt64DataType>() {
+    } else if data_type.is::<UInt64DataType>() {
         Ok(dlpark::ffi::DataType::U64)
-    } else if type_id == TypeId::of::<Float16DataType>() {
+    } else if data_type.is::<Float16DataType>() {
         Ok(dlpark::ffi::DataType::F16)
-    } else if type_id == TypeId::of::<Float32DataType>() {
+    } else if data_type.is::<Float32DataType>() {
         Ok(dlpark::ffi::DataType::F32)
-    } else if type_id == TypeId::of::<Float64DataType>() {
+    } else if data_type.is::<Float64DataType>() {
         Ok(dlpark::ffi::DataType::F64)
-    } else if type_id == TypeId::of::<BFloat16DataType>() {
+    } else if data_type.is::<BFloat16DataType>() {
         Ok(dlpark::ffi::DataType::BF16)
     } else {
-        Err(TensorError::UnsupportedDataType(data_type.clone())).map_err(ZarristaError::from)
+        Err(PyValueError::new_err("Unsupported data type in dlpack").into())
     }
 }
 
