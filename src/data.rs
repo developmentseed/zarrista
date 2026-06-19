@@ -29,6 +29,53 @@ use zarrs::array::{ArrayBytes, ArrayError, DataType, FromArrayBytes};
 
 use crate::dtype::PyDataType;
 
+/// Fixed-width, dense decoded data.
+///
+/// We don't use the upstream `Tensor` type because its bytes are not reference counted, and thus
+/// don't play nicely with buffer protocol export
+#[pyclass(module = "zarrista", frozen, name = "Tensor")]
+pub struct PyTensor {
+    bytes: Bytes,
+    data_type: DataType,
+    shape: Vec<u64>,
+}
+
+#[pymethods]
+impl PyTensor {
+    #[getter]
+    fn shape(&self) -> &[u64] {
+        &self.shape
+    }
+
+    #[getter]
+    fn dtype(&self) -> PyDataType {
+        self.data_type.clone().into()
+    }
+
+    /// The raw decoded bytes, zero-copy, as a buffer-protocol object.
+    // TODO: it might be nice for the Tensor itself to implement the buffer protocol, instead of
+    // having to call the buffer method? :shrug:
+    fn buffer(&self) -> PyBytes {
+        PyBytes::new(self.bytes.clone())
+    }
+
+    /// Reinterpret the raw bytes as a numpy array of this dtype and shape.
+    ///
+    /// Zero-copy view (`np.frombuffer`) — numpy tolerates an unaligned buffer.
+    fn to_numpy<'py>(&self, py: Python<'py>) -> PyResult<Bound<'py, PyAny>> {
+        // TODO: will the name_v3 always be understood by numpy?
+        let name = self.data_type.name_v3().ok_or_else(|| {
+            PyNotImplementedError::new_err(format!(
+                "data type {} has no zarr v3 name / numpy mapping",
+                self.data_type
+            ))
+        })?;
+        let np = py.import("numpy")?;
+        let flat = np.call_method1("frombuffer", (self.buffer(), name.into_owned()))?;
+        flat.call_method1("reshape", (&self.shape,))
+    }
+}
+
 /// Internal decoded result, produced by our [`FromArrayBytes`] impl. Carries the
 /// post-codec bytes (zero-copy), the data type, and the region shape (which
 /// zarrs hands us, so we never have to re-derive it).
@@ -140,50 +187,6 @@ impl<'py> IntoPyObject<'py> for Decoded {
             } => Bound::new(py, PyMaskedVariableArray { data_type, shape })?.into_any(),
         };
         Ok(obj)
-    }
-}
-
-/// Fixed-width, dense decoded data. The zero-copy raw bytes are reinterpreted by
-/// numpy's `frombuffer` using the dtype, then reshaped.
-#[pyclass(module = "zarrista", frozen, name = "Tensor")]
-pub struct PyTensor {
-    bytes: Bytes,
-    data_type: DataType,
-    shape: Vec<u64>,
-}
-
-#[pymethods]
-impl PyTensor {
-    #[getter]
-    fn shape(&self) -> Vec<u64> {
-        self.shape.clone()
-    }
-
-    #[getter]
-    fn dtype(&self) -> PyDataType {
-        self.data_type.clone().into()
-    }
-
-    /// The raw decoded bytes, zero-copy, as a buffer-protocol object.
-    fn buffer(&self) -> PyBytes {
-        PyBytes::new(self.bytes.clone())
-    }
-
-    /// Reinterpret the raw bytes as a numpy array of this dtype and shape.
-    ///
-    /// Zero-copy view (`np.frombuffer`) — numpy tolerates an unaligned buffer.
-    fn to_numpy<'py>(&self, py: Python<'py>) -> PyResult<Bound<'py, PyAny>> {
-        let name = self.data_type.name_v3().ok_or_else(|| {
-            PyNotImplementedError::new_err(format!(
-                "data type {} has no zarr v3 name / numpy mapping",
-                self.data_type
-            ))
-        })?;
-        let np = py.import("numpy")?;
-        let buffer = PyBytes::new(self.bytes.clone());
-        let flat = np.call_method1("frombuffer", (buffer, name.into_owned()))?;
-        let shape: Vec<usize> = self.shape.iter().map(|&d| d as usize).collect();
-        flat.call_method1("reshape", (shape,))
     }
 }
 
