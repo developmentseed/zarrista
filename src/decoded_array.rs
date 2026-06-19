@@ -23,14 +23,14 @@ use std::borrow::Cow;
 use std::ffi::c_void;
 use std::sync::Arc;
 
-use arrow_array::{Array, ArrayRef, LargeBinaryArray, LargeStringArray};
+use arrow_array::{ArrayRef, LargeBinaryArray, LargeStringArray};
 use arrow_buffer::{Buffer, OffsetBuffer, ScalarBuffer};
-use arrow_schema::{ArrowError, Field};
+use arrow_schema::Field;
 use bytes::Bytes;
 use dlpark::ffi::{Device, DeviceType};
 use dlpark::traits::{RowMajorCompactLayout, TensorLike};
 use dlpark::SafeManagedTensor;
-use pyo3::exceptions::{PyNotImplementedError, PyValueError};
+use pyo3::exceptions::{PyNotImplementedError, PyTypeError, PyValueError};
 use pyo3::prelude::*;
 use pyo3::types::{PyCapsule, PyDict, PyTuple};
 use pyo3::IntoPyObjectExt;
@@ -185,7 +185,7 @@ impl PyVariableArray {
     /// Build an Arrow array over this data. The values buffer is shared
     /// zero-copy from the `bytes::Bytes`; only the small offsets array is copied
     /// (zarrs `usize` → Arrow `i64`).
-    fn to_arrow_array(&self) -> Result<ArrayRef, ArrowError> {
+    fn to_arrow_array(&self) -> PyArrowResult<ArrayRef> {
         use zarrs::array::data_type::*;
 
         let values = Buffer::from(self.bytes.clone());
@@ -205,7 +205,23 @@ impl PyVariableArray {
         } else if self.data_type.is::<BytesDataType>() {
             Ok(Arc::new(LargeBinaryArray::try_new(offsets, values, None)?))
         } else {
-            Err(ArrowError::NotYetImplemented(format!(
+            Err(PyTypeError::new_err(format!(
+                "Arrow export of variable-length data type {} is not supported",
+                self.data_type
+            ))
+            .into())
+        }
+    }
+
+    fn arrow_data_type(&self) -> PyResult<arrow_schema::DataType> {
+        use zarrs::array::data_type::*;
+
+        if self.data_type.is::<StringDataType>() {
+            Ok(arrow_schema::DataType::LargeUtf8)
+        } else if self.data_type.is::<BytesDataType>() {
+            Ok(arrow_schema::DataType::LargeBinary)
+        } else {
+            Err(PyTypeError::new_err(format!(
                 "Arrow export of variable-length data type {} is not supported",
                 self.data_type
             )))
@@ -213,8 +229,8 @@ impl PyVariableArray {
     }
 
     /// The Arrow field describing [`Self::to_arrow_array`].
-    fn arrow_field(array: &ArrayRef) -> Field {
-        Field::new("", array.data_type().clone(), false)
+    fn arrow_field(&self) -> PyResult<Field> {
+        Ok(Field::new("", self.arrow_data_type()?, false))
     }
 }
 
@@ -228,6 +244,21 @@ impl PyVariableArray {
     #[getter]
     fn dtype(&self) -> PyDataType {
         self.data_type.clone().into()
+    }
+
+    fn __arrow_c_schema__<'py>(&self, py: Python<'py>) -> PyArrowResult<Bound<'py, PyCapsule>> {
+        to_schema_pycapsule(py, &self.arrow_field()?)
+    }
+
+    #[pyo3(signature = (requested_schema=None))]
+    fn __arrow_c_array__<'py>(
+        &self,
+        py: Python<'py>,
+        requested_schema: Option<Bound<'py, PyCapsule>>,
+    ) -> PyArrowResult<Bound<'py, PyTuple>> {
+        let array = self.to_arrow_array()?;
+        let field = Arc::new(self.arrow_field()?);
+        to_array_pycapsules(py, field, array.as_ref(), requested_schema)
     }
 }
 
