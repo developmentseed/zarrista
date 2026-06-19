@@ -50,7 +50,8 @@ class Tensor:
 class VariableArray:
     """Variable-length decoded data (e.g. strings or bytes).
 
-    Not yet exposed to NumPy.
+    Exposes the Arrow PyCapsule interface for zero-copy data exchange for variable
+    length string or bytes data.
     """
 
     @property
@@ -59,6 +60,13 @@ class VariableArray:
     @property
     def dtype(self) -> DataType:
         """The Zarr data type."""
+    def __arrow_c_schema__(self) -> CapsuleType:
+        """Export the Arrow schema as a PyCapsule (Arrow C Data Interface)."""
+    def __arrow_c_array__(
+        self,
+        requested_schema: object | None = None,
+    ) -> tuple[CapsuleType, CapsuleType]:
+        """Export as an Arrow array: a `(schema_capsule, array_capsule)` pair."""
 
 class MaskedTensor:
     """Fixed-width decoded data with a validity mask.
