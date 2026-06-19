@@ -9,6 +9,6 @@ class FillValue:
     def size(self) -> int:
         """The size of the fill value in bytes."""
     def as_bytes(self) -> bytes:
-        """The fill value as native-endian bytes."""
+        """Return the fill value as native-endian bytes."""
     def equals_all(self, other: Buffer) -> bool:
         """Whether `other` is entirely repetitions of this fill value."""

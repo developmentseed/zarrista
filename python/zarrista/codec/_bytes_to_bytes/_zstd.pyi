@@ -13,6 +13,7 @@ class Zstd(BytesToBytesCodec):
         """
     @staticmethod
     def from_config(config: dict[str, Any]) -> Zstd:
-        """Construct a `zstd` codec from a configuration mapping, e.g.
-        `{"level": 5, "checksum": false}`.
+        """Construct a `zstd` codec from a configuration mapping.
+
+        For example, `{"level": 5, "checksum": false}`.
         """

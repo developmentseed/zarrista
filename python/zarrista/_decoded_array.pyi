@@ -24,7 +24,7 @@ class Tensor:
     def dtype(self) -> DataType:
         """The Zarr data type."""
     def buffer(self) -> Buffer:
-        """The raw decoded bytes as a zero-copy buffer-protocol object."""
+        """Return the raw decoded bytes as a zero-copy buffer-protocol object."""
     def to_numpy(self) -> NDArray[Any]:
         """Access a NumPy array view over Rust memory.
 
