@@ -20,21 +20,28 @@
 //! pays the alignment copy as part of the copy it was already doing.
 
 use std::borrow::Cow;
+use std::ffi::c_void;
 
 use bytes::Bytes;
-use pyo3::exceptions::PyNotImplementedError;
+use dlpark::ffi::{Device, DeviceType};
+use dlpark::traits::{RowMajorCompactLayout, TensorLike};
+use dlpark::SafeManagedTensor;
+use pyo3::exceptions::{PyNotImplementedError, PyValueError};
 use pyo3::prelude::*;
+use pyo3::types::PyDict;
 use pyo3::IntoPyObjectExt;
 use pyo3_bytes::PyBytes;
 use zarrs::array::{ArrayBytes, ArrayError, DataType, FromArrayBytes};
 
 use crate::dtype::PyDataType;
+use crate::error::{ZarristaError, ZarristaResult};
 
 /// Fixed-width, dense decoded data.
 ///
 /// We don't use the upstream `Tensor` type because its bytes are not reference counted, and thus
 /// don't play nicely with buffer protocol export
-#[pyclass(module = "zarrista", frozen, name = "Tensor")]
+#[derive(Clone)]
+#[pyclass(module = "zarrista", frozen, name = "Tensor", skip_from_py_object)]
 pub struct PyTensor {
     bytes: Bytes,
     data_type: DataType,
@@ -74,6 +81,88 @@ impl PyTensor {
         let np = py.import("numpy")?;
         let flat = np.call_method1("frombuffer", (self.buffer(), name.into_owned()))?;
         flat.call_method1("reshape", (&self.shape,))
+    }
+
+    /// Export via the DLPack protocol so consumers (e.g. `np.from_dlpack`) can
+    /// import this data zero-copy.
+    #[pyo3(signature = (**_kwargs))]
+    fn __dlpack__<'py>(
+        &self,
+        _kwargs: Option<Bound<'py, PyDict>>,
+    ) -> ZarristaResult<SafeManagedTensor> {
+        SafeManagedTensor::new(self.clone())
+    }
+
+    /// The DLPack device this data lives on: `(device_type, device_id)`. Always CPU.
+    fn __dlpack_device__(&self) -> (i32, i32) {
+        (DeviceType::Cpu as i32, 0)
+    }
+}
+
+/// Convert a zarrs [`DataType`] to a [`dlpark::ffi::DataType`].
+///
+/// # Errors
+/// Returns [`TensorError::UnsupportedDataType`] if the data type is not supported.
+fn data_type_to_dlpack(data_type: &DataType) -> ZarristaResult<dlpark::ffi::DataType> {
+    use zarrs::array::data_type::*;
+
+    if data_type.is::<BoolDataType>() {
+        Ok(dlpark::ffi::DataType::BOOL)
+    } else if data_type.is::<Int8DataType>() {
+        Ok(dlpark::ffi::DataType::I8)
+    } else if data_type.is::<Int16DataType>() {
+        Ok(dlpark::ffi::DataType::I16)
+    } else if data_type.is::<Int32DataType>() {
+        Ok(dlpark::ffi::DataType::I32)
+    } else if data_type.is::<Int64DataType>() {
+        Ok(dlpark::ffi::DataType::I64)
+    } else if data_type.is::<UInt8DataType>() {
+        Ok(dlpark::ffi::DataType::U8)
+    } else if data_type.is::<UInt16DataType>() {
+        Ok(dlpark::ffi::DataType::U16)
+    } else if data_type.is::<UInt32DataType>() {
+        Ok(dlpark::ffi::DataType::U32)
+    } else if data_type.is::<UInt64DataType>() {
+        Ok(dlpark::ffi::DataType::U64)
+    } else if data_type.is::<Float16DataType>() {
+        Ok(dlpark::ffi::DataType::F16)
+    } else if data_type.is::<Float32DataType>() {
+        Ok(dlpark::ffi::DataType::F32)
+    } else if data_type.is::<Float64DataType>() {
+        Ok(dlpark::ffi::DataType::F64)
+    } else if data_type.is::<BFloat16DataType>() {
+        Ok(dlpark::ffi::DataType::BF16)
+    } else {
+        Err(PyValueError::new_err("Unsupported data type in dlpack").into())
+    }
+}
+
+impl TensorLike<RowMajorCompactLayout> for PyTensor {
+    type Error = ZarristaError;
+
+    fn data_ptr(&self) -> *mut c_void {
+        self.bytes.as_ptr().cast::<c_void>().cast_mut()
+    }
+
+    fn memory_layout(&self) -> RowMajorCompactLayout {
+        let shape = self
+            .shape()
+            .iter()
+            .map(|s| i64::try_from(*s).expect("overflow converting shape to i64"))
+            .collect();
+        RowMajorCompactLayout::new(shape)
+    }
+
+    fn byte_offset(&self) -> u64 {
+        0
+    }
+
+    fn device(&self) -> Result<Device, Self::Error> {
+        Ok(Device::CPU)
+    }
+
+    fn data_type(&self) -> Result<dlpark::ffi::DataType, Self::Error> {
+        data_type_to_dlpack(&self.data_type)
     }
 }
 

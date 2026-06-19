@@ -27,7 +27,7 @@ use crate::exceptions as exc;
 /// appropriate Python exception.
 #[derive(Debug, Error)]
 #[non_exhaustive]
-pub(crate) enum ZarristaError {
+pub enum ZarristaError {
     /// No array or group exists at the requested path.
     #[error("{0}")]
     NotFound(String),

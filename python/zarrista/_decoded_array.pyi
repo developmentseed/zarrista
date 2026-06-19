@@ -10,6 +10,11 @@ if sys.version_info >= (3, 12):
 else:
     from typing_extensions import Buffer
 
+if sys.version_info >= (3, 13):
+    from types import CapsuleType
+else:
+    from typing_extensions import CapsuleType
+
 class Tensor:
     """Fixed-width, dense decoded array data.
 
@@ -30,6 +35,17 @@ class Tensor:
 
         This is a zero-copy view via `np.frombuffer`.
         """
+    def __dlpack__(
+        self,
+        *,
+        stream: int | None = None,
+        max_version: tuple[int, int] | None = None,
+        dl_device: tuple[int, int] | None = None,
+        copy: bool | None = None,
+    ) -> CapsuleType:
+        """Export the data as a DLPack capsule (e.g. for `np.from_dlpack`)."""
+    def __dlpack_device__(self) -> tuple[int, int]:
+        """Return the DLPack device `(device_type, device_id)`. Always CPU."""
 
 class VariableArray:
     """Variable-length decoded data (e.g. strings or bytes).

@@ -21,6 +21,9 @@ abi3-py311 = ["pyo3/abi3-py311"]
 
 [dependencies]
 bytes = "1.12.0"
+dlpark = { git = "https://github.com/kylebarron/dlpark", rev = "31c6f49c064e634326c97172d39a00acecd854b6", features = [
+    "pyo3",
+] }
 half = "2"
 icechunk = "2.0.0"
 ndarray = "0.17.2"
