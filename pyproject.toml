@@ -61,6 +61,7 @@ ignore = [
     "EM101",  # raw string in exception
     "EM102",  # f-string in exception
     "FIX002", # todo statements
+    "PYI021", # Docstrings should not be included in stubs
     "PYI051", # literal strings redundant with str in type union
     "TD002",  # todo without author name
     "TRY003", # define exceptions in the exception class
