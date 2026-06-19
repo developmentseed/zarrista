@@ -21,15 +21,21 @@
 
 use std::borrow::Cow;
 use std::ffi::c_void;
+use std::sync::Arc;
 
+use arrow_array::{Array, ArrayRef, LargeBinaryArray, LargeStringArray};
+use arrow_buffer::{Buffer, OffsetBuffer, ScalarBuffer};
+use arrow_schema::{ArrowError, Field};
 use bytes::Bytes;
 use dlpark::ffi::{Device, DeviceType};
 use dlpark::traits::{RowMajorCompactLayout, TensorLike};
 use dlpark::SafeManagedTensor;
 use pyo3::exceptions::{PyNotImplementedError, PyValueError};
 use pyo3::prelude::*;
-use pyo3::types::PyDict;
+use pyo3::types::{PyCapsule, PyDict, PyTuple};
 use pyo3::IntoPyObjectExt;
+use pyo3_arrow::error::PyArrowResult;
+use pyo3_arrow::ffi::{to_array_pycapsules, to_schema_pycapsule};
 use pyo3_bytes::PyBytes;
 use zarrs::array::{ArrayBytes, ArrayError, DataType, FromArrayBytes};
 
@@ -166,15 +172,50 @@ impl TensorLike<RowMajorCompactLayout> for PyTensor {
     }
 }
 
-/// Variable-length data (string/bytes). Skeleton: carries metadata only for now.
+/// Variable-length data (string/bytes).
 #[pyclass(module = "zarrista", frozen, name = "VariableArray")]
 pub struct PyVariableArray {
-    #[expect(dead_code)]
     bytes: Bytes,
-    #[expect(dead_code)]
     offsets: Vec<usize>,
     data_type: DataType,
     shape: Vec<u64>,
+}
+
+impl PyVariableArray {
+    /// Build an Arrow array over this data. The values buffer is shared
+    /// zero-copy from the `bytes::Bytes`; only the small offsets array is copied
+    /// (zarrs `usize` → Arrow `i64`).
+    fn to_arrow_array(&self) -> Result<ArrayRef, ArrowError> {
+        use zarrs::array::data_type::*;
+
+        let values = Buffer::from(self.bytes.clone());
+        let offsets = self
+            .offsets
+            .iter()
+            .map(|&offset| i64::try_from(offset).expect("offset overflows i64"))
+            .collect::<Vec<_>>();
+        let scalar_buffer = ScalarBuffer::from(offsets);
+
+        // Safety: Zarrs guarantees that the offsets are valid and monotonically increasing, and
+        // that the final offset is within bounds of the values buffer.
+        let offsets = unsafe { OffsetBuffer::new_unchecked(scalar_buffer) };
+
+        if self.data_type.is::<StringDataType>() {
+            Ok(Arc::new(LargeStringArray::try_new(offsets, values, None)?))
+        } else if self.data_type.is::<BytesDataType>() {
+            Ok(Arc::new(LargeBinaryArray::try_new(offsets, values, None)?))
+        } else {
+            Err(ArrowError::NotYetImplemented(format!(
+                "Arrow export of variable-length data type {} is not supported",
+                self.data_type
+            )))
+        }
+    }
+
+    /// The Arrow field describing [`Self::to_arrow_array`].
+    fn arrow_field(array: &ArrayRef) -> Field {
+        Field::new("", array.data_type().clone(), false)
+    }
 }
 
 #[pymethods]

@@ -20,6 +20,9 @@ crate-type = ["cdylib"]
 abi3-py311 = ["pyo3/abi3-py311"]
 
 [dependencies]
+arrow-array = "59"
+arrow-buffer = "59"
+arrow-schema = "59"
 bytes = "1.12.0"
 dlpark = { git = "https://github.com/kylebarron/dlpark", rev = "31c6f49c064e634326c97172d39a00acecd854b6", features = [
     "pyo3",
@@ -30,6 +33,7 @@ ndarray = "0.17.2"
 numpy = { version = "0.29", features = ["half"] }
 object_store = "0.13.2"
 pyo3 = { version = "0.29", features = ["macros", "abi3-py311"] }
+pyo3-arrow = "0.19"
 pyo3-async-runtimes = { version = "0.29", features = ["tokio-runtime"] }
 pyo3-bytes = "0.7.1"
 pyo3-object_store = { version = "0.11.0", default-features = false }
