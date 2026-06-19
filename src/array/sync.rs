@@ -4,13 +4,11 @@ use crate::array::selection::PySelection;
 use crate::array::util::PyChunkIndices;
 use crate::chunks::PyChunkGrid;
 use crate::codec::{PyCodecChain, PyCodecOptions};
-use crate::data::{for_each_dtype, DataInner, PyData};
+use crate::data::Decoded;
 use crate::dtype::PyDataType;
-use crate::error::ZarristaResult;
+use crate::error::{ZarristaError, ZarristaResult};
 use crate::node::PyNodePath;
 use crate::storage::PySyncStorage;
-use ndarray::ArrayD;
-use pyo3::exceptions::PyNotImplementedError;
 use pyo3::prelude::*;
 use pyo3_bytes::PyBytes;
 use pythonize::pythonize;
@@ -33,7 +31,7 @@ impl PyArray {
 #[pymethods]
 impl PyArray {
     /// Read a region with numpy-style basic indexing, e.g. `arr[0:10, :, 5]`.
-    fn __getitem__(&self, selection: PySelection) -> ZarristaResult<PyData> {
+    fn __getitem__(&self, selection: PySelection) -> ZarristaResult<Decoded> {
         self.retrieve_array_subset(selection)
     }
 
@@ -101,29 +99,17 @@ impl PyArray {
         self.inner.path().as_str()
     }
 
-    /// Read a region of the array as `Data`, using numpy-style basic indexing.
-    fn retrieve_array_subset(&self, selection: PySelection) -> ZarristaResult<PyData> {
-        use zarrs::array::data_type::*;
-
+    /// Read a region of the array, using numpy-style basic indexing.
+    ///
+    /// Returns one of the decoded result classes (`Tensor`, `VariableArray`,
+    /// `MaskedTensor`, `MaskedVariableArray`) depending on the dtype layout.
+    fn retrieve_array_subset(&self, selection: PySelection) -> ZarristaResult<Decoded> {
         let array_subset = selection.to_array_subset(self.inner.shape())?;
-        let dtype = self.inner.data_type();
-
-        macro_rules! arm {
-            ($dtype:ty, $variant:ident, $elem:ty) => {
-                if dtype.is::<$dtype>() {
-                    let data = self
-                        .inner
-                        .retrieve_array_subset::<ArrayD<$elem>>(&array_subset)?;
-                    return Ok(PyData::from(DataInner::$variant(data)));
-                }
-            };
-        }
-        for_each_dtype!(arm);
-
-        Err(PyNotImplementedError::new_err(format!(
-            "reading data type {dtype} is not supported yet"
-        ))
-        .into())
+        let decoded = self
+            .inner
+            .retrieve_array_subset::<Decoded>(&array_subset)
+            .map_err(ZarristaError::from)?;
+        Ok(decoded)
     }
 
     #[pyo3(signature = (chunk_indices, **codec_options))]
@@ -131,31 +117,15 @@ impl PyArray {
         &self,
         chunk_indices: PyChunkIndices,
         codec_options: Option<PyCodecOptions>,
-    ) -> ZarristaResult<PyData> {
-        use zarrs::array::data_type::*;
-
-        let dtype = self.inner.data_type();
+    ) -> ZarristaResult<Decoded> {
         let codec_options = codec_options
             .map(|opts| opts.into_inner())
             .unwrap_or_default();
-
-        macro_rules! arm {
-            ($dtype:ty, $variant:ident, $elem:ty) => {
-                if dtype.is::<$dtype>() {
-                    let chunk = self.inner.retrieve_chunk_opt::<ArrayD<$elem>>(
-                        chunk_indices.as_ref(),
-                        &codec_options,
-                    )?;
-                    return Ok(PyData::from(DataInner::$variant(chunk)));
-                }
-            };
-        }
-        for_each_dtype!(arm);
-
-        Err(PyNotImplementedError::new_err(format!(
-            "reading data type {dtype} is not supported yet"
-        ))
-        .into())
+        let decoded = self
+            .inner
+            .retrieve_chunk_opt::<Decoded>(chunk_indices.as_ref(), &codec_options)
+            .map_err(ZarristaError::from)?;
+        Ok(decoded)
     }
 
     fn retrieve_encoded_chunk(

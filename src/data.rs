@@ -1,254 +1,266 @@
-//! A Python-exposed array type that implements the buffer protocol.
+//! Decoded array data exposed to Python.
 //!
-//! This module provides `PyData`, an ND array type that can be used with numpy
-//! via Python's buffer protocol. The buffer protocol allows Python objects to
-//! expose raw memory buffers, enabling zero-copy interoperability with numpy.
+//! SPIKE: instead of decoding into a typed `ndarray::ArrayD<T>` (which copies
+//! every buffer via `bytemuck::pod_collect_to_vec`), we retrieve the raw
+//! post-codec [`ArrayBytes`] and wrap it zero-copy. Retrieval is a single
+//! generic call (`retrieve::<Decoded>`) — no per-dtype macro — because we
+//! implement [`FromArrayBytes`] on our own [`Decoded`] type.
 //!
-//! ## Buffer Protocol Overview
+//! `ArrayBytes` has three layouts (`Fixed`, `Variable`, `Optional`), which we
+//! surface as four concrete Python classes so each exposes exactly the faces it
+//! can support:
 //!
-//! The buffer protocol is defined in [PEP 3118] and allows objects to expose their
-//! internal data as a contiguous or strided memory region. Key concepts:
+//! - [`PyTensor`] — fixed-width, dense. Buffer protocol + `to_numpy`.
+//! - [`PyVariableArray`] — variable-length (string/bytes). (skeleton)
+//! - [`PyMaskedTensor`] — fixed-width with a validity mask. (skeleton)
+//! - [`PyMaskedVariableArray`] — variable-length with a validity mask. (skeleton)
 //!
-//! [PEP 3118](https://peps.python.org/pep-3118/)
-//!
-//! - **view**: A `Py_buffer` struct that describes how to interpret the memory
-//! - **format**: A string describing the element type (e.g., "<H" for little-endian uint16)
-//! - **shape**: Array dimensions (e.g., [height, width, bands] for a 3D array)
-//! - **strides**: Byte offsets between consecutive elements in each dimension
-//!
-//! ## Reference Counting
-//!
-//! When `__getbuffer__` is called, we increment the reference count on the PyData
-//! object (`Py_INCREF`) to ensure it stays alive while the buffer view exists.
-//! Python's `PyBuffer_Release` automatically calls `Py_DECREF` after `__releasebuffer__`
-//! returns, so we don't need to manually decrement the count.
-//!
-//! ## Memory Safety
-//!
-//! The shape and strides arrays are stored as `Box<[isize]>` on the PyData struct
-//! itself. This means their lifetime is tied to the PyData object, which is kept
-//! alive by the `Py_INCREF` call. This avoids the need to leak/free allocations
-//! in `__getbuffer__`/`__releasebuffer__`.
+//! Buffers are **not** aligned: numpy's `frombuffer` tolerates unaligned data
+//! (it sets `aligned=False`), and any consumer that materializes an owned array
+//! pays the alignment copy as part of the copy it was already doing.
 
-use std::ffi::{c_char, c_void, CStr};
-use std::os::raw::c_int;
+use std::borrow::Cow;
 
-use ndarray::ArrayD;
-use numpy::PyArray;
-use pyo3::exceptions::PyBufferError;
-use pyo3::ffi;
+use bytes::Bytes;
+use pyo3::exceptions::PyNotImplementedError;
 use pyo3::prelude::*;
+use pyo3_bytes::PyBytes;
+use zarrs::array::{ArrayBytes, ArrayError, DataType, FromArrayBytes};
 
-/// The decoded data of a chunk, with variants for each supported dtype.
-///
-/// This is kept separate from `PyData` 1. because Python classes can't be defined as Rust enums and 2. so that we have a clean place to manage data types not supported by numpy.
-pub enum DataInner {
-    Bool(ArrayD<bool>),
-    Float16(ArrayD<half::f16>),
-    Float32(ArrayD<f32>),
-    Float64(ArrayD<f64>),
-    Int16(ArrayD<i16>),
-    Int32(ArrayD<i32>),
-    Int64(ArrayD<i64>),
-    Int8(ArrayD<i8>),
-    Uint16(ArrayD<u16>),
-    Uint32(ArrayD<u32>),
-    Uint64(ArrayD<u64>),
-    Uint8(ArrayD<u8>),
+use crate::dtype::PyDataType;
+
+/// Internal decoded result, produced by our [`FromArrayBytes`] impl. Carries the
+/// post-codec bytes (zero-copy), the data type, and the region shape (which
+/// zarrs hands us, so we never have to re-derive it).
+pub enum Decoded {
+    Tensor {
+        bytes: Bytes,
+        data_type: DataType,
+        shape: Vec<u64>,
+    },
+    Variable {
+        bytes: ArrayBytes<'static>,
+        data_type: DataType,
+        shape: Vec<u64>,
+    },
+    MaskedTensor {
+        bytes: ArrayBytes<'static>,
+        data_type: DataType,
+        shape: Vec<u64>,
+    },
+    MaskedVariable {
+        bytes: ArrayBytes<'static>,
+        data_type: DataType,
+        shape: Vec<u64>,
+    },
 }
 
-/// Invoke `$arm!(ZarrsDataType, DataInnerVariant, rust_elem_type)` once per
-/// supported dtype. The caller supplies an `arm!` macro that turns a single
-/// `(dtype, variant, elem)` triple into a retrieval (e.g. `retrieve_chunk` or
-/// `retrieve_array_subset`), keeping the dtype list defined in exactly one place.
-///
-/// The `ZarrsDataType` idents (e.g. `BoolDataType`) and `half::f16` are resolved
-/// in the caller's scope, so callers must have `use zarrs::array::data_type::*`.
-macro_rules! for_each_dtype {
-    ($arm:ident) => {
-        $arm!(BoolDataType, Bool, bool);
-        $arm!(Int8DataType, Int8, i8);
-        $arm!(Int16DataType, Int16, i16);
-        $arm!(Int32DataType, Int32, i32);
-        $arm!(Int64DataType, Int64, i64);
-        $arm!(UInt8DataType, Uint8, u8);
-        $arm!(UInt16DataType, Uint16, u16);
-        $arm!(UInt32DataType, Uint32, u32);
-        $arm!(UInt64DataType, Uint64, u64);
-        $arm!(Float16DataType, Float16, half::f16);
-        $arm!(Float32DataType, Float32, f32);
-        $arm!(Float64DataType, Float64, f64);
-    };
-}
-pub(crate) use for_each_dtype;
-
-/// Run `$body` against the inner `ArrayD`, with `$a` bound to it regardless of
-/// element type. Exhaustive, so a new `DataInner` variant is a compile error.
-macro_rules! with_array {
-    ($data:expr, $a:ident => $body:expr) => {{
-        use DataInner::*;
-        match $data {
-            Bool($a) => $body,
-            Float16($a) => $body,
-            Float32($a) => $body,
-            Float64($a) => $body,
-            Int16($a) => $body,
-            Int32($a) => $body,
-            Int64($a) => $body,
-            Int8($a) => $body,
-            Uint16($a) => $body,
-            Uint32($a) => $body,
-            Uint64($a) => $body,
-            Uint8($a) => $body,
-        }
-    }};
+/// Move a `'static` `Cow<[u8]>` into `bytes::Bytes`. Owned is a zero-copy move;
+/// borrowed (rare for retrieval) copies.
+fn cow_to_bytes(cow: Cow<'static, [u8]>) -> Bytes {
+    match cow {
+        Cow::Owned(v) => Bytes::from(v),
+        Cow::Borrowed(b) => Bytes::copy_from_slice(b),
+    }
 }
 
-impl DataInner {
-    /// The PEP 3118 buffer-protocol format string for this dtype, or `None` if
-    /// the dtype has no buffer-protocol representation (e.g. dtypes with no
-    /// matching native layout). `None` is the signal that consumers must copy.
-    fn buffer_format(&self) -> Option<&'static CStr> {
-        use DataInner::*;
+impl FromArrayBytes for Decoded {
+    fn from_array_bytes(
+        bytes: ArrayBytes<'static>,
+        shape: &[u64],
+        data_type: &DataType,
+    ) -> Result<Self, ArrayError> {
+        let shape = shape.to_vec();
+        let data_type = data_type.clone();
+        Ok(match bytes {
+            ArrayBytes::Fixed(b) => Decoded::Tensor {
+                bytes: cow_to_bytes(b),
+                data_type,
+                shape,
+            },
+            ArrayBytes::Variable(v) => Decoded::Variable {
+                bytes: ArrayBytes::Variable(v),
+                data_type,
+                shape,
+            },
+            ArrayBytes::Optional(o) => {
+                // Peek at the inner layout to pick the masked class, then move
+                // the value back into an owned `ArrayBytes`.
+                let inner_is_variable = matches!(o.data(), ArrayBytes::Variable(_));
+                let bytes = ArrayBytes::Optional(o);
+                if inner_is_variable {
+                    Decoded::MaskedVariable {
+                        bytes,
+                        data_type,
+                        shape,
+                    }
+                } else {
+                    Decoded::MaskedTensor {
+                        bytes,
+                        data_type,
+                        shape,
+                    }
+                }
+            }
+        })
+    }
+}
 
-        let format = match self {
-            Bool(_) => c"?",
-            Int8(_) => c"b",
-            Int16(_) => c"h",
-            Int32(_) => c"i",
-            Int64(_) => c"q",
-            Uint8(_) => c"B",
-            Uint16(_) => c"H",
-            Uint32(_) => c"I",
-            Uint64(_) => c"Q",
-            Float16(_) => c"e",
-            Float32(_) => c"f",
-            Float64(_) => c"d",
+/// Convert into the appropriate concrete Python result class. Implemented as
+/// `IntoPyObject` so both the sync and async retrieve paths can simply return
+/// `Decoded` and let pyo3 build the Python object once the GIL is held.
+impl<'py> IntoPyObject<'py> for Decoded {
+    type Target = PyAny;
+    type Output = Bound<'py, PyAny>;
+    type Error = PyErr;
+
+    fn into_pyobject(self, py: Python<'py>) -> Result<Self::Output, Self::Error> {
+        let obj = match self {
+            Decoded::Tensor {
+                bytes,
+                data_type,
+                shape,
+            } => Bound::new(
+                py,
+                PyTensor {
+                    bytes,
+                    data_type,
+                    shape,
+                },
+            )?
+            .into_any(),
+            Decoded::Variable {
+                data_type, shape, ..
+            } => Bound::new(py, PyVariableArray { data_type, shape })?.into_any(),
+            Decoded::MaskedTensor {
+                data_type, shape, ..
+            } => Bound::new(py, PyMaskedTensor { data_type, shape })?.into_any(),
+            Decoded::MaskedVariable {
+                data_type, shape, ..
+            } => Bound::new(py, PyMaskedVariableArray { data_type, shape })?.into_any(),
         };
-        Some(format)
-    }
-
-    /// The size of a single element in bytes.
-    fn itemsize(&self) -> usize {
-        use DataInner::*;
-
-        match self {
-            Bool(_) | Int8(_) | Uint8(_) => 1,
-            Float16(_) | Int16(_) | Uint16(_) => 2,
-            Float32(_) | Int32(_) | Uint32(_) => 4,
-            Float64(_) | Int64(_) | Uint64(_) => 8,
-        }
-    }
-
-    /// A raw pointer to the first element of the backing buffer.
-    fn data_ptr(&self) -> *mut c_void {
-        with_array!(self, a => a.as_ptr() as *mut c_void)
-    }
-
-    /// Copy the decoded chunk into a fresh NumPy array. Used as the fallback for
-    /// dtypes that cannot be exposed via the buffer protocol.
-    fn to_numpy_with_copy<'py>(&self, py: Python<'py>) -> Bound<'py, PyAny> {
-        with_array!(&self, a => PyArray::from_array(py, a).into_any())
+        Ok(obj)
     }
 }
 
-#[pyclass(module = "zarrista", frozen, name = "Data")]
-pub struct PyData {
-    inner: DataInner,
-    /// Shape in elements. Cached here so the buffer protocol can hand out a
-    /// pointer with a lifetime tied to this (frozen) object.
-    shape: Box<[isize]>,
-    /// Strides in bytes, cached for the same reason.
-    strides: Box<[isize]>,
-}
-
-impl From<DataInner> for PyData {
-    fn from(inner: DataInner) -> Self {
-        let itemsize = inner.itemsize() as isize;
-        let shape: Box<[isize]> =
-            with_array!(&inner, a => a.shape().iter().map(|&d| d as isize).collect());
-        let strides: Box<[isize]> = with_array!(&inner,
-            a => a.strides().iter().map(|&s| s * itemsize).collect());
-        Self {
-            inner,
-            shape,
-            strides,
-        }
-    }
+/// Fixed-width, dense decoded data. The zero-copy raw bytes are reinterpreted by
+/// numpy's `frombuffer` using the dtype, then reshaped.
+#[pyclass(module = "zarrista", frozen, name = "Tensor")]
+pub struct PyTensor {
+    bytes: Bytes,
+    data_type: DataType,
+    shape: Vec<u64>,
 }
 
 #[pymethods]
-impl PyData {
-    /// Convert the decoded chunk into a NumPy array.
-    ///
-    /// When the dtype has a buffer-protocol representation this is a zero-copy
-    /// view (numpy reads our buffer directly). Otherwise the data is copied and
-    /// converted into a fresh array.
-    fn to_numpy<'py>(slf: Bound<'py, Self>) -> PyResult<Bound<'py, PyAny>> {
-        let py = slf.py();
-        if slf.borrow().inner.buffer_format().is_some() {
-            // Zero-copy: `np.asarray` views our buffer via `__getbuffer__`.
-            py.import("numpy")?.call_method1("asarray", (&slf,))
-        } else {
-            // Fallback: copy/convert into a new numpy array.
-            Ok(slf.borrow().inner.to_numpy_with_copy(py))
-        }
+impl PyTensor {
+    #[getter]
+    fn shape(&self) -> Vec<u64> {
+        self.shape.clone()
     }
 
-    /// Buffer-protocol export (PEP 3118): lets any consumer (`memoryview`,
-    /// numpy, pyarrow, …) read the data without a copy.
-    ///
-    /// # Safety
-    /// `view` is a valid `Py_buffer` provided by the interpreter. We pin `self`
-    /// for the view's lifetime with `Py_INCREF`, and `shape`/`strides` are owned
-    /// by `self`, so all pointers stay valid until `__releasebuffer__`.
-    unsafe fn __getbuffer__(
-        slf: PyRef<'_, Self>,
-        view: *mut ffi::Py_buffer,
-        flags: c_int,
-    ) -> PyResult<()> {
-        if view.is_null() {
-            return Err(PyBufferError::new_err("null buffer view"));
-        }
-        let Some(format) = slf.inner.buffer_format() else {
-            return Err(PyBufferError::new_err(
-                "this data type has no buffer-protocol representation",
-            ));
-        };
-        // We only ever expose a read-only buffer.
-        if (flags & ffi::PyBUF_WRITABLE) == ffi::PyBUF_WRITABLE {
-            return Err(PyBufferError::new_err("buffer is read-only"));
-        }
-
-        let itemsize = slf.inner.itemsize() as isize;
-        let len = slf.shape.iter().product::<isize>() * itemsize;
-
-        (*view).buf = slf.inner.data_ptr();
-        (*view).len = len;
-        (*view).itemsize = itemsize;
-        (*view).readonly = 1;
-        (*view).ndim = slf.shape.len() as c_int;
-        (*view).format = if (flags & ffi::PyBUF_FORMAT) == ffi::PyBUF_FORMAT {
-            format.as_ptr() as *mut c_char
-        } else {
-            std::ptr::null_mut()
-        };
-        (*view).shape = slf.shape.as_ptr() as *mut isize;
-        (*view).strides = slf.strides.as_ptr() as *mut isize;
-        (*view).suboffsets = std::ptr::null_mut();
-        (*view).internal = std::ptr::null_mut();
-
-        // Keep `self` (and therefore the buffer) alive while the view exists;
-        // Python calls `Py_DECREF` after `__releasebuffer__` returns.
-        (*view).obj = slf.as_ptr();
-        ffi::Py_INCREF((*view).obj);
-
-        Ok(())
+    #[getter]
+    fn dtype(&self) -> PyDataType {
+        self.data_type.clone().into()
     }
 
-    /// Required counterpart to `__getbuffer__`. Nothing to free: all memory is
-    /// owned by `self`, and Python handles the `Py_DECREF` on `view.obj`.
-    unsafe fn __releasebuffer__(&self, _view: *mut ffi::Py_buffer) {}
+    /// The raw decoded bytes, zero-copy, as a buffer-protocol object.
+    fn buffer(&self) -> PyBytes {
+        PyBytes::new(self.bytes.clone())
+    }
+
+    /// Reinterpret the raw bytes as a numpy array of this dtype and shape.
+    ///
+    /// Zero-copy view (`np.frombuffer`) — numpy tolerates an unaligned buffer.
+    fn to_numpy<'py>(&self, py: Python<'py>) -> PyResult<Bound<'py, PyAny>> {
+        let name = self.data_type.name_v3().ok_or_else(|| {
+            PyNotImplementedError::new_err(format!(
+                "data type {} has no zarr v3 name / numpy mapping",
+                self.data_type
+            ))
+        })?;
+        let np = py.import("numpy")?;
+        let buffer = PyBytes::new(self.bytes.clone());
+        let flat = np.call_method1("frombuffer", (buffer, name.into_owned()))?;
+        let shape: Vec<usize> = self.shape.iter().map(|&d| d as usize).collect();
+        flat.call_method1("reshape", (shape,))
+    }
 }
 
-impl PyData {}
+/// Variable-length data (string/bytes). Skeleton: carries metadata only for now.
+#[pyclass(module = "zarrista", frozen, name = "VariableArray")]
+pub struct PyVariableArray {
+    data_type: DataType,
+    shape: Vec<u64>,
+}
+
+#[pymethods]
+impl PyVariableArray {
+    #[getter]
+    fn shape(&self) -> Vec<u64> {
+        self.shape.clone()
+    }
+
+    #[getter]
+    fn dtype(&self) -> PyDataType {
+        self.data_type.clone().into()
+    }
+
+    fn to_numpy(&self) -> PyResult<()> {
+        Err(PyNotImplementedError::new_err(
+            "variable-length data is not yet exposed to numpy",
+        ))
+    }
+}
+
+/// Fixed-width data with a validity mask. Skeleton.
+#[pyclass(module = "zarrista", frozen, name = "MaskedTensor")]
+pub struct PyMaskedTensor {
+    data_type: DataType,
+    shape: Vec<u64>,
+}
+
+#[pymethods]
+impl PyMaskedTensor {
+    #[getter]
+    fn shape(&self) -> Vec<u64> {
+        self.shape.clone()
+    }
+
+    #[getter]
+    fn dtype(&self) -> PyDataType {
+        self.data_type.clone().into()
+    }
+
+    fn to_numpy(&self) -> PyResult<()> {
+        Err(PyNotImplementedError::new_err(
+            "masked data is not yet exposed to numpy",
+        ))
+    }
+}
+
+/// Variable-length data with a validity mask. Skeleton.
+#[pyclass(module = "zarrista", frozen, name = "MaskedVariableArray")]
+pub struct PyMaskedVariableArray {
+    data_type: DataType,
+    shape: Vec<u64>,
+}
+
+#[pymethods]
+impl PyMaskedVariableArray {
+    #[getter]
+    fn shape(&self) -> Vec<u64> {
+        self.shape.clone()
+    }
+
+    #[getter]
+    fn dtype(&self) -> PyDataType {
+        self.data_type.clone().into()
+    }
+
+    fn to_numpy(&self) -> PyResult<()> {
+        Err(PyNotImplementedError::new_err(
+            "masked variable-length data is not yet exposed to numpy",
+        ))
+    }
+}
