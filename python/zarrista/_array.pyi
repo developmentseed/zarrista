@@ -1,5 +1,5 @@
 from types import EllipsisType
-from typing import Any, Unpack
+from typing import Any, TypeAlias, Unpack
 
 from zarrista.codec import CodecOptions
 
@@ -9,8 +9,8 @@ from ._decoded_array import DecodedArray
 from ._dtype import DataType
 from ._store import AsyncStore, FilesystemStore, MemoryStore
 
-_AxisSelector = int | slice | EllipsisType
-Selection = _AxisSelector | tuple[_AxisSelector, ...]
+_AxisSelector: TypeAlias = int | slice | EllipsisType
+Selection: TypeAlias = _AxisSelector | tuple[_AxisSelector, ...]
 """A numpy-style basic-indexing selection: what you would write inside `[]`.
 
 Supports integers, step-1 slices, `Ellipsis`, and tuples of those (with fewer
@@ -50,7 +50,7 @@ class Array:
     def path(self) -> str:
         """The array's path in the store."""
     def retrieve_array_subset(
-        self, selection: Selection, **codec_options: Unpack[CodecOptions]
+        self, selection: Selection, **codec_options: Unpack[CodecOptions],
     ) -> DecodedArray:
         """Read and decode an array region selected with numpy-style basic indexing.
 
@@ -60,7 +60,7 @@ class Array:
         Keyword arguments are passed as [`CodecOptions`][zarrista.codec.CodecOptions].
         """
     def retrieve_chunk(
-        self, chunk_indices: list[int], **codec_options: Unpack[CodecOptions]
+        self, chunk_indices: list[int], **codec_options: Unpack[CodecOptions],
     ) -> DecodedArray:
         """Read and decode the chunk at the given chunk grid indices.
 
@@ -74,7 +74,6 @@ class Array:
 
         Sugar for `retrieve_array_subset`.
         """
-    def __repr__(self) -> str: ...
 
 class AsyncArray:
     """A read-only Zarr array backed by an async store."""
@@ -110,7 +109,7 @@ class AsyncArray:
     def path(self) -> str:
         """The array's path in the store."""
     async def retrieve_array_subset(
-        self, selection: Selection, **codec_options: Unpack[CodecOptions]
+        self, selection: Selection, **codec_options: Unpack[CodecOptions],
     ) -> DecodedArray:
         """Read and decode an array region selected with numpy-style basic indexing.
 
@@ -120,7 +119,7 @@ class AsyncArray:
         Keyword arguments are passed as [`CodecOptions`][zarrista.codec.CodecOptions].
         """
     async def retrieve_chunk(
-        self, chunk_indices: list[int], **codec_options: Unpack[CodecOptions]
+        self, chunk_indices: list[int], **codec_options: Unpack[CodecOptions],
     ) -> DecodedArray:
         """Read and decode the chunk at the given chunk grid indices.
 
@@ -134,4 +133,3 @@ class AsyncArray:
 
         Sugar for `retrieve_array_subset`.
         """
-    def __repr__(self) -> str: ...

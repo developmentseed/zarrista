@@ -18,7 +18,6 @@ class Group:
         """Names of the direct child groups."""
     def __getitem__(self, name: str) -> Array | Group:
         """Open a direct child array or group by name."""
-    def __repr__(self) -> str: ...
 
 class AsyncGroup:
     """A read-only Zarr group backed by an async store."""
@@ -38,4 +37,3 @@ class AsyncGroup:
         """Names of the direct child groups."""
     async def open_child_async(self, name: str) -> AsyncArray | AsyncGroup:
         """Open a direct child array or group by name."""
-    def __repr__(self) -> str: ...

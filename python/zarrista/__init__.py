@@ -1,3 +1,5 @@
+"""A low-level Zarr API for Python, binding to Rust's Zarrs."""
+
 from typing import TypeAlias
 
 from . import codec, exceptions
@@ -33,11 +35,11 @@ __all__ = [
     "ArrayBytes",
     "AsyncArray",
     "AsyncGroup",
-    "DecodedArray",
     "ChunkGrid",
     "DataType",
-    "FillValue",
+    "DecodedArray",
     "FilesystemStore",
+    "FillValue",
     "Group",
     "MaskedTensor",
     "MaskedVariableArray",
