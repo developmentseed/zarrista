@@ -99,12 +99,6 @@ impl PyVariableArray {
     fn dtype(&self) -> PyDataType {
         self.data_type.clone().into()
     }
-
-    fn to_numpy(&self) -> PyResult<()> {
-        Err(PyNotImplementedError::new_err(
-            "variable-length data is not yet exposed to numpy",
-        ))
-    }
 }
 
 /// Fixed-width data with a validity mask. Skeleton.
@@ -129,12 +123,6 @@ impl PyMaskedTensor {
     #[getter]
     fn dtype(&self) -> PyDataType {
         self.data_type.clone().into()
-    }
-
-    fn to_numpy(&self) -> PyResult<()> {
-        Err(PyNotImplementedError::new_err(
-            "masked data is not yet exposed to numpy",
-        ))
     }
 }
 
@@ -162,12 +150,6 @@ impl PyMaskedVariableArray {
     #[getter]
     fn dtype(&self) -> PyDataType {
         self.data_type.clone().into()
-    }
-
-    fn to_numpy(&self) -> PyResult<()> {
-        Err(PyNotImplementedError::new_err(
-            "masked variable-length data is not yet exposed to numpy",
-        ))
     }
 }
 

@@ -26,10 +26,9 @@ class Tensor:
     def buffer(self) -> Buffer:
         """The raw decoded bytes as a zero-copy buffer-protocol object."""
     def to_numpy(self) -> NDArray[Any]:
-        """Reinterpret the raw bytes as a NumPy array of this dtype and shape.
+        """Access a NumPy array view over Rust memory.
 
-        A zero-copy view via `np.frombuffer`; NumPy tolerates the (possibly
-        unaligned) buffer.
+        This is a zero-copy view via `np.frombuffer`.
         """
 
 class VariableArray:
@@ -44,8 +43,6 @@ class VariableArray:
     @property
     def dtype(self) -> DataType:
         """The Zarr data type."""
-    def to_numpy(self) -> NDArray[Any]:
-        """Not yet implemented: raises `NotImplementedError`."""
 
 class MaskedTensor:
     """Fixed-width decoded data with a validity mask.
@@ -59,8 +56,6 @@ class MaskedTensor:
     @property
     def dtype(self) -> DataType:
         """The Zarr data type."""
-    def to_numpy(self) -> NDArray[Any]:
-        """Not yet implemented: raises `NotImplementedError`."""
 
 class MaskedVariableArray:
     """Variable-length decoded data with a validity mask.
@@ -74,8 +69,6 @@ class MaskedVariableArray:
     @property
     def dtype(self) -> DataType:
         """The Zarr data type."""
-    def to_numpy(self) -> NDArray[Any]:
-        """Not yet implemented: raises `NotImplementedError`."""
 
 DecodedArray: TypeAlias = Tensor | VariableArray | MaskedTensor | MaskedVariableArray
 """The result of a read: one of the four decoded array layouts.
