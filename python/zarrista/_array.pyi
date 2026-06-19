@@ -5,7 +5,7 @@ from zarrista.codec import CodecOptions
 
 from ._chunks import ChunkGrid
 from ._codec import CodecChain
-from ._data import DecodedArray
+from ._decoded_array import DecodedArray
 from ._dtype import DataType
 from ._store import AsyncStore, FilesystemStore, MemoryStore
 
