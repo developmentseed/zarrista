@@ -26,7 +26,7 @@ nav:
       - api/store.md
       - api/chunk-grid.md
       - api/codec.md
-      - api/data.md
+      - api/decoded_array.md
       - api/dtype.md
   - Blog:
       - blog/index.md
