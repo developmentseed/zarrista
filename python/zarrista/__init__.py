@@ -5,14 +5,20 @@ from ._zarrista import (
     AsyncArray,
     AsyncGroup,
     ChunkGrid,
-    Data,
     DataType,
     FilesystemStore,
     FillValue,
     Group,
+    MaskedTensor,
+    MaskedVariableArray,
     MemoryStore,
+    Tensor,
+    VariableArray,
     __version__,
 )
+
+DataArray = Tensor | VariableArray | MaskedTensor | MaskedVariableArray
+"""The result of a read: one of the four decoded array layouts."""
 
 __all__ = [
     "Array",
@@ -20,12 +26,16 @@ __all__ = [
     "AsyncArray",
     "AsyncGroup",
     "ChunkGrid",
-    "Data",
     "DataType",
+    "DataArray",
     "FillValue",
     "FilesystemStore",
     "Group",
+    "MaskedTensor",
+    "MaskedVariableArray",
     "MemoryStore",
+    "Tensor",
+    "VariableArray",
     "__version__",
     "codec",
     "exceptions",

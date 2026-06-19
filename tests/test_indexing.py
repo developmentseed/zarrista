@@ -12,7 +12,7 @@ import pytest
 import zarr
 from numpy.typing import NDArray
 from obstore.store import LocalStore
-from zarrista import Array, AsyncArray, FilesystemStore
+from zarrista import Array, AsyncArray, FilesystemStore, Tensor
 
 
 @pytest.fixture
@@ -36,6 +36,25 @@ def test_slice_read_matches_numpy(int32_array: tuple[Path, NDArray[np.int32]]):
     ).to_numpy()
 
     np.testing.assert_array_equal(result, data[0:2, :, 5:7])
+
+
+def test_fixed_dtype_returns_tensor(int32_array: tuple[Path, NDArray[np.int32]]):
+    """A fixed-width dtype decodes to a `Tensor` carrying `shape`/`dtype`; its raw
+    `buffer()` reinterprets to the same array as `to_numpy()`."""
+    path, data = int32_array
+    arr = Array.open(FilesystemStore(path))
+
+    tensor = arr.retrieve_array_subset((slice(0, 2), slice(None), slice(5, 7)))
+    assert isinstance(tensor, Tensor)
+    assert tensor.shape == [2, 64, 2]
+    assert tensor.dtype == arr.dtype
+
+    expected = data[0:2, :, 5:7]
+    np.testing.assert_array_equal(tensor.to_numpy(), expected)
+
+    # buffer() exposes the raw decoded bytes; reinterpreting matches to_numpy().
+    from_buffer = np.frombuffer(tensor.buffer(), dtype="int32").reshape(tensor.shape)
+    np.testing.assert_array_equal(from_buffer, expected)
 
 
 def test_getitem_matches_retrieve_array_subset(
