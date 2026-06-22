@@ -15,22 +15,20 @@ use zarrs::storage::ReadableWritableListableStorageTraits;
 /// A Zarr group.
 #[pyclass(module = "zarrista", frozen, name = "Group")]
 pub struct PyGroup {
-    pub(crate) storage: Arc<dyn ReadableWritableListableStorageTraits>,
     pub(crate) path: NodePath,
     pub(crate) inner: Group<dyn ReadableWritableListableStorageTraits>,
 }
 
 impl PyGroup {
     pub(crate) fn new(
-        storage: Arc<dyn ReadableWritableListableStorageTraits>,
         path: NodePath,
         inner: Group<dyn ReadableWritableListableStorageTraits>,
     ) -> Self {
-        Self {
-            storage,
-            path,
-            inner,
-        }
+        Self { path, inner }
+    }
+
+    fn storage(&self) -> Arc<dyn ReadableWritableListableStorageTraits> {
+        self.inner.storage()
     }
 }
 
@@ -47,8 +45,8 @@ impl PyGroup {
     )]
     fn open(store: PySyncStorage, path: PyNodePath) -> ZarristaResult<Self> {
         let store = store.into_inner();
-        let inner = Group::open(store.clone(), path.as_str())?;
-        Ok(Self::new(store, path.into(), inner))
+        let inner = Group::open(store, path.as_str())?;
+        Ok(Self::new(path.into(), inner))
     }
 
     /// Names of the direct child arrays.

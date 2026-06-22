@@ -14,22 +14,20 @@ use zarrs::storage::AsyncReadableWritableListableStorageTraits;
 /// A Zarr group.
 #[pyclass(module = "zarrista", frozen, name = "AsyncGroup")]
 pub struct PyAsyncGroup {
-    pub(crate) storage: Arc<dyn AsyncReadableWritableListableStorageTraits>,
     pub(crate) path: NodePath,
     pub(crate) inner: Arc<Group<dyn AsyncReadableWritableListableStorageTraits>>,
 }
 
 impl PyAsyncGroup {
     pub(crate) fn new(
-        storage: Arc<dyn AsyncReadableWritableListableStorageTraits>,
         path: NodePath,
         inner: Arc<Group<dyn AsyncReadableWritableListableStorageTraits>>,
     ) -> Self {
-        Self {
-            storage,
-            path,
-            inner,
-        }
+        Self { path, inner }
+    }
+
+    fn storage(&self) -> Arc<dyn AsyncReadableWritableListableStorageTraits> {
+        self.inner.storage()
     }
 }
 
@@ -54,7 +52,7 @@ impl PyAsyncGroup {
             let inner = Group::async_open(storage.clone(), path.as_str())
                 .await
                 .map_err(ZarristaError::from)?;
-            Ok(Self::new(storage, path.into(), Arc::new(inner)))
+            Ok(Self::new(path.into(), Arc::new(inner)))
         })
     }
 
@@ -90,7 +88,7 @@ impl PyAsyncGroup {
 
     /// Open a direct child array or group by name.
     fn open_child_async<'py>(&self, py: Python<'py>, name: &str) -> PyResult<Bound<'py, PyAny>> {
-        let storage = self.storage.clone();
+        let storage = self.storage();
         let path = self.path.join(name).map_err(ZarristaError::from)?;
         future_into_py(py, async move {
             open_node_async(storage, path).await.map_err(PyErr::from)
