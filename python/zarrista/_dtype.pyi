@@ -19,10 +19,6 @@ DataTypeName: TypeAlias = Literal[
     "bytes",
 ]
 """The Zarr v3 names of the built-in fixed data types.
-
-Documents the common names for editor autocompletion; arbitrary strings (e.g.
-raw `"r*"` types or extension data types) are still accepted by
-[`DataType.from_string`][zarrista.DataType.from_string].
 """
 
 class DataType:
