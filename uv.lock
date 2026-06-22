@@ -1884,8 +1884,23 @@ wheels = [
 ]
 
 [[package]]
+name = "zarr-metadata"
+version = "0.3.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "typing-extensions" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/f2/9c/cfd5aa02a27c63ecec702a77834b395411518da5c748414d7e6a323638ed/zarr_metadata-0.3.0.tar.gz", hash = "sha256:d8fe02feef43380056ea0429ceb50974b7b5afe6f0386853977506b034e89d53", size = 36398, upload-time = "2026-06-19T13:17:38.276Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/91/96/64137930fb40b96b4d207eb1f1e4e42c5d6c9e682a5a7c3e6feff6eb0e29/zarr_metadata-0.3.0-py3-none-any.whl", hash = "sha256:e6651f418fcc89cc3c6fc11aa852fb6f8dd6f31d62913abc0d4d37ce7302d671", size = 45636, upload-time = "2026-06-19T13:17:37.097Z" },
+]
+
+[[package]]
 name = "zarrista"
 source = { editable = "." }
+dependencies = [
+    { name = "zarr-metadata" },
+]
 
 [package.dev-dependencies]
 dev = [
@@ -1913,6 +1928,7 @@ docs = [
 ]
 
 [package.metadata]
+requires-dist = [{ name = "zarr-metadata", specifier = ">=0.3" }]
 
 [package.metadata.requires-dev]
 dev = [
