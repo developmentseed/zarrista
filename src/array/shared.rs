@@ -39,8 +39,8 @@ macro_rules! array_metadata_accessors {
             }
 
             #[getter]
-            fn metadata<'py>(&self, py: ::pyo3::Python<'py>) -> ::pyo3::Bound<'py, ::pyo3::PyAny> {
-                ::pythonize::pythonize(py, self.inner.metadata()).unwrap()
+            fn metadata(&self) -> $crate::metadata::PyArrayMetadata {
+                self.inner.metadata().clone().into()
             }
 
             /// The number of dimensions.
