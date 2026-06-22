@@ -2,12 +2,17 @@ use pyo3::prelude::*;
 use pyo3_bytes::PyBytes;
 use zarrs::array::FillValue;
 
-#[pyclass(module = "zarrista", frozen, name = "FillValue")]
+#[derive(Debug, Clone)]
+#[pyclass(module = "zarrista", frozen, name = "FillValue", from_py_object)]
 pub struct PyFillValue(FillValue);
 
 impl PyFillValue {
     pub(crate) fn inner(&self) -> &FillValue {
         &self.0
+    }
+
+    pub fn into_inner(self) -> FillValue {
+        self.0
     }
 }
 

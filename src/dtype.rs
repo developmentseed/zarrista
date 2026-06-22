@@ -10,7 +10,7 @@ use zarrs::array::{DataType, DataTypeSize};
 use zarrs::metadata::v3::MetadataV3;
 
 #[derive(Debug, Clone)]
-#[pyclass(module = "zarrista", frozen, name = "DataType", skip_from_py_object)]
+#[pyclass(module = "zarrista", frozen, name = "DataType", from_py_object)]
 pub struct PyDataType {
     inner: DataType,
 }
@@ -18,6 +18,10 @@ pub struct PyDataType {
 impl PyDataType {
     pub(crate) fn inner(&self) -> &DataType {
         &self.inner
+    }
+
+    pub fn into_inner(self) -> DataType {
+        self.inner
     }
 }
 

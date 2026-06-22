@@ -22,8 +22,20 @@ pub fn bitround(keepbits: u32) -> PyArrayToArrayCodec {
     PyArrayToArrayCodec(Arc::new(codec))
 }
 
-#[pyclass(module = "zarrista.codec", frozen, name = "ArrayToArrayCodec")]
+#[derive(Debug, Clone)]
+#[pyclass(
+    module = "zarrista.codec",
+    frozen,
+    name = "ArrayToArrayCodec",
+    from_py_object
+)]
 pub struct PyArrayToArrayCodec(Arc<dyn ArrayToArrayCodecTraits>);
+
+impl PyArrayToArrayCodec {
+    pub fn into_inner(self) -> Arc<dyn ArrayToArrayCodecTraits> {
+        self.0
+    }
+}
 
 #[pymethods]
 impl PyArrayToArrayCodec {

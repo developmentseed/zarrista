@@ -3,17 +3,18 @@
 use crate::array::selection::PySelection;
 use crate::array::util::PyChunkIndices;
 use crate::chunks::PyChunkGrid;
-use crate::codec::{PyCodecChain, PyCodecOptions};
+use crate::codec::{PyArrayToArrayCodec, PyBytesToBytesCodec, PyCodecChain, PyCodecOptions};
 use crate::decoded_array::DecodedArray;
 use crate::dtype::PyDataType;
 use crate::error::ZarristaResult;
+use crate::fill_value::PyFillValue;
 use crate::node::PyNodePath;
 use crate::storage::PySyncStorage;
 use pyo3::prelude::*;
 use pyo3_bytes::PyBytes;
 use pythonize::pythonize;
 use pythonize::Result as PythonizeResult;
-use zarrs::array::Array;
+use zarrs::array::{Array, ArrayBuilder};
 use zarrs::storage::ReadableWritableListableStorageTraits;
 
 /// A Zarr array.
@@ -41,6 +42,55 @@ impl PyArray {
             self.inner.shape(),
             self.dtype().__repr__()
         )
+    }
+
+    /// Create a new array
+    #[staticmethod]
+    #[pyo3(
+        signature = (store, dtype, chunk_grid, fill_value, *, path="/", subchunk_shape=None, array_to_array_codecs=None, bytes_to_bytes_codecs=None),
+        text_signature = "(store, dtype, chunk_grid, fill_value, *, path='/', subchunk_shape=None, array_to_array_codecs=None, bytes_to_bytes_codecs=None)"
+    )]
+    #[expect(clippy::too_many_arguments)]
+    fn create(
+        store: PySyncStorage,
+        dtype: PyDataType,
+        chunk_grid: PyChunkGrid,
+        fill_value: PyFillValue,
+        path: &str,
+        subchunk_shape: Option<Vec<u64>>,
+        array_to_array_codecs: Option<Vec<PyArrayToArrayCodec>>,
+        bytes_to_bytes_codecs: Option<Vec<PyBytesToBytesCodec>>,
+    ) -> ZarristaResult<Self> {
+        let store = store.into_inner();
+        let mut builder = ArrayBuilder::new_with_chunk_grid(
+            chunk_grid,
+            dtype.into_inner(),
+            fill_value.into_inner(),
+        );
+
+        if let Some(subchunk_shape) = subchunk_shape {
+            builder.subchunk_shape(subchunk_shape);
+        }
+        if let Some(array_to_array_codecs) = array_to_array_codecs {
+            builder.array_to_array_codecs(
+                array_to_array_codecs
+                    .into_iter()
+                    .map(|c| c.into_inner())
+                    .collect(),
+            );
+        }
+        if let Some(bytes_to_bytes_codecs) = bytes_to_bytes_codecs {
+            builder.bytes_to_bytes_codecs(
+                bytes_to_bytes_codecs
+                    .into_iter()
+                    .map(|c| c.into_inner())
+                    .collect(),
+            );
+        }
+
+        Ok(Self {
+            inner: builder.build(store, path)?,
+        })
     }
 
     /// Open the array stored at `path` in `store`.

@@ -4,7 +4,8 @@ use zarrs::array::ChunkGrid;
 use crate::error::ZarristaResult;
 use crate::metadata::PyMetadataV3;
 
-#[pyclass(module = "zarrista", frozen, name = "ChunkGrid")]
+#[derive(Debug, Clone)]
+#[pyclass(module = "zarrista", frozen, name = "ChunkGrid", from_py_object)]
 pub struct PyChunkGrid(ChunkGrid);
 
 #[pymethods]
