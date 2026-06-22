@@ -1,4 +1,4 @@
-from zarr_metadata import JSONValue
+from zarr_metadata import ConsolidatedMetadataV3, GroupMetadataV3, JSONValue
 
 from ._array import Array, AsyncArray
 from ._store import AsyncStore, FilesystemStore, MemoryStore
@@ -12,6 +12,15 @@ class Group:
     @property
     def attrs(self) -> dict[str, JSONValue]:
         """The group's user attributes as a dict."""
+    @property
+    def metadata(self) -> GroupMetadataV3:
+        """The group's full Zarr v3 metadata."""
+    @property
+    def consolidated_metadata(self) -> ConsolidatedMetadataV3 | None:
+        """The consolidated metadata, if present in the group metadata."""
+    @property
+    def path(self) -> str:
+        """The group's path in the store."""
     def array_keys(self) -> list[str]:
         """Names of the direct child arrays."""
     def group_keys(self) -> list[str]:
@@ -31,6 +40,15 @@ class AsyncGroup:
     @property
     def attrs(self) -> dict[str, JSONValue]:
         """The group's user attributes as a dict."""
+    @property
+    def metadata(self) -> GroupMetadataV3:
+        """The group's full Zarr v3 metadata."""
+    @property
+    def consolidated_metadata(self) -> ConsolidatedMetadataV3 | None:
+        """The consolidated metadata, if present in the group metadata."""
+    @property
+    def path(self) -> str:
+        """The group's path in the store."""
     async def array_keys(self) -> list[str]:
         """Names of the direct child arrays."""
     async def group_keys(self) -> list[str]:
