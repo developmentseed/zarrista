@@ -1,11 +1,24 @@
 use pyo3::prelude::*;
 use zarrs::array::ChunkGrid;
 
+use crate::error::ZarristaResult;
+use crate::metadata::PyMetadataV3;
+
 #[pyclass(module = "zarrista", frozen, name = "ChunkGrid")]
 pub struct PyChunkGrid(ChunkGrid);
 
 #[pymethods]
 impl PyChunkGrid {
+    #[staticmethod]
+    fn from_metadata(metadata: PyMetadataV3, shape: Vec<u64>) -> ZarristaResult<Self> {
+        Ok(Self(ChunkGrid::from_metadata(metadata.as_ref(), &shape)?))
+    }
+
+    #[getter]
+    fn metadata(&self) -> PyMetadataV3 {
+        self.0.metadata().into()
+    }
+
     #[getter]
     fn ndim(&self) -> usize {
         self.0.dimensionality()
