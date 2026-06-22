@@ -21,6 +21,12 @@ macro_rules! group_metadata_accessors {
                 self.inner.metadata().clone().into()
             }
 
+            /// The consolidated metadata, if present in the group metadata.
+            #[getter]
+            fn consolidated_metadata(&self) -> Option<$crate::metadata::PyConsolidatedMetadata> {
+                self.inner.consolidated_metadata().map(Into::into)
+            }
+
             /// The group's path in the store.
             #[getter]
             fn path(&self) -> &str {

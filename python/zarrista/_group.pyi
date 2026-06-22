@@ -1,4 +1,4 @@
-from zarr_metadata import GroupMetadataV3, JSONValue
+from zarr_metadata import ConsolidatedMetadataV3, GroupMetadataV3, JSONValue
 
 from ._array import Array, AsyncArray
 from ._store import AsyncStore, FilesystemStore, MemoryStore
@@ -15,6 +15,9 @@ class Group:
     @property
     def metadata(self) -> GroupMetadataV3:
         """The group's full Zarr v3 metadata."""
+    @property
+    def consolidated_metadata(self) -> ConsolidatedMetadataV3 | None:
+        """The consolidated metadata, if present in the group metadata."""
     @property
     def path(self) -> str:
         """The group's path in the store."""
@@ -40,6 +43,9 @@ class AsyncGroup:
     @property
     def metadata(self) -> GroupMetadataV3:
         """The group's full Zarr v3 metadata."""
+    @property
+    def consolidated_metadata(self) -> ConsolidatedMetadataV3 | None:
+        """The consolidated metadata, if present in the group metadata."""
     @property
     def path(self) -> str:
         """The group's path in the store."""
