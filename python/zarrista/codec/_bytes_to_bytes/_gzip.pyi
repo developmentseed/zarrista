@@ -1,4 +1,4 @@
-from typing import Any
+from zarr_metadata.v3.codec.gzip import GzipCodecConfiguration
 
 from zarrista.codec._bytes_to_bytes import BytesToBytesCodec
 
@@ -12,5 +12,5 @@ class Gzip(BytesToBytesCodec):
         to 9 (most compression).
         """
     @staticmethod
-    def from_config(config: dict[str, Any]) -> Gzip:
+    def from_config(config: GzipCodecConfiguration) -> Gzip:
         """Construct a `gzip` codec from a config mapping, e.g. `{"level": 5}`."""

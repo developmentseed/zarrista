@@ -1,4 +1,4 @@
-from typing import Any
+from zarr_metadata.v3.codec.zstd import ZstdCodecConfiguration
 
 from zarrista.codec._bytes_to_bytes import BytesToBytesCodec
 
@@ -12,7 +12,7 @@ class Zstd(BytesToBytesCodec):
         is written to (and verified on decode from) the encoded bytestream.
         """
     @staticmethod
-    def from_config(config: dict[str, Any]) -> Zstd:
+    def from_config(config: ZstdCodecConfiguration) -> Zstd:
         """Construct a `zstd` codec from a configuration mapping.
 
         For example, `{"level": 5, "checksum": false}`.

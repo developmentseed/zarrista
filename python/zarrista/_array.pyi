@@ -1,5 +1,7 @@
 from types import EllipsisType
-from typing import Any, TypeAlias, Unpack
+from typing import TypeAlias, Unpack
+
+from zarr_metadata import ArrayMetadataV3, JSONValue
 
 from zarrista.codec import CodecOptions
 
@@ -26,7 +28,7 @@ class Array:
     def open(store: FilesystemStore | MemoryStore, path: str = "/") -> Array:
         """Open the array stored at `path` in `store`."""
     @property
-    def attrs(self) -> dict[str, Any]:
+    def attrs(self) -> dict[str, JSONValue]:
         """The array's user attributes as a dict."""
     @property
     def chunk_grid(self) -> ChunkGrid:
@@ -41,8 +43,8 @@ class Array:
     def dtype(self) -> DataType:
         """The Zarr data type."""
     @property
-    def metadata(self) -> dict[str, Any]:
-        """The array's full Zarr v3 metadata as a dict."""
+    def metadata(self) -> ArrayMetadataV3:
+        """The array's full Zarr v3 metadata."""
     @property
     def ndim(self) -> int:
         """The number of dimensions."""
@@ -50,7 +52,9 @@ class Array:
     def path(self) -> str:
         """The array's path in the store."""
     def retrieve_array_subset(
-        self, selection: Selection, **codec_options: Unpack[CodecOptions],
+        self,
+        selection: Selection,
+        **codec_options: Unpack[CodecOptions],
     ) -> DecodedArray:
         """Read and decode an array region selected with numpy-style basic indexing.
 
@@ -60,7 +64,9 @@ class Array:
         Keyword arguments are passed as [`CodecOptions`][zarrista.codec.CodecOptions].
         """
     def retrieve_chunk(
-        self, chunk_indices: list[int], **codec_options: Unpack[CodecOptions],
+        self,
+        chunk_indices: list[int],
+        **codec_options: Unpack[CodecOptions],
     ) -> DecodedArray:
         """Read and decode the chunk at the given chunk grid indices.
 
@@ -85,7 +91,7 @@ class AsyncArray:
         `store` may be an obstore `ObjectStore` or an icechunk `Session`.
         """
     @property
-    def attrs(self) -> dict[str, Any]:
+    def attrs(self) -> dict[str, JSONValue]:
         """The array's user attributes as a dict."""
     @property
     def chunk_grid(self) -> ChunkGrid:
@@ -100,8 +106,8 @@ class AsyncArray:
     def dtype(self) -> DataType:
         """The Zarr data type."""
     @property
-    def metadata(self) -> dict[str, Any]:
-        """The array's full Zarr v3 metadata as a dict."""
+    def metadata(self) -> ArrayMetadataV3:
+        """The array's full Zarr v3 metadata."""
     @property
     def ndim(self) -> int:
         """The number of dimensions."""
@@ -109,7 +115,9 @@ class AsyncArray:
     def path(self) -> str:
         """The array's path in the store."""
     async def retrieve_array_subset(
-        self, selection: Selection, **codec_options: Unpack[CodecOptions],
+        self,
+        selection: Selection,
+        **codec_options: Unpack[CodecOptions],
     ) -> DecodedArray:
         """Read and decode an array region selected with numpy-style basic indexing.
 
@@ -119,7 +127,9 @@ class AsyncArray:
         Keyword arguments are passed as [`CodecOptions`][zarrista.codec.CodecOptions].
         """
     async def retrieve_chunk(
-        self, chunk_indices: list[int], **codec_options: Unpack[CodecOptions],
+        self,
+        chunk_indices: list[int],
+        **codec_options: Unpack[CodecOptions],
     ) -> DecodedArray:
         """Read and decode the chunk at the given chunk grid indices.
 
