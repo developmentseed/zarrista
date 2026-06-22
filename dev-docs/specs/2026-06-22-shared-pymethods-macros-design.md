@@ -57,15 +57,29 @@ block with these 9 `#[getter]` accessors:
 - `attrs`, `chunk_grid`, `codecs`, `dimension_names`, `dtype`, `metadata`,
   `ndim`, `path`, `shape`
 
+`metadata` returns `PyArrayMetadata` (the metadata newtype handles
+pythonization via its `IntoPyObject` impl) rather than calling `pythonize`
+inline, mirroring the group accessor.
+
 Exported via `pub(crate) use array_metadata_accessors;`. Uses `$crate::`-rooted
-paths for referenced types (`PyChunkGrid`, `PyCodecChain`, `PyDataType`) and
-fully-qualified `::pyo3::` / `::pythonize::` paths so the macro is hygienic
-regardless of the caller's imports.
+paths for referenced types (`PyChunkGrid`, `PyCodecChain`, `PyDataType`,
+`PyArrayMetadata`) and fully-qualified `::pyo3::` / `::pythonize::` paths so the
+macro is hygienic regardless of the caller's imports.
 
 ### `src/group/shared.rs`
 
-Defines `group_metadata_accessors!($ty)`. Starts with `attrs`. Grows as more
-storage-agnostic `zarrs` `Group` methods are exposed.
+Defines `group_metadata_accessors!($ty)` emitting a `#[pymethods] impl $ty`
+block with the storage-agnostic, no-I/O `Group` accessors:
+
+- `attrs` (`#[getter]`, pythonized attributes map)
+- `metadata` (`#[getter]`, returns `PyGroupMetadata` — the newtype's
+  `IntoPyObject` impl handles pythonization, so the getter just clones
+  `self.inner.metadata()` and `.into()`s it; no inline `pythonize`)
+- `path` (`#[getter]`, `self.inner.path().as_str()`)
+
+Grows further as more storage-agnostic `zarrs` `Group` methods are exposed
+(e.g. `consolidated_metadata`). I/O methods (`array_keys`/`group_keys`,
+child navigation) stay per-type.
 
 ### Wiring
 
