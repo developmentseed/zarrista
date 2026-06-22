@@ -5,6 +5,7 @@ from pathlib import Path
 
 import pytest
 import zarr
+
 from zarrista import FilesystemStore, Group
 from zarrista import exceptions as exc
 

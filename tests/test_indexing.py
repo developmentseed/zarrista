@@ -12,6 +12,7 @@ import pytest
 import zarr
 from numpy.typing import NDArray
 from obstore.store import LocalStore
+
 from zarrista import Array, AsyncArray, FilesystemStore, Tensor
 
 
@@ -21,7 +22,10 @@ def int32_array(tmp_path: Path) -> tuple[Path, NDArray[np.int32]]:
     path = tmp_path / "a.zarr"
     data = np.arange(9 * 64 * 100, dtype="int32").reshape(9, 64, 100)
     z = zarr.create_array(
-        store=str(path), shape=data.shape, chunks=(3, 16, 50), dtype=data.dtype,
+        store=str(path),
+        shape=data.shape,
+        chunks=(3, 16, 50),
+        dtype=data.dtype,
     )
     z[:] = data
     return path, data
@@ -84,7 +88,8 @@ def test_getitem_matches_retrieve_array_subset(
 
     key = (slice(0, 2), slice(None), slice(5, 7))
     np.testing.assert_array_equal(
-        arr[key].to_numpy(), arr.retrieve_array_subset(key).to_numpy(),
+        arr[key].to_numpy(),
+        arr.retrieve_array_subset(key).to_numpy(),
     )
 
 
@@ -136,7 +141,10 @@ def test_float64_dtype(tmp_path):
     path = tmp_path / "f.zarr"
     data = (np.arange(4 * 5, dtype="float64") * 0.5).reshape(4, 5)
     z = zarr.create_array(
-        store=str(path), shape=data.shape, chunks=(2, 5), dtype=data.dtype,
+        store=str(path),
+        shape=data.shape,
+        chunks=(2, 5),
+        dtype=data.dtype,
     )
     z[:] = data
 

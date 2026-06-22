@@ -16,6 +16,7 @@ import numpy as np
 import pytest
 import zarr
 from numpy.typing import NDArray
+
 from zarrista import AsyncArray, AsyncGroup
 
 # The session is serialized with the Python icechunk and reconstructed by the
@@ -38,7 +39,10 @@ def icechunk_session(tmp_path: Path) -> tuple[icechunk.Session, NDArray[np.int32
     data = np.arange(9 * 64 * 100, dtype="int32").reshape(9, 64, 100)
     root = zarr.group(store=session.store)
     z = root.create_array(
-        "embeddings", shape=data.shape, chunks=(3, 16, 50), dtype=data.dtype,
+        "embeddings",
+        shape=data.shape,
+        chunks=(3, 16, 50),
+        dtype=data.dtype,
     )
     z[:] = data
     session.commit("write embeddings")
