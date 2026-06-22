@@ -28,7 +28,8 @@ raw `"r*"` types or extension data types) are still accepted by
 class DataType:
     """A Zarr v3 data type."""
 
-    def __init__(self, metadata: dict[str, Any]) -> None:
+    @staticmethod
+    def from_metadata(metadata: dict[str, Any]) -> DataType:
         """Construct a data type from its Zarr v3 metadata."""
     @staticmethod
     def from_string(name: DataTypeName | str) -> DataType:

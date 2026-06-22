@@ -23,10 +23,11 @@ impl PyDataType {
 
 #[pymethods]
 impl PyDataType {
-    #[new]
-    fn py_new(metadata: PyMetadataV3) -> Self {
-        let data_type = DataType::from_metadata(&metadata.into_inner()).unwrap();
-        PyDataType { inner: data_type }
+    /// Construct a data type from its Zarr v3 metadata.
+    #[staticmethod]
+    fn from_metadata(metadata: PyMetadataV3) -> ZarristaResult<Self> {
+        let data_type = DataType::from_metadata(&metadata.into_inner())?;
+        Ok(Self { inner: data_type })
     }
 
     /// Construct a data type from its Zarr v3 name (e.g. `"float32"`).

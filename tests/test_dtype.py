@@ -2,8 +2,8 @@ import pytest
 from zarrista import DataType
 
 
-def test_construct_from_metadata():
-    dtype = DataType({"name": "float32"})
+def test_from_metadata():
+    dtype = DataType.from_metadata({"name": "float32"})
     assert dtype.name == "float32"
     assert dtype.size == 4
 
@@ -15,7 +15,9 @@ def test_from_string():
 
 
 def test_from_string_matches_metadata_construction():
-    assert DataType.from_string("float32") == DataType({"name": "float32"})
+    from_string = DataType.from_string("float32")
+    from_metadata = DataType.from_metadata({"name": "float32"})
+    assert from_string == from_metadata
 
 
 def test_from_string_variable_length_has_no_size():
