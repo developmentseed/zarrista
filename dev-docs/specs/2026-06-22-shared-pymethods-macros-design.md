@@ -75,11 +75,18 @@ block with the storage-agnostic, no-I/O `Group` accessors:
 - `metadata` (`#[getter]`, returns `PyGroupMetadata` — the newtype's
   `IntoPyObject` impl handles pythonization, so the getter just clones
   `self.inner.metadata()` and `.into()`s it; no inline `pythonize`)
+- `consolidated_metadata` (`#[getter]`, returns
+  `Option<PyConsolidatedMetadata>` — `self.inner.consolidated_metadata()`
+  already returns an owned `Option`, so it just `.map(Into::into)`s)
 - `path` (`#[getter]`, `self.inner.path().as_str()`)
 
-Grows further as more storage-agnostic `zarrs` `Group` methods are exposed
-(e.g. `consolidated_metadata`). I/O methods (`array_keys`/`group_keys`,
-child navigation) stay per-type.
+`PyConsolidatedMetadata` is added to `src/metadata.rs` via the existing
+`pythonized_metadata!` macro (wrapping
+`zarrs::metadata_ext::group::consolidated_metadata::ConsolidatedMetadata`,
+which derives `Serialize`/`Deserialize`/`Clone`).
+
+Grows further as more storage-agnostic `zarrs` `Group` methods are exposed.
+I/O methods (`array_keys`/`group_keys`, child navigation) stay per-type.
 
 ### Wiring
 
