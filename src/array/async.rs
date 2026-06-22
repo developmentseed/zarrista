@@ -124,3 +124,9 @@ impl PyAsyncArray {
         })
     }
 }
+
+impl From<Array<dyn AsyncReadableWritableListableStorageTraits>> for PyAsyncArray {
+    fn from(inner: Array<dyn AsyncReadableWritableListableStorageTraits>) -> Self {
+        Self::new(Arc::new(inner))
+    }
+}

@@ -85,3 +85,9 @@ impl PyArray {
         Ok(encoded.map(|buf| PyBytes::new(buf.into())))
     }
 }
+
+impl From<Array<dyn ReadableWritableListableStorageTraits>> for PyArray {
+    fn from(inner: Array<dyn ReadableWritableListableStorageTraits>) -> Self {
+        Self::new(inner)
+    }
+}
