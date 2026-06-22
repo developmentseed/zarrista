@@ -83,7 +83,7 @@ impl FromPyObject<'_, '_> for PyDataType {
             // assume the metadata corresponds to a "name" if it cannot be parsed as MetadataV3
             // this makes "float32" work for example, where normally r#""float32""# would be required
             MetadataV3::try_from(string_type.as_str())
-                .unwrap_or(MetadataV3::new(string_type.as_str()))
+                .unwrap_or_else(|_| MetadataV3::new(string_type.as_str()))
         } else {
             obj.extract::<PyMetadataV3>()?.into_inner()
         };
