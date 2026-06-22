@@ -17,10 +17,10 @@ impl PyNodePath {
     }
 }
 
-impl<'a, 'py> FromPyObject<'a, 'py> for PyNodePath {
+impl FromPyObject<'_, '_> for PyNodePath {
     type Error = PyErr;
 
-    fn extract(obj: Borrowed<'a, 'py, PyAny>) -> Result<Self, Self::Error> {
+    fn extract(obj: Borrowed<'_, '_, PyAny>) -> Result<Self, Self::Error> {
         let path = obj.extract::<PyBackedStr>()?;
         NodePath::new(&path)
             .map(PyNodePath)
