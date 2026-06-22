@@ -1,4 +1,5 @@
 mod r#async;
+mod shared;
 mod sync;
 
 pub use r#async::PyAsyncGroup;

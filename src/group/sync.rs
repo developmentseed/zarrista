@@ -4,11 +4,10 @@ use std::sync::Arc;
 
 use super::last_segment;
 use crate::error::ZarristaResult;
+use crate::group::shared::group_metadata_accessors;
 use crate::node::{open_node, Node, PyNodePath};
 use crate::storage::PySyncStorage;
 use pyo3::prelude::*;
-use pythonize::pythonize;
-use pythonize::Result as PythonizeResult;
 use zarrs::group::Group;
 use zarrs::node::NodePath;
 use zarrs::storage::ReadableWritableListableStorageTraits;
@@ -35,6 +34,9 @@ impl PyGroup {
     }
 }
 
+// Metadata accessors shared with `PyAsyncGroup`; see `group/shared.rs`.
+group_metadata_accessors!(PyGroup);
+
 #[pymethods]
 impl PyGroup {
     /// Open the group stored at `path` in `store`.
@@ -47,12 +49,6 @@ impl PyGroup {
         let store = store.into_inner();
         let inner = Group::open(store.clone(), path.as_str())?;
         Ok(Self::new(store, path.into(), inner))
-    }
-
-    /// The group's user attributes as a dict.
-    #[getter]
-    fn attrs<'py>(&self, py: Python<'py>) -> PythonizeResult<Bound<'py, PyAny>> {
-        pythonize(py, self.inner.attributes())
     }
 
     /// Names of the direct child arrays.
