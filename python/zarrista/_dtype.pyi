@@ -1,18 +1,5 @@
 from typing import Any, Literal, TypeAlias
 
-class DataType:
-    """A Zarr v3 data type."""
-
-    def __init__(self, metadata: dict[str, Any]) -> None:
-        """Construct a data type from its Zarr v3 metadata."""
-    @property
-    def name(self) -> str | None:
-        """The Zarr v3 data-type name (e.g. `"float64"`)."""
-    @property
-    def size(self) -> int | None:
-        """The fixed size in bytes, or `None` for variable-length data types."""
-    def __eq__(self, other: object) -> bool: ...
-
 DataTypeName: TypeAlias = Literal[
     "bool",
     "int8",
@@ -34,17 +21,22 @@ DataTypeName: TypeAlias = Literal[
 """The Zarr v3 names of the built-in fixed data types.
 
 Documents the common names for editor autocompletion; arbitrary strings (e.g.
-raw `"r*"` types or extension data types) are still accepted via `str` in
-[`DataTypeInput`][zarrista.DataTypeInput].
+raw `"r*"` types or extension data types) are still accepted by
+[`DataType.from_string`][zarrista.DataType.from_string].
 """
 
-DataTypeInput: TypeAlias = DataType | DataTypeName | str | dict[str, Any]
-"""A data type accepted anywhere a `DataType` is required.
+class DataType:
+    """A Zarr v3 data type."""
 
-Coerced into a [`DataType`][zarrista.DataType] at the function boundary:
-
-- a `DataType` instance (used as-is),
-- a name string such as `"float32"` (see
-  [`DataTypeName`][zarrista.DataTypeName]),
-- a Zarr v3 metadata `dict` such as `{"name": "float32"}`.
-"""
+    def __init__(self, metadata: dict[str, Any]) -> None:
+        """Construct a data type from its Zarr v3 metadata."""
+    @staticmethod
+    def from_string(name: DataTypeName | str) -> DataType:
+        """Construct a data type from its Zarr v3 name (e.g. `"float32"`)."""
+    @property
+    def name(self) -> str | None:
+        """The Zarr v3 data-type name (e.g. `"float64"`)."""
+    @property
+    def size(self) -> int | None:
+        """The fixed size in bytes, or `None` for variable-length data types."""
+    def __eq__(self, other: object) -> bool: ...

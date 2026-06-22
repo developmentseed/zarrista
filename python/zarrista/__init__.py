@@ -1,6 +1,6 @@
 """A low-level Zarr API for Python, binding to Rust's Zarrs."""
 
-from typing import Any, Literal, TypeAlias
+from typing import Literal, TypeAlias
 
 from . import codec, exceptions
 from ._zarrista import (
@@ -50,18 +50,8 @@ DataTypeName: TypeAlias = Literal[
 """The Zarr v3 names of the built-in fixed data types.
 
 Documents the common names for editor autocompletion; arbitrary strings (e.g.
-raw `"r*"` types or extension data types) are still accepted via `str` in
-`DataTypeInput`.
-"""
-
-DataTypeInput: TypeAlias = DataType | DataTypeName | str | dict[str, Any]
-"""A data type accepted anywhere a `DataType` is required.
-
-Coerced into a `DataType` at the function boundary:
-
-- a `DataType` instance (used as-is),
-- a name string such as `"float32"` (see `DataTypeName`),
-- a Zarr v3 metadata `dict` such as `{"name": "float32"}`.
+raw `"r*"` types or extension data types) are still accepted by
+`DataType.from_string`.
 """
 
 
@@ -72,7 +62,6 @@ __all__ = [
     "AsyncGroup",
     "ChunkGrid",
     "DataType",
-    "DataTypeInput",
     "DataTypeName",
     "DecodedArray",
     "FilesystemStore",
