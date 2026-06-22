@@ -15,6 +15,17 @@ macro_rules! group_metadata_accessors {
             ) -> ::pythonize::Result<::pyo3::Bound<'py, ::pyo3::PyAny>> {
                 ::pythonize::pythonize(py, self.inner.attributes())
             }
+
+            #[getter]
+            fn metadata(&self) -> $crate::metadata::PyGroupMetadata {
+                self.inner.metadata().clone().into()
+            }
+
+            /// The group's path in the store.
+            #[getter]
+            fn path(&self) -> &str {
+                self.inner.path().as_str()
+            }
         }
     };
 }
