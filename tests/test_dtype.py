@@ -25,7 +25,7 @@ def test_from_string_variable_length_has_no_size():
 
 
 def test_from_string_rejects_unknown_name():
-    with pytest.raises(Exception):
+    with pytest.raises(Exception):  # noqa: B017, PT011
         DataType.from_string("not_a_real_dtype")
 
 
