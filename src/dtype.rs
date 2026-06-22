@@ -5,17 +5,14 @@ use std::borrow::Cow;
 
 use crate::error::ZarristaError;
 use crate::metadata::PyMetadataV3;
-use numpy::prelude::*;
-use numpy::IntoPyArray;
-use pyo3::exceptions::PyNotImplementedError;
 use pyo3::prelude::*;
-use pyo3::IntoPyObjectExt;
-use zarrs::array::{Array, ArraySubset};
-use zarrs::array::{ArrayError, ElementOwned};
-use zarrs::array::{DataType, DataTypeSize};
-use zarrs::storage::ReadableListableStorageTraits;
+use pyo3::pybacked::PyBackedStr;
+use pyo3::types::PyString;
+use zarrs::array::{ArrayCreateError, DataType, DataTypeSize};
+use zarrs::metadata::v3::MetadataV3;
 
-#[pyclass(module = "zarrista", frozen, name = "DataType")]
+#[derive(Debug, Clone)]
+#[pyclass(module = "zarrista", frozen, name = "DataType", skip_from_py_object)]
 pub struct PyDataType {
     inner: DataType,
 }
@@ -72,121 +69,27 @@ impl From<PyDataType> for DataType {
     }
 }
 
-/// The store trait object backing every zarrista array/group.
-pub(crate) type DynStorage = dyn ReadableListableStorageTraits;
+impl FromPyObject<'_, '_> for PyDataType {
+    type Error = ZarristaError;
 
-// The following helpers back the array-read path (numpy region/chunk reads),
-// which is still commented out in `array/sync.rs`. Allow dead code until those
-// methods are enabled.
+    // Taken from https://github.com/zarrs/zarrs/blob/38a7be3e51c0b7f2f6a88ba0859714ab07878cb4/zarrs/src/array/builder/array_builder_data_type.rs#L36-L52
+    fn extract(obj: Borrowed<'_, '_, PyAny>) -> Result<Self, Self::Error> {
+        if let Ok(slf) = obj.cast::<Self>() {
+            return Ok(slf.get().clone());
+        }
 
-/// A region of an array to read: either an explicit subset or a whole chunk.
-#[allow(dead_code)]
-pub(crate) enum Region<'a> {
-    Subset(&'a ArraySubset),
-    Chunk(&'a [u64]),
-}
+        let metadata = if obj.is_instance_of::<PyString>() {
+            let string_type = obj.extract::<PyBackedStr>()?;
+            // assume the metadata corresponds to a "name" if it cannot be parsed as MetadataV3
+            // this makes "float32" work for example, where normally r#""float32""# would be required
+            MetadataV3::try_from(string_type.as_str())
+                .unwrap_or(MetadataV3::new(string_type.as_str()))
+        } else {
+            obj.extract::<PyMetadataV3>()?.into_inner()
+        };
 
-#[allow(dead_code)]
-fn retrieve_vec<T: ElementOwned>(
-    array: &Array<DynStorage>,
-    region: &Region<'_>,
-) -> Result<Vec<T>, ArrayError> {
-    match region {
-        Region::Subset(subset) => array.retrieve_array_subset(*subset),
-        Region::Chunk(indices) => array.retrieve_chunk(indices),
+        Ok(DataType::from_metadata(&metadata)
+            .map_err(ArrayCreateError::DataTypeCreateError)?
+            .into())
     }
-}
-
-#[allow(dead_code)]
-fn vec_to_numpy<T: numpy::Element>(
-    py: Python<'_>,
-    data: Vec<T>,
-    shape: &[usize],
-) -> PyResult<Py<PyAny>> {
-    let array = data.into_pyarray(py);
-    let reshaped = array.reshape(shape.to_vec())?;
-    Ok(reshaped.into_any().unbind())
-}
-
-/// Read a region of `array` into a C-order numpy array of the given output
-/// shape. Only fixed-length numeric and boolean dtypes are supported so far.
-#[allow(dead_code)]
-pub(crate) fn read_region(
-    py: Python<'_>,
-    array: &Array<DynStorage>,
-    region: &Region<'_>,
-    out_shape: &[usize],
-) -> PyResult<Py<PyAny>> {
-    let name = array.data_type().name_v3();
-
-    macro_rules! arm {
-        ($t:ty) => {{
-            let data: Vec<$t> = retrieve_vec(array, region).map_err(ZarristaError::from)?;
-            vec_to_numpy(py, data, out_shape)
-        }};
-    }
-
-    match name.as_deref() {
-        Some("bool") => arm!(bool),
-        Some("int8") => arm!(i8),
-        Some("int16") => arm!(i16),
-        Some("int32") => arm!(i32),
-        Some("int64") => arm!(i64),
-        Some("uint8") => arm!(u8),
-        Some("uint16") => arm!(u16),
-        Some("uint32") => arm!(u32),
-        Some("uint64") => arm!(u64),
-        Some("float16") => arm!(half::f16),
-        Some("float32") => arm!(f32),
-        Some("float64") => arm!(f64),
-        other => Err(PyNotImplementedError::new_err(format!(
-            "reading dtype {:?} is not supported yet",
-            other.unwrap_or("<unknown>")
-        ))),
-    }
-}
-
-/// Convert a fill value (native-endian bytes) into a Python scalar, returning
-/// `None` for dtypes we do not yet interpret.
-#[allow(dead_code)]
-pub(crate) fn fill_value_to_py(
-    py: Python<'_>,
-    data_type: &DataType,
-    bytes: &[u8],
-) -> PyResult<Py<PyAny>> {
-    macro_rules! scalar {
-        ($t:ty) => {{
-            const N: usize = std::mem::size_of::<$t>();
-            match <[u8; N]>::try_from(bytes) {
-                Ok(arr) => <$t>::from_ne_bytes(arr).into_bound_py_any(py)?.unbind(),
-                Err(_) => py.None(),
-            }
-        }};
-    }
-
-    let dtype_name = data_type.name_v3();
-    let value = match dtype_name.as_deref() {
-        Some("bool") => (!bytes.is_empty() && bytes[0] != 0)
-            .into_bound_py_any(py)?
-            .unbind(),
-        Some("int8") => scalar!(i8),
-        Some("int16") => scalar!(i16),
-        Some("int32") => scalar!(i32),
-        Some("int64") => scalar!(i64),
-        Some("uint8") => scalar!(u8),
-        Some("uint16") => scalar!(u16),
-        Some("uint32") => scalar!(u32),
-        Some("uint64") => scalar!(u64),
-        Some("float16") => match <[u8; 2]>::try_from(bytes) {
-            Ok(arr) => half::f16::from_ne_bytes(arr)
-                .to_f32()
-                .into_bound_py_any(py)?
-                .unbind(),
-            Err(_) => py.None(),
-        },
-        Some("float32") => scalar!(f32),
-        Some("float64") => scalar!(f64),
-        _ => py.None(),
-    };
-    Ok(value)
 }
