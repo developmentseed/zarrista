@@ -1,31 +1,56 @@
-from typing import Any, Literal, TypeAlias
+from typing import TypeAlias
 
-DataTypeName: TypeAlias = Literal[
-    "bool",
-    "int8",
-    "int16",
-    "int32",
-    "int64",
-    "uint8",
-    "uint16",
-    "uint32",
-    "uint64",
-    "float16",
-    "float32",
-    "float64",
-    "complex64",
-    "complex128",
-    "string",
-    "bytes",
-]
-"""The Zarr v3 names of the built-in fixed data types.
+from zarr_metadata import NamedConfigV3
+from zarr_metadata.v3.data_type import (
+    BoolDataTypeName,
+    BytesDataTypeName,
+    Complex64DataTypeName,
+    Complex128DataTypeName,
+    Float16DataTypeName,
+    Float32DataTypeName,
+    Float64DataTypeName,
+    Int8DataTypeName,
+    Int16DataTypeName,
+    Int32DataTypeName,
+    Int64DataTypeName,
+    RawBytesDataTypeName,
+    StringDataTypeName,
+    Uint8DataTypeName,
+    Uint16DataTypeName,
+    Uint32DataTypeName,
+    Uint64DataTypeName,
+)
+
+DataTypeName: TypeAlias = (
+    BoolDataTypeName
+    | Int8DataTypeName
+    | Int16DataTypeName
+    | Int32DataTypeName
+    | Int64DataTypeName
+    | Uint8DataTypeName
+    | Uint16DataTypeName
+    | Uint32DataTypeName
+    | Uint64DataTypeName
+    | Float16DataTypeName
+    | Float32DataTypeName
+    | Float64DataTypeName
+    | Complex64DataTypeName
+    | Complex128DataTypeName
+    | StringDataTypeName
+    | BytesDataTypeName
+    | RawBytesDataTypeName
+)
+"""The Zarr v3 names of the data types `from_string` can build.
+
+Composed from the per-dtype name literals in `zarr_metadata.v3.data_type`, so
+it stays in sync with the spec rather than being hand-maintained here.
 """
 
 class DataType:
     """A Zarr v3 data type."""
 
     @staticmethod
-    def from_metadata(metadata: dict[str, Any]) -> DataType:
+    def from_metadata(metadata: NamedConfigV3) -> DataType:
         """Construct a data type from its Zarr v3 metadata."""
     @staticmethod
     def from_string(name: DataTypeName | str) -> DataType:

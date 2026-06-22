@@ -1,4 +1,4 @@
-from typing import Any
+from zarr_metadata import JSONValue
 
 from ._array import Array, AsyncArray
 from ._store import AsyncStore, FilesystemStore, MemoryStore
@@ -10,7 +10,7 @@ class Group:
     def open(store: FilesystemStore | MemoryStore, path: str = "/") -> Group:
         """Open the group stored at `path` in `store`."""
     @property
-    def attrs(self) -> dict[str, Any]:
+    def attrs(self) -> dict[str, JSONValue]:
         """The group's user attributes as a dict."""
     def array_keys(self) -> list[str]:
         """Names of the direct child arrays."""
@@ -29,7 +29,7 @@ class AsyncGroup:
         `store` may be an obstore `ObjectStore` or an icechunk `Session`.
         """
     @property
-    def attrs(self) -> dict[str, Any]:
+    def attrs(self) -> dict[str, JSONValue]:
         """The group's user attributes as a dict."""
     async def array_keys(self) -> list[str]:
         """Names of the direct child arrays."""

@@ -1,4 +1,6 @@
-from typing import Any, Literal, TypeAlias
+from typing import Literal, TypeAlias
+
+from zarr_metadata.v3.codec.blosc import BloscCodecConfiguration
 
 from zarrista.codec._bytes_to_bytes import BytesToBytesCodec
 
@@ -35,7 +37,7 @@ class Blosc(BytesToBytesCodec):
         automatically when `blocksize` is `None` or `0`.
         """
     @staticmethod
-    def from_config(config: dict[str, Any]) -> Blosc:
+    def from_config(config: BloscCodecConfiguration) -> Blosc:
         """Construct a `blosc` codec from a configuration mapping.
 
         For example `{"cname": "lz4", "clevel": 5, "shuffle": "shuffle",

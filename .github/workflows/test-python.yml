@@ -20,6 +20,11 @@ jobs:
       # Use ruff-action so we get annotations in the GitHub UI.
       - uses: astral-sh/ruff-action@v3
 
+      # The default step above runs `ruff check`; also enforce formatting.
+      - uses: astral-sh/ruff-action@v3
+        with:
+          args: "format --check"
+
   docs:
     name: Build docs
     runs-on: ubuntu-latest

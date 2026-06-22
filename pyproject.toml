@@ -18,6 +18,11 @@ classifiers = [
     "Typing :: Typed",
 ]
 dynamic = ["version"]
+dependencies = [
+    # Type-only package providing Zarr v3 metadata TypedDicts/Literals used in
+    # the `.pyi` stubs (data-type names, codec configs, array metadata).
+    "zarr-metadata>=0.3",
+]
 
 [tool.maturin]
 features = ["pyo3/extension-module", "abi3-py311"]
@@ -67,6 +72,9 @@ ignore = [
     "TD002",  # todo without author name
     "TRY003", # define exceptions in the exception class
 ]
+
+[tool.ruff.lint.isort]
+known-first-party = ["zarrista"]
 
 [tool.ruff.lint.per-file-ignores]
 "*.pyi" = [
