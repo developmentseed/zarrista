@@ -1,6 +1,7 @@
 mod r#async;
 mod create;
 mod selection;
+mod shared;
 mod sync;
 mod util;
 

@@ -28,9 +28,6 @@ use crate::exceptions as exc;
 #[derive(Debug, Error)]
 #[non_exhaustive]
 pub enum ZarristaError {
-    /// No array or group exists at the requested path.
-    #[error("{0}")]
-    NotFound(String),
     /// An error originating from the Python interpreter, passed through as-is.
     #[error(transparent)]
     Py(#[from] PyErr),
@@ -72,17 +69,9 @@ pub enum ZarristaError {
     PluginCreate(#[from] PluginCreateError),
 }
 
-impl ZarristaError {
-    /// Build a [`ZarristaError::NotFound`] for a missing node path.
-    pub(crate) fn not_found(path: &str) -> Self {
-        Self::NotFound(format!("no array or group found at path {path:?}"))
-    }
-}
-
 impl From<ZarristaError> for PyErr {
     fn from(error: ZarristaError) -> Self {
         match error {
-            ZarristaError::NotFound(msg) => exc::NotFoundError::new_err(msg),
             ZarristaError::Py(err) => err,
             ZarristaError::ArrayCreate(err) => exc::ArrayCreateError::new_err(err.to_string()),
             ZarristaError::Array(err) => exc::ArrayError::new_err(err.to_string()),

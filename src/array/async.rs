@@ -3,24 +3,22 @@
 use std::sync::Arc;
 
 use crate::array::selection::PySelection;
+use crate::array::shared::array_metadata_accessors;
 use crate::array::util::PyChunkIndices;
-use crate::chunks::PyChunkGrid;
-use crate::codec::{PyCodecChain, PyCodecOptions};
+use crate::codec::PyCodecOptions;
 use crate::decoded_array::DecodedArray;
-use crate::dtype::PyDataType;
 use crate::error::ZarristaError;
 use crate::node::PyNodePath;
 use crate::storage::PyAsyncStorage;
 use pyo3::prelude::*;
 use pyo3_async_runtimes::tokio::future_into_py;
 use pyo3_bytes::PyBytes;
-use pythonize::pythonize;
-use pythonize::Result as PythonizeResult;
 use zarrs::array::Array;
 use zarrs::storage::AsyncReadableWritableListableStorageTraits;
 
 /// A Zarr array.
-#[pyclass(module = "zarrista", frozen, name = "AsyncArray")]
+#[derive(Clone)]
+#[pyclass(module = "zarrista", frozen, name = "AsyncArray", from_py_object)]
 pub struct PyAsyncArray {
     pub(crate) inner: Arc<Array<dyn AsyncReadableWritableListableStorageTraits>>,
 }
@@ -30,6 +28,9 @@ impl PyAsyncArray {
         Self { inner }
     }
 }
+
+// Metadata accessors shared with `PyArray`; see `array/shared.rs`.
+array_metadata_accessors!(PyAsyncArray);
 
 #[pymethods]
 impl PyAsyncArray {
@@ -68,51 +69,6 @@ impl PyAsyncArray {
                 .map_err(ZarristaError::from)?;
             Ok(Self::new(Arc::new(inner)))
         })
-    }
-
-    /// The array's user attributes as a dict.
-    #[getter]
-    fn attrs<'py>(&self, py: Python<'py>) -> PythonizeResult<Bound<'py, PyAny>> {
-        pythonize(py, self.inner.attributes())
-    }
-
-    #[getter]
-    fn chunk_grid(&self) -> PyChunkGrid {
-        self.inner.chunk_grid().clone().into()
-    }
-
-    #[getter]
-    fn codecs(&self) -> PyCodecChain {
-        self.inner.codecs().into()
-    }
-
-    /// The dimension names, if any were specified.
-    #[getter]
-    fn dimension_names(&self) -> &Option<Vec<Option<String>>> {
-        self.inner.dimension_names()
-    }
-
-    /// The Zarr data-type
-    #[getter]
-    fn dtype(&self) -> PyDataType {
-        self.inner.data_type().clone().into()
-    }
-
-    #[getter]
-    fn metadata<'py>(&self, py: Python<'py>) -> Bound<'py, PyAny> {
-        pythonize(py, self.inner.metadata()).unwrap()
-    }
-
-    /// The number of dimensions.
-    #[getter]
-    fn ndim(&self) -> usize {
-        self.inner.dimensionality()
-    }
-
-    /// The array's path in the store.
-    #[getter]
-    fn path(&self) -> &str {
-        self.inner.path().as_str()
     }
 
     /// Read a region of the array as `Data`, using numpy-style basic indexing.
@@ -168,10 +124,10 @@ impl PyAsyncArray {
             Ok(encoded.map(PyBytes::new))
         })
     }
+}
 
-    /// The array shape.
-    #[getter]
-    fn shape(&self) -> &[u64] {
-        self.inner.shape()
+impl From<Array<dyn AsyncReadableWritableListableStorageTraits>> for PyAsyncArray {
+    fn from(inner: Array<dyn AsyncReadableWritableListableStorageTraits>) -> Self {
+        Self::new(Arc::new(inner))
     }
 }

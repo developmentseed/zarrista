@@ -10,7 +10,6 @@ from zarrista import FilesystemStore, Group
 from zarrista import exceptions as exc
 
 LEAF_EXCEPTIONS = [
-    "NotFoundError",
     "ArrayCreateError",
     "ArrayError",
     "GroupCreateError",
@@ -41,7 +40,6 @@ def test_leaf_subclasses_base(name):
 def test_importable_by_name():
     from zarrista.exceptions import (  # noqa: F401
         CodecError,
-        NotFoundError,
         ZarristaError,
     )
 
@@ -60,13 +58,15 @@ def _make_group(tmp_path: Path) -> Path:
     return path
 
 
-def test_missing_child_raises_not_found(tmp_path: Path):
+def test_missing_child_raises_key_error(tmp_path: Path):
     group = Group.open(FilesystemStore(str(_make_group(tmp_path))))
-    with pytest.raises(exc.NotFoundError):
+    with pytest.raises(KeyError):
         group["does_not_exist"]
 
 
 def test_base_catches_subclass(tmp_path: Path):
-    group = Group.open(FilesystemStore(str(_make_group(tmp_path))))
+    # Opening a group where none exists raises GroupCreateError, a ZarristaError.
+    empty = tmp_path / "empty"
+    empty.mkdir()
     with pytest.raises(exc.ZarristaError):
-        group["does_not_exist"]
+        Group.open(FilesystemStore(str(empty)))

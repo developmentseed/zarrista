@@ -1,9 +1,6 @@
 class ZarristaError(Exception):
     """Base class for all zarrista exceptions."""
 
-class NotFoundError(ZarristaError):
-    """Raised when no array or group exists at a path."""
-
 class ArrayCreateError(ZarristaError):
     """Raised when an array cannot be opened or created."""
 
@@ -44,7 +41,6 @@ __all__ = [
     "GroupCreateError",
     "NodeCreateError",
     "NodePathError",
-    "NotFoundError",
     "PluginCreateError",
     "SerializationError",
     "StorageError",

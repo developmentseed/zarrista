@@ -1,33 +1,36 @@
 //! The `Array` Python class: metadata accessors and numpy-style reads.
 
+use std::sync::Arc;
+
 use crate::array::selection::PySelection;
+use crate::array::shared::array_metadata_accessors;
 use crate::array::util::PyChunkIndices;
 use crate::chunks::PyChunkGrid;
 use crate::codec::{PyArrayToArrayCodec, PyBytesToBytesCodec, PyCodecChain, PyCodecOptions};
 use crate::decoded_array::DecodedArray;
-use crate::dtype::PyDataType;
 use crate::error::ZarristaResult;
 use crate::fill_value::PyFillValue;
 use crate::node::PyNodePath;
 use crate::storage::PySyncStorage;
 use pyo3::prelude::*;
 use pyo3_bytes::PyBytes;
-use pythonize::pythonize;
-use pythonize::Result as PythonizeResult;
 use zarrs::array::{Array, ArrayBuilder};
 use zarrs::storage::ReadableWritableListableStorageTraits;
 
 /// A Zarr array.
 #[pyclass(module = "zarrista", frozen, name = "Array")]
 pub struct PyArray {
-    pub(crate) inner: Array<dyn ReadableWritableListableStorageTraits>,
+    pub(crate) inner: Arc<Array<dyn ReadableWritableListableStorageTraits>>,
 }
 
 impl PyArray {
-    pub(crate) fn new(inner: Array<dyn ReadableWritableListableStorageTraits>) -> Self {
+    pub(crate) fn new(inner: Arc<Array<dyn ReadableWritableListableStorageTraits>>) -> Self {
         Self { inner }
     }
 }
+
+// Metadata accessors shared with `PyAsyncArray`; see `array/shared.rs`.
+array_metadata_accessors!(PyArray);
 
 #[pymethods]
 impl PyArray {
@@ -101,52 +104,7 @@ impl PyArray {
     )]
     fn open(store: PySyncStorage, path: PyNodePath) -> ZarristaResult<Self> {
         let inner = Array::open(store.into(), path.as_str())?;
-        Ok(Self::new(inner))
-    }
-
-    /// The array's user attributes as a dict.
-    #[getter]
-    fn attrs<'py>(&self, py: Python<'py>) -> PythonizeResult<Bound<'py, PyAny>> {
-        pythonize(py, self.inner.attributes())
-    }
-
-    #[getter]
-    fn chunk_grid(&self) -> PyChunkGrid {
-        self.inner.chunk_grid().clone().into()
-    }
-
-    #[getter]
-    fn codecs(&self) -> PyCodecChain {
-        self.inner.codecs().into()
-    }
-
-    /// The dimension names, if any were specified.
-    #[getter]
-    fn dimension_names(&self) -> &Option<Vec<Option<String>>> {
-        self.inner.dimension_names()
-    }
-
-    /// The Zarr data-type
-    #[getter]
-    fn dtype(&self) -> PyDataType {
-        self.inner.data_type().clone().into()
-    }
-
-    #[getter]
-    fn metadata<'py>(&self, py: Python<'py>) -> Bound<'py, PyAny> {
-        pythonize(py, self.inner.metadata()).unwrap()
-    }
-
-    /// The number of dimensions.
-    #[getter]
-    fn ndim(&self) -> usize {
-        self.inner.dimensionality()
-    }
-
-    /// The array's path in the store.
-    #[getter]
-    fn path(&self) -> &str {
-        self.inner.path().as_str()
+        Ok(Self::new(Arc::new(inner)))
     }
 
     /// Read a region of the array, using numpy-style basic indexing.
@@ -179,10 +137,16 @@ impl PyArray {
         let encoded = self.inner.retrieve_encoded_chunk(chunk_indices.as_ref())?;
         Ok(encoded.map(|buf| PyBytes::new(buf.into())))
     }
+}
 
-    /// The array shape.
-    #[getter]
-    fn shape(&self) -> &[u64] {
-        self.inner.shape()
+impl From<Array<dyn ReadableWritableListableStorageTraits>> for PyArray {
+    fn from(inner: Array<dyn ReadableWritableListableStorageTraits>) -> Self {
+        Self::new(Arc::new(inner))
+    }
+}
+
+impl From<Arc<Array<dyn ReadableWritableListableStorageTraits>>> for PyArray {
+    fn from(inner: Arc<Array<dyn ReadableWritableListableStorageTraits>>) -> Self {
+        Self::new(inner)
     }
 }
