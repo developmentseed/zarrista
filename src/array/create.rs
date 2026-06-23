@@ -2,11 +2,24 @@ use pyo3::exceptions::PyTypeError;
 use pyo3::prelude::*;
 use zarrs::array::ArrayBuilder;
 
+use crate::array::util::PyArrayShape;
 use crate::array::{PyArray, PyAsyncArray};
+use crate::codec::{PyArrayToArrayCodec, PyArrayToBytesCodec, PyBytesToBytesCodec};
+use crate::dtype::PyDataType;
 use crate::error::ZarristaResult;
+use crate::metadata::PyArrayMetadataV3;
+use crate::storage::{PyAsyncStorage, PySyncStorage};
 
 #[pyclass(module = "zarrista.array", frozen, name = "Config")]
 pub struct PyArrayBuilder(ArrayBuilder);
+
+impl PyArrayBuilder {
+    fn with(&self, f: impl FnOnce(&mut ArrayBuilder)) -> Self {
+        let mut b = self.0.clone();
+        f(&mut b);
+        Self(b)
+    }
+}
 
 #[pymethods]
 impl PyArrayBuilder {
@@ -24,4 +37,74 @@ impl PyArrayBuilder {
             .into())
         }
     }
+
+    fn attrs(&self, attrs: Bound<'_, PyAny>) -> PyResult<Self> {
+        let attributes = pythonize::depythonize(&attrs)?;
+        Ok(self.with(|builder| {
+            builder.attributes(attributes);
+        }))
+    }
+
+    // TODO:
+    // fn codec_options
+
+    fn compressors(&self, compressors: Vec<PyBytesToBytesCodec>) -> Self {
+        self.with(|builder| {
+            builder
+                .bytes_to_bytes_codecs(compressors.into_iter().map(|c| c.into_inner()).collect());
+        })
+    }
+
+    fn create(&self, store: PySyncStorage, path: &str) -> ZarristaResult<PyArray> {
+        Ok(self.0.build_arc(store.into_inner(), path)?.into())
+    }
+
+    fn create_async(&self, store: PyAsyncStorage, path: &str) -> ZarristaResult<PyAsyncArray> {
+        Ok(self.0.build_arc(store.into_inner(), path)?.into())
+    }
+
+    fn create_metadata(&self) -> ZarristaResult<PyArrayMetadataV3> {
+        Ok(self.0.build_metadata()?.into())
+    }
+
+    /// Set the data type of the array to be built.
+    fn data_type(&self, data_type: PyDataType) -> Self {
+        self.with(|builder| {
+            builder.data_type(data_type.into_inner());
+        })
+    }
+
+    fn dimension_names(&self, dimension_names: Option<Vec<Option<String>>>) -> Self {
+        self.with(|builder| {
+            builder.dimension_names(dimension_names);
+        })
+    }
+
+    fn filters(&self, filters: Vec<PyArrayToArrayCodec>) -> Self {
+        self.with(|builder| {
+            builder.array_to_array_codecs(filters.into_iter().map(|f| f.into_inner()).collect());
+        })
+    }
+
+    fn serializer(&self, serializer: PyArrayToBytesCodec) -> Self {
+        self.with(|builder| {
+            builder.array_to_bytes_codec(serializer.into_inner());
+        })
+    }
+
+    /// Set the shape of the array to be built.
+    fn shape(&self, shape: PyArrayShape) -> Self {
+        self.with(|builder| {
+            builder.shape(shape);
+        })
+    }
+
+    fn subchunk_shape(&self, subchunk_shape: Option<PyArrayShape>) -> Self {
+        self.with(|builder| {
+            builder.subchunk_shape(subchunk_shape);
+        })
+    }
+
+    // TODO:
+    // fn storage_transformers
 }
