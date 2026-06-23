@@ -21,11 +21,8 @@ pub(crate) struct PyNode {
 }
 
 impl PyNode {
-    pub fn new(
-        node: Node,
-        storage: Arc<dyn ReadableWritableListableStorageTraits>,
-    ) -> ZarristaResult<Self> {
-        Ok(Self { node, storage })
+    pub fn new(node: Node, storage: Arc<dyn ReadableWritableListableStorageTraits>) -> Self {
+        Self { node, storage }
     }
 }
 
