@@ -1,3 +1,5 @@
+//! Bytes to bytes codecs, or "compressors".
+
 pub(super) mod blosc;
 pub(super) mod crc32c;
 pub(super) mod gzip;

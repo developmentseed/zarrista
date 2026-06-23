@@ -21,11 +21,6 @@ macro_rules! array_metadata_accessors {
                 self.inner.chunk_grid().clone().into()
             }
 
-            #[getter]
-            fn codecs(&self) -> $crate::codec::PyCodecChain {
-                self.inner.codecs().into()
-            }
-
             /// The dimension names, if any were specified.
             #[getter]
             fn dimension_names(&self) -> &Option<Vec<Option<String>>> {
@@ -65,3 +60,39 @@ macro_rules! array_metadata_accessors {
 }
 
 pub(crate) use array_metadata_accessors;
+
+use pyo3::prelude::*;
+
+use crate::array::PyArray;
+use crate::codec::{PyArrayToArrayCodec, PyArrayToBytesCodec, PyBytesToBytesCodec};
+use crate::error::ZarristaResult;
+
+#[pymethods]
+impl PyArray {
+    /// filter codecs
+    #[getter]
+    fn filters(&self) -> Vec<PyArrayToArrayCodec> {
+        let codecs = self.inner.codecs();
+        codecs
+            .array_to_array_codecs()
+            .iter()
+            .map(|f| PyArrayToArrayCodec::new(f.clone()))
+            .collect()
+    }
+
+    #[getter]
+    fn serializer(&self) -> PyArrayToBytesCodec {
+        let codecs = self.inner.codecs();
+        PyArrayToBytesCodec::new(codecs.array_to_bytes_codec().clone())
+    }
+
+    #[getter]
+    fn compressors(&self) -> Vec<PyBytesToBytesCodec> {
+        let codecs = self.inner.codecs();
+        codecs
+            .bytes_to_bytes_codecs()
+            .iter()
+            .map(|c| PyBytesToBytesCodec::new(c.clone()))
+            .collect()
+    }
+}
