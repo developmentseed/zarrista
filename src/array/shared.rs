@@ -21,9 +21,15 @@ macro_rules! array_metadata_accessors {
                 self.inner.chunk_grid().clone().into()
             }
 
+            /// The bytes-to-bytes codecs ("compressors").
             #[getter]
-            fn codecs(&self) -> $crate::codec::PyCodecChain {
-                self.inner.codecs().into()
+            fn compressors(&self) -> Vec<$crate::codec::PyBytesToBytesCodec> {
+                let codecs = self.inner.codecs();
+                codecs
+                    .bytes_to_bytes_codecs()
+                    .iter()
+                    .map(|c| $crate::codec::PyBytesToBytesCodec::new(c.clone()))
+                    .collect()
             }
 
             /// The dimension names, if any were specified.
@@ -36,6 +42,17 @@ macro_rules! array_metadata_accessors {
             #[getter]
             fn dtype(&self) -> $crate::dtype::PyDataType {
                 self.inner.data_type().clone().into()
+            }
+
+            /// The array-to-array codecs ("filters").
+            #[getter]
+            fn filters(&self) -> Vec<$crate::codec::PyArrayToArrayCodec> {
+                let codecs = self.inner.codecs();
+                codecs
+                    .array_to_array_codecs()
+                    .iter()
+                    .map(|f| $crate::codec::PyArrayToArrayCodec::new(f.clone()))
+                    .collect()
             }
 
             #[getter]
@@ -53,6 +70,13 @@ macro_rules! array_metadata_accessors {
             #[getter]
             fn path(&self) -> &str {
                 self.inner.path().as_str()
+            }
+
+            /// The array-to-bytes codec ("serializer").
+            #[getter]
+            fn serializer(&self) -> $crate::codec::PyArrayToBytesCodec {
+                let codecs = self.inner.codecs();
+                $crate::codec::PyArrayToBytesCodec::new(codecs.array_to_bytes_codec().clone())
             }
 
             /// The array shape.

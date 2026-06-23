@@ -2,7 +2,7 @@ use pyo3::prelude::*;
 use pythonize::{depythonize, pythonize, PythonizeError};
 use zarrs::metadata::v2::{ArrayMetadataV2, GroupMetadataV2, MetadataV2};
 use zarrs::metadata::v3::{ArrayMetadataV3, GroupMetadataV3, MetadataV3};
-use zarrs::metadata::{ArrayMetadata, GroupMetadata};
+use zarrs::metadata::{ArrayMetadata, Configuration, GroupMetadata};
 use zarrs::metadata_ext::group::consolidated_metadata::ConsolidatedMetadata;
 
 /// Generate a pythonize-compatible newtype wrapper around a zarrs metadata type.
@@ -65,3 +65,4 @@ pythonized_metadata!(PyGroupMetadata, GroupMetadata);
 pythonized_metadata!(PyGroupMetadataV2, GroupMetadataV2);
 pythonized_metadata!(PyGroupMetadataV3, GroupMetadataV3);
 pythonized_metadata!(PyConsolidatedMetadata, ConsolidatedMetadata);
+pythonized_metadata!(PyConfiguration, Configuration);
