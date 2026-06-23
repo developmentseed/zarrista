@@ -27,6 +27,10 @@ impl PyAsyncArray {
     pub(crate) fn new(inner: Arc<Array<dyn AsyncReadableWritableListableStorageTraits>>) -> Self {
         Self { inner }
     }
+
+    pub fn inner(&self) -> &Arc<Array<dyn AsyncReadableWritableListableStorageTraits>> {
+        &self.inner
+    }
 }
 
 // Metadata accessors shared with `PyArray`; see `array/shared.rs`.

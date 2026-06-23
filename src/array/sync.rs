@@ -6,7 +6,7 @@ use crate::array::selection::PySelection;
 use crate::array::shared::array_metadata_accessors;
 use crate::array::util::PyChunkIndices;
 use crate::chunks::PyChunkGrid;
-use crate::codec::{PyArrayToArrayCodec, PyBytesToBytesCodec, PyCodecChain, PyCodecOptions};
+use crate::codec::{PyArrayToArrayCodec, PyBytesToBytesCodec, PyCodecOptions};
 use crate::decoded_array::DecodedArray;
 use crate::dtype::PyDataType;
 use crate::error::ZarristaResult;
@@ -27,6 +27,10 @@ pub struct PyArray {
 impl PyArray {
     pub(crate) fn new(inner: Arc<Array<dyn ReadableWritableListableStorageTraits>>) -> Self {
         Self { inner }
+    }
+
+    pub fn inner(&self) -> &Arc<Array<dyn ReadableWritableListableStorageTraits>> {
+        &self.inner
     }
 }
 
