@@ -3,13 +3,15 @@
 use std::sync::Arc;
 
 use super::last_segment;
+use crate::array::PyArray;
 use crate::error::ZarristaResult;
 use crate::group::shared::group_metadata_accessors;
-use crate::node::{open_node, Node, PyNodePath};
+use crate::node::{PyNode, PyNodePath};
 use crate::storage::PySyncStorage;
+use pyo3::exceptions::PyKeyError;
 use pyo3::prelude::*;
+use pyo3::pybacked::PyBackedStr;
 use zarrs::group::Group;
-use zarrs::node::NodePath;
 use zarrs::storage::ReadableWritableListableStorageTraits;
 
 /// A Zarr group.
@@ -58,11 +60,100 @@ impl PyGroup {
     }
 
     /// Open a direct child array or group by name.
-    fn __getitem__(&self, name: &str) -> ZarristaResult<Node> {
-        open_node(self.storage.clone(), self.path.join(name)?)
+    fn __getitem__(&self, name: PyBackedStr) -> ZarristaResult<PyNode> {
+        self.child(name)
+    }
+
+    fn child(&self, name: PyBackedStr) -> ZarristaResult<PyNode> {
+        let children = self.inner.children(false)?;
+        let selected_child = children
+            .into_iter()
+            .find(|child| child.name().as_str() == name.as_str())
+            .ok_or(PyKeyError::new_err(format!("child {name} not found")))?;
+        Ok(PyNode::new(selected_child, self.storage()))
+    }
+
+    /// The direct children of the group as `Array` and `Group` objects.
+    ///
+    /// If `recursive` is true, descendants are included as well (flattened).
+    #[pyo3(signature = (recursive = false))]
+    fn children(&self, recursive: bool) -> ZarristaResult<Vec<PyNode>> {
+        let nodes = self.inner.children(recursive)?;
+        Ok(nodes
+            .into_iter()
+            .map(|node| PyNode::new(node, self.storage()))
+            .collect())
+    }
+
+    /// The direct child arrays of the group.
+    fn child_arrays(&self) -> ZarristaResult<Vec<PyArray>> {
+        Ok(self
+            .inner
+            .child_arrays()?
+            .into_iter()
+            .map(PyArray::new)
+            .collect())
+    }
+
+    /// The direct child groups of the group.
+    fn child_groups(&self) -> ZarristaResult<Vec<Self>> {
+        Ok(self
+            .inner
+            .child_groups()?
+            .into_iter()
+            .map(Self::from)
+            .collect())
+    }
+
+    /// The full paths of the group's direct children.
+    fn child_paths(&self) -> ZarristaResult<Vec<PyNodePath>> {
+        Ok(self
+            .inner
+            .child_paths()?
+            .into_iter()
+            .map(|p| p.into())
+            .collect())
+    }
+
+    /// The full paths of the group's direct child arrays.
+    fn child_array_paths(&self) -> ZarristaResult<Vec<PyNodePath>> {
+        Ok(self
+            .inner
+            .child_array_paths()?
+            .into_iter()
+            .map(|p| p.into())
+            .collect())
+    }
+
+    /// The full paths of the group's direct child groups.
+    fn child_group_paths(&self) -> ZarristaResult<Vec<PyNodePath>> {
+        Ok(self
+            .inner
+            .child_group_paths()?
+            .into_iter()
+            .map(|p| p.into())
+            .collect())
+    }
+
+    /// Write the group metadata to the store.
+    fn store_metadata(&self) -> ZarristaResult<()> {
+        self.inner.store_metadata()?;
+        Ok(())
+    }
+
+    /// Erase the group metadata from the store. Succeeds if it does not exist.
+    fn erase_metadata(&self) -> ZarristaResult<()> {
+        self.inner.erase_metadata()?;
+        Ok(())
     }
 
     fn __repr__(&self) -> String {
-        format!("Group(path={:?})", self.path)
+        format!("Group(path={:?})", self.inner.path().as_str())
+    }
+}
+
+impl From<Group<dyn ReadableWritableListableStorageTraits>> for PyGroup {
+    fn from(inner: Group<dyn ReadableWritableListableStorageTraits>) -> Self {
+        Self::new(inner)
     }
 }
