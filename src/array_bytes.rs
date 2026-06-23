@@ -17,7 +17,8 @@ use zarrs::array::{
 };
 
 /// Bytes for a chunk as they cross the Python boundary.
-#[pyclass(module = "zarrista", frozen, name = "ArrayBytes")]
+#[derive(Clone)]
+#[pyclass(module = "zarrista", frozen, name = "ArrayBytes", from_py_object)]
 pub struct PyArrayBytes(ArrayBytesOwned);
 
 #[pymethods]
@@ -114,10 +115,14 @@ impl From<ArrayBytesOwned> for PyArrayBytes {
 ///   as [`PyBytes`] and borrowed zero-copy.
 /// - Offsets are copied into a `Vec<usize>` (they need a per-element cast from
 ///   Python ints and are tiny metadata relative to the payload).
+#[derive(Clone)]
 pub enum ArrayBytesOwned {
     Fixed(PyBytes),
     Variable {
         bytes: PyBytes,
+        // Note: Cloning actually memcpy's the offsets; to avoid that would require Arc<[usize]>,
+        // but then it's not zero-copy to create from a Vec<usize>
+        // This is currently mostly hit on the async store_chunk path
         offsets: Vec<usize>,
     },
     Optional {
