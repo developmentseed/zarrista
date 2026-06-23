@@ -1,6 +1,9 @@
+use std::convert::Infallible;
+
 use pyo3::exceptions::PyValueError;
 use pyo3::prelude::*;
 use pyo3::pybacked::PyBackedStr;
+use pyo3::types::PyString;
 use pyo3::{Borrowed, FromPyObject};
 use zarrs::node::NodePath;
 
@@ -25,6 +28,16 @@ impl FromPyObject<'_, '_> for PyNodePath {
         NodePath::new(&path)
             .map(PyNodePath)
             .map_err(|e| PyValueError::new_err(e.to_string()))
+    }
+}
+
+impl<'py> IntoPyObject<'py> for PyNodePath {
+    type Target = PyString;
+    type Error = Infallible;
+    type Output = Bound<'py, Self::Target>;
+
+    fn into_pyobject(self, py: Python<'py>) -> Result<Self::Output, Self::Error> {
+        Ok(PyString::new(py, self.0.as_str()))
     }
 }
 

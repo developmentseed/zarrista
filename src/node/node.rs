@@ -6,65 +6,119 @@ use crate::array::{PyArray, PyAsyncArray};
 use crate::error::{ZarristaError, ZarristaResult};
 use crate::group::{PyAsyncGroup, PyGroup};
 use pyo3::prelude::*;
+use pyo3::IntoPyObjectExt;
 use zarrs::array::Array;
 use zarrs::group::Group;
-use zarrs::node::NodePath;
+use zarrs::node::{Node, NodeMetadata};
 use zarrs::storage::{
     AsyncReadableWritableListableStorageTraits, ReadableWritableListableStorageTraits,
 };
 
 /// An opened node: either an array or a group.
+pub(crate) struct PyNode {
+    node: Node,
+    storage: Arc<dyn ReadableWritableListableStorageTraits>,
+}
+
+impl PyNode {
+    pub fn new(node: Node, storage: Arc<dyn ReadableWritableListableStorageTraits>) -> Self {
+        Self { node, storage }
+    }
+}
+
+// TODO: remove this if we make `Node` a full pyclass
+impl<'py> IntoPyObject<'py> for PyNode {
+    type Target = PyAny;
+    type Error = ZarristaError;
+    type Output = Bound<'py, Self::Target>;
+
+    fn into_pyobject(self, py: Python<'py>) -> Result<Self::Output, Self::Error> {
+        let storage = self.storage;
+        let path = self.node.path().clone();
+        let node_metadata = NodeMetadata::from(self.node);
+        match node_metadata {
+            NodeMetadata::Array(array_metadata) => {
+                let array = Array::new_with_metadata(storage, path.as_str(), array_metadata)?;
+                Ok(PyArray::new(Arc::new(array)).into_bound_py_any(py)?)
+            }
+            NodeMetadata::Group(group_metadata) => {
+                let group = Group::new_with_metadata(storage, path.as_str(), group_metadata)?;
+                Ok(PyGroup::new(Arc::new(group)).into_bound_py_any(py)?)
+            }
+        }
+    }
+}
+
+/// An opened node from an async store: either an array or a group.
+pub(crate) struct PyAsyncNode {
+    node: Node,
+    storage: Arc<dyn AsyncReadableWritableListableStorageTraits>,
+}
+
+impl PyAsyncNode {
+    pub fn new(
+        node: Node,
+        storage: Arc<dyn AsyncReadableWritableListableStorageTraits>,
+    ) -> ZarristaResult<Self> {
+        Ok(Self { node, storage })
+    }
+}
+
+// TODO: remove this if we make `Node` a full pyclass
+impl<'py> IntoPyObject<'py> for PyAsyncNode {
+    type Target = PyAny;
+    type Error = ZarristaError;
+    type Output = Bound<'py, Self::Target>;
+
+    fn into_pyobject(self, py: Python<'py>) -> Result<Self::Output, Self::Error> {
+        let storage = self.storage;
+        let path = self.node.path().clone();
+        let node_metadata = NodeMetadata::from(self.node);
+        match node_metadata {
+            NodeMetadata::Array(array_metadata) => {
+                let array = Array::new_with_metadata(storage, path.as_str(), array_metadata)?;
+                Ok(PyAsyncArray::new(Arc::new(array)).into_bound_py_any(py)?)
+            }
+            NodeMetadata::Group(group_metadata) => {
+                let group = Group::new_with_metadata(storage, path.as_str(), group_metadata)?;
+                Ok(PyAsyncGroup::new(Arc::new(group)).into_bound_py_any(py)?)
+            }
+        }
+    }
+}
+
 #[derive(IntoPyObject)]
-// TODO: fix this
-#[allow(clippy::large_enum_variant)]
-pub(crate) enum Node {
+pub enum PyArrayOrGroup {
     Array(PyArray),
     Group(PyGroup),
 }
 
-/// Open the node at `path`, trying an array first, then a group.
-///
-/// Returns a [`Node`] (Python `Array` or `Group`), or raises `NotFoundError`
-/// if neither exists at the path.
-pub(crate) fn open_node(
-    storage: Arc<dyn ReadableWritableListableStorageTraits>,
-    path: NodePath,
-) -> ZarristaResult<Node> {
-    if let Ok(inner) = Array::open(storage.clone(), path.as_str()) {
-        return Ok(Node::Array(PyArray::new(inner)));
+impl From<PyArray> for PyArrayOrGroup {
+    fn from(array: PyArray) -> Self {
+        Self::Array(array)
     }
-    if let Ok(inner) = Group::open(storage.clone(), path.as_str()) {
-        return Ok(Node::Group(PyGroup::new(storage, path, inner)));
-    }
-
-    Err(ZarristaError::not_found(path.as_str()))
 }
 
-/// An opened async node: either an array or a group.
+impl From<PyGroup> for PyArrayOrGroup {
+    fn from(group: PyGroup) -> Self {
+        Self::Group(group)
+    }
+}
+
 #[derive(IntoPyObject)]
-pub(crate) enum AsyncNode {
+pub enum PyAsyncArrayOrGroup {
     Array(PyAsyncArray),
     Group(PyAsyncGroup),
 }
 
-/// Async variant of [`open_node`], trying an array first, then a group.
-///
-/// Returns an [`AsyncNode`] (Python `AsyncArray` or `AsyncGroup`), or raises
-/// `NotFoundError` if neither exists at the path.
-pub(crate) async fn open_node_async(
-    storage: Arc<dyn AsyncReadableWritableListableStorageTraits>,
-    path: NodePath,
-) -> ZarristaResult<AsyncNode> {
-    if let Ok(inner) = Array::async_open(storage.clone(), path.as_str()).await {
-        return Ok(AsyncNode::Array(PyAsyncArray::new(Arc::new(inner))));
+impl From<PyAsyncArray> for PyAsyncArrayOrGroup {
+    fn from(array: PyAsyncArray) -> Self {
+        Self::Array(array)
     }
-    if let Ok(inner) = Group::async_open(storage.clone(), path.as_str()).await {
-        return Ok(AsyncNode::Group(PyAsyncGroup::new(
-            storage,
-            path,
-            Arc::new(inner),
-        )));
-    }
+}
 
-    Err(ZarristaError::not_found(path.as_str()))
+impl From<PyAsyncGroup> for PyAsyncArrayOrGroup {
+    fn from(group: PyAsyncGroup) -> Self {
+        Self::Group(group)
+    }
 }
