@@ -6,12 +6,15 @@ use super::last_segment;
 use crate::array::PyArray;
 use crate::error::ZarristaResult;
 use crate::group::shared::group_metadata_accessors;
-use crate::node::{flatten_nodes, PyNode, PyNodePath};
+use crate::node::{PyNode, PyNodePath};
 use crate::storage::PySyncStorage;
 use pyo3::exceptions::PyKeyError;
 use pyo3::prelude::*;
 use pyo3::pybacked::PyBackedStr;
+use pyo3::IntoPyObjectExt;
+use zarrs::array::Array;
 use zarrs::group::Group;
+use zarrs::node::NodeMetadata;
 use zarrs::storage::ReadableWritableListableStorageTraits;
 
 /// A Zarr group.
@@ -73,16 +76,27 @@ impl PyGroup {
         Ok(PyNode::new(selected_child, self.storage()))
     }
 
-    /// The direct children of the group as `Array` and `Group` objects.
-    ///
-    /// If `recursive` is true, descendants are included as well (flattened).
-    #[pyo3(signature = (recursive = false))]
-    fn children(&self, recursive: bool) -> ZarristaResult<Vec<PyNode>> {
-        let nodes = flatten_nodes(self.inner.children(recursive)?);
-        Ok(nodes
+    /// Every node under the group, recursively, as `(path, metadata)` pairs.
+    fn traverse<'py>(&self, py: Python<'py>) -> ZarristaResult<Vec<Bound<'py, PyAny>>> {
+        self.inner
+            .traverse()?
             .into_iter()
-            .map(|node| PyNode::new(node, self.storage()))
-            .collect())
+            .map(|(path, metadata)| {
+                let storage = self.storage();
+                match metadata {
+                    NodeMetadata::Array(array_metadata) => {
+                        let array =
+                            Array::new_with_metadata(storage, path.as_str(), array_metadata)?;
+                        Ok(PyArray::new(array).into_bound_py_any(py)?)
+                    }
+                    NodeMetadata::Group(group_metadata) => {
+                        let group =
+                            Group::new_with_metadata(storage, path.as_str(), group_metadata)?;
+                        Ok(PyGroup::new(group).into_bound_py_any(py)?)
+                    }
+                }
+            })
+            .collect()
     }
 
     /// The direct child arrays of the group.
