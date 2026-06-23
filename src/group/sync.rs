@@ -75,7 +75,7 @@ impl PyGroup {
         Ok(PyNode::new(selected_child, self.storage()))
     }
 
-    /// Every node under the group, recursively, as `(path, metadata)` pairs.
+    /// Every node under the group, recursively, as `Array`/`Group` objects.
     fn traverse(&self) -> ZarristaResult<Vec<PyArrayOrGroup>> {
         self.inner
             .traverse()?

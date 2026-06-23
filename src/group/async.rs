@@ -103,7 +103,7 @@ impl PyAsyncGroup {
         })
     }
 
-    /// Every node under the group, recursively, as `(path, metadata)` pairs.
+    /// Every node under the group, recursively, as `AsyncArray`/`AsyncGroup` objects.
     fn traverse<'py>(&self, py: Python<'py>) -> PyResult<Bound<'py, PyAny>> {
         let storage = self.storage();
         let inner = self.inner.clone();
