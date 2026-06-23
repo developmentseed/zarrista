@@ -7,7 +7,7 @@ class BytesToBytesCodec:
     def name(self) -> str | None:
         """The codec's Zarr v3 name (e.g. `"blosc"`), if any."""
     @property
-    def configuration(self) -> JSONValue | None:
+    def config(self) -> JSONValue | None:
         """The codec's Zarr v3 configuration as a dict, if any."""
     @staticmethod
     def from_config(metadata: JSONValue) -> BytesToBytesCodec:
