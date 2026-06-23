@@ -4,12 +4,14 @@ use super::last_segment;
 use crate::array::PyAsyncArray;
 use crate::error::{ZarristaError, ZarristaResult};
 use crate::group::shared::group_metadata_accessors;
-use crate::node::{flatten_nodes, PyAsyncNode, PyNodePath};
+use crate::node::{PyAsyncArrayOrGroup, PyAsyncNode, PyNodePath};
 use crate::storage::PyAsyncStorage;
 use pyo3::exceptions::PyKeyError;
 use pyo3::prelude::*;
 use pyo3_async_runtimes::tokio::future_into_py;
+use zarrs::array::Array;
 use zarrs::group::Group;
+use zarrs::node::NodeMetadata;
 use zarrs::storage::AsyncReadableWritableListableStorageTraits;
 
 /// A Zarr group.
@@ -101,22 +103,30 @@ impl PyAsyncGroup {
         })
     }
 
-    /// The direct children of the group as `AsyncArray` and `AsyncGroup` objects.
-    ///
-    /// If `recursive` is true, descendants are included as well (flattened).
-    #[pyo3(signature = (recursive = false))]
-    fn children<'py>(&self, py: Python<'py>, recursive: bool) -> PyResult<Bound<'py, PyAny>> {
-        let inner = self.inner.clone();
+    /// Every node under the group, recursively, as `(path, metadata)` pairs.
+    fn traverse<'py>(&self, py: Python<'py>) -> PyResult<Bound<'py, PyAny>> {
         let storage = self.storage();
+        let inner = self.inner.clone();
         future_into_py(py, async move {
-            let nodes = inner
-                .async_children(recursive)
-                .await
-                .map_err(ZarristaError::from)?;
-            flatten_nodes(nodes)
+            let nodes = inner.async_traverse().await.map_err(ZarristaError::from)?;
+            nodes
                 .into_iter()
-                .map(|node| PyAsyncNode::new(node, storage.clone()))
-                .collect::<ZarristaResult<Vec<_>>>()
+                .map(|(path, metadata)| {
+                    let storage = storage.clone();
+                    match metadata {
+                        NodeMetadata::Array(array_metadata) => {
+                            let array =
+                                Array::new_with_metadata(storage, path.as_str(), array_metadata)?;
+                            Ok(PyAsyncArray::new(Arc::new(array)).into())
+                        }
+                        NodeMetadata::Group(group_metadata) => {
+                            let group =
+                                Group::new_with_metadata(storage, path.as_str(), group_metadata)?;
+                            Ok(PyAsyncGroup::new(Arc::new(group)).into())
+                        }
+                    }
+                })
+                .collect::<ZarristaResult<Vec<PyAsyncArrayOrGroup>>>()
                 .map_err(PyErr::from)
         })
     }

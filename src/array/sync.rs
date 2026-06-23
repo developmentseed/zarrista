@@ -1,5 +1,7 @@
 //! The `Array` Python class: metadata accessors and numpy-style reads.
 
+use std::sync::Arc;
+
 use crate::array::selection::PySelection;
 use crate::array::shared::array_metadata_accessors;
 use crate::array::util::PyChunkIndices;
@@ -16,11 +18,11 @@ use zarrs::storage::ReadableWritableListableStorageTraits;
 /// A Zarr array.
 #[pyclass(module = "zarrista", frozen, name = "Array")]
 pub struct PyArray {
-    pub(crate) inner: Array<dyn ReadableWritableListableStorageTraits>,
+    pub(crate) inner: Arc<Array<dyn ReadableWritableListableStorageTraits>>,
 }
 
 impl PyArray {
-    pub(crate) fn new(inner: Array<dyn ReadableWritableListableStorageTraits>) -> Self {
+    pub(crate) fn new(inner: Arc<Array<dyn ReadableWritableListableStorageTraits>>) -> Self {
         Self { inner }
     }
 }
@@ -51,7 +53,7 @@ impl PyArray {
     )]
     fn open(store: PySyncStorage, path: PyNodePath) -> ZarristaResult<Self> {
         let inner = Array::open(store.into(), path.as_str())?;
-        Ok(Self::new(inner))
+        Ok(Self::new(Arc::new(inner)))
     }
 
     /// Read a region of the array, using numpy-style basic indexing.
@@ -88,6 +90,12 @@ impl PyArray {
 
 impl From<Array<dyn ReadableWritableListableStorageTraits>> for PyArray {
     fn from(inner: Array<dyn ReadableWritableListableStorageTraits>) -> Self {
+        Self::new(Arc::new(inner))
+    }
+}
+
+impl From<Arc<Array<dyn ReadableWritableListableStorageTraits>>> for PyArray {
+    fn from(inner: Arc<Array<dyn ReadableWritableListableStorageTraits>>) -> Self {
         Self::new(inner)
     }
 }
