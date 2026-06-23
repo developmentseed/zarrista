@@ -3,10 +3,11 @@ use pyo3::prelude::*;
 use zarrs::array::ArrayBuilder;
 
 use crate::array::util::PyArrayShape;
-use crate::array::{PyArray, PyAsyncArray, PyChunkKeyEncoding};
+use crate::array::{PyArray, PyAsyncArray, PyChunkGrid, PyChunkKeyEncoding};
 use crate::codec::{PyArrayToArrayCodec, PyArrayToBytesCodec, PyBytesToBytesCodec};
 use crate::dtype::PyDataType;
 use crate::error::ZarristaResult;
+use crate::fill_value::PyFillValue;
 use crate::metadata::PyArrayMetadataV3;
 use crate::storage::{PyAsyncStorage, PySyncStorage};
 
@@ -23,6 +24,15 @@ impl PyArrayBuilder {
 
 #[pymethods]
 impl PyArrayBuilder {
+    #[new]
+    fn py_new(chunk_grid: PyChunkGrid, dtype: PyDataType, fill_value: PyFillValue) -> Self {
+        Self(ArrayBuilder::new_with_chunk_grid(
+            chunk_grid.into_inner(),
+            dtype.into_inner(),
+            fill_value.into_inner(),
+        ))
+    }
+
     #[staticmethod]
     fn like<'py>(array: Bound<'py, PyAny>) -> ZarristaResult<Self> {
         if let Ok(array) = array.cast::<PyArray>() {

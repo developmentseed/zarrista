@@ -2,7 +2,6 @@
 
 mod array;
 mod array_bytes;
-mod chunks;
 mod codec;
 mod decoded_array;
 mod dtype;
@@ -16,9 +15,8 @@ mod storage;
 
 use pyo3::prelude::*;
 
-use crate::array::{PyArray, PyAsyncArray};
+use crate::array::{PyArray, PyAsyncArray, PyChunkGrid};
 use crate::array_bytes::PyArrayBytes;
-use crate::chunks::PyChunkGrid;
 use crate::codec::register_codec_module;
 use crate::decoded_array::{PyMaskedTensor, PyMaskedVariableArray, PyTensor, PyVariableArray};
 use crate::dtype::PyDataType;
