@@ -9,6 +9,7 @@ from ._zarrista import (
     AsyncArray,
     AsyncGroup,
     ChunkGrid,
+    Config,
     DataType,
     FilesystemStore,
     FillValue,
@@ -19,6 +20,7 @@ from ._zarrista import (
     Tensor,
     VariableArray,
     __version__,
+    config,
 )
 
 DecodedArray: TypeAlias = Tensor | VariableArray | MaskedTensor | MaskedVariableArray
@@ -36,6 +38,7 @@ __all__ = [
     "AsyncArray",
     "AsyncGroup",
     "ChunkGrid",
+    "Config",
     "DataType",
     "DecodedArray",
     "FilesystemStore",
@@ -48,5 +51,6 @@ __all__ = [
     "VariableArray",
     "__version__",
     "codec",
+    "config",
     "exceptions",
 ]

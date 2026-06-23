@@ -21,6 +21,7 @@ use crate::array::{PyArray, PyAsyncArray};
 use crate::array_bytes::PyArrayBytes;
 use crate::chunks::PyChunkGrid;
 use crate::codec::register_codec_module;
+use crate::config::PyConfig;
 use crate::decoded_array::{PyMaskedTensor, PyMaskedVariableArray, PyTensor, PyVariableArray};
 use crate::dtype::PyDataType;
 use crate::exceptions::register_exceptions_module;
@@ -38,6 +39,8 @@ fn _zarrista(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<PyAsyncArray>()?;
     m.add_class::<PyAsyncGroup>()?;
     m.add_class::<PyChunkGrid>()?;
+    m.add_class::<PyConfig>()?;
+    m.add("config", Bound::new(m.py(), PyConfig)?)?;
     m.add_class::<PyTensor>()?;
     m.add_class::<PyVariableArray>()?;
     m.add_class::<PyMaskedTensor>()?;
