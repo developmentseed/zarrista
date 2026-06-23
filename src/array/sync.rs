@@ -61,6 +61,30 @@ impl PyArray {
         Ok(Self::new(Arc::new(inner)))
     }
 
+    #[pyo3(signature = (chunk_indices, **codec_options))]
+    fn compact_chunk(
+        &self,
+        chunk_indices: PyChunkIndices,
+        codec_options: Option<PyCodecOptions>,
+    ) -> ZarristaResult<bool> {
+        let codec_options = codec_options
+            .map(|opts| opts.into_inner())
+            .unwrap_or_default();
+        Ok(self
+            .inner
+            .compact_chunk(chunk_indices.as_ref(), &codec_options)?)
+    }
+
+    fn erase_chunk(&self, chunk_indices: PyChunkIndices) -> ZarristaResult<()> {
+        self.inner.erase_chunk(chunk_indices.as_ref())?;
+        Ok(())
+    }
+
+    fn erase_metadata(&self) -> ZarristaResult<()> {
+        self.inner.erase_metadata()?;
+        Ok(())
+    }
+
     /// Read a region of the array, using numpy-style basic indexing.
     ///
     /// Returns one of the decoded result classes (`Tensor`, `VariableArray`,
@@ -107,6 +131,20 @@ impl PyArray {
             encoded_chunk.as_array_bytes()?,
             &codec_options,
         )?;
+        Ok(())
+    }
+
+    fn store_encoded_chunk(
+        &self,
+        chunk_indices: PyChunkIndices,
+        encoded_chunk: PyBytes,
+    ) -> ZarristaResult<()> {
+        // Safety:
+        // The responsibility is on the caller to ensure the chunk is encoded correctly
+        unsafe {
+            self.inner
+                .store_encoded_chunk(chunk_indices.as_ref(), encoded_chunk.into_inner())?;
+        }
         Ok(())
     }
 }

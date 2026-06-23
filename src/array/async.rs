@@ -76,6 +76,52 @@ impl PyAsyncArray {
         })
     }
 
+    fn compact_chunk<'py>(
+        &self,
+        py: Python<'py>,
+        chunk_indices: PyChunkIndices,
+        codec_options: Option<PyCodecOptions>,
+    ) -> PyResult<Bound<'py, PyAny>> {
+        let inner = self.inner.clone();
+        let codec_options = codec_options
+            .map(|opts| opts.into_inner())
+            .unwrap_or_default();
+
+        future_into_py(py, async move {
+            let result = inner
+                .async_compact_chunk(chunk_indices.as_ref(), &codec_options)
+                .await
+                .map_err(ZarristaError::from)?;
+            Ok(result)
+        })
+    }
+
+    fn erase_chunk<'py>(
+        &self,
+        py: Python<'py>,
+        chunk_indices: PyChunkIndices,
+    ) -> PyResult<Bound<'py, PyAny>> {
+        let inner = self.inner.clone();
+        future_into_py(py, async move {
+            inner
+                .async_erase_chunk(chunk_indices.as_ref())
+                .await
+                .map_err(ZarristaError::from)?;
+            Ok(())
+        })
+    }
+
+    fn erase_metadata<'py>(&self, py: Python<'py>) -> PyResult<Bound<'py, PyAny>> {
+        let inner = self.inner.clone();
+        future_into_py(py, async move {
+            inner
+                .async_erase_metadata()
+                .await
+                .map_err(ZarristaError::from)?;
+            Ok(())
+        })
+    }
+
     /// Read a region of the array as `Data`, using numpy-style basic indexing.
     fn retrieve_array_subset<'py>(
         &self,
@@ -152,6 +198,26 @@ impl PyAsyncArray {
                 )
                 .await
                 .map_err(ZarristaError::from)?;
+            Ok(())
+        })
+    }
+
+    fn store_encoded_chunk<'py>(
+        &self,
+        py: Python<'py>,
+        chunk_indices: PyChunkIndices,
+        encoded_chunk: PyBytes,
+    ) -> PyResult<Bound<'py, PyAny>> {
+        let inner = self.inner.clone();
+        future_into_py(py, async move {
+            // Safety:
+            // The responsibility is on the caller to ensure the chunk is encoded correctly
+            unsafe {
+                inner
+                    .async_store_encoded_chunk(chunk_indices.as_ref(), encoded_chunk.into_inner())
+                    .await
+                    .map_err(ZarristaError::from)?;
+            }
             Ok(())
         })
     }
