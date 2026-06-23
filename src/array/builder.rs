@@ -11,7 +11,7 @@ use crate::fill_value::PyFillValue;
 use crate::metadata::{PyArrayMetadataV3, PyAttributes};
 use crate::storage::{PyAsyncStorage, PySyncStorage};
 
-#[pyclass(module = "zarrista.array", frozen, name = "Config")]
+#[pyclass(module = "zarrista.array", frozen, name = "ArrayBuilder")]
 pub struct PyArrayBuilder(ArrayBuilder);
 
 impl PyArrayBuilder {
