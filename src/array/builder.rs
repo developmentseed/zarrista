@@ -100,7 +100,7 @@ impl PyArrayBuilder {
                 .async_store_metadata()
                 .await
                 .map_err(ZarristaError::from)?;
-            Ok(())
+            Ok(PyAsyncArray::from(array))
         })
     }
 
