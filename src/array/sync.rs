@@ -5,6 +5,7 @@ use std::sync::Arc;
 use crate::array::selection::PySelection;
 use crate::array::shared::array_metadata_accessors;
 use crate::array::PyChunkIndices;
+use crate::array_bytes::PyArrayBytes;
 use crate::codec::PyCodecOptions;
 use crate::decoded_array::DecodedArray;
 use crate::error::ZarristaResult;
@@ -89,6 +90,24 @@ impl PyArray {
     ) -> ZarristaResult<Option<PyBytes>> {
         let encoded = self.inner.retrieve_encoded_chunk(chunk_indices.as_ref())?;
         Ok(encoded.map(|buf| PyBytes::new(buf.into())))
+    }
+
+    #[pyo3(signature = (chunk_indices, encoded_chunk, **codec_options))]
+    fn store_chunk(
+        &self,
+        chunk_indices: PyChunkIndices,
+        encoded_chunk: &PyArrayBytes,
+        codec_options: Option<PyCodecOptions>,
+    ) -> ZarristaResult<()> {
+        let codec_options = codec_options
+            .map(|opts| opts.into_inner())
+            .unwrap_or_default();
+        self.inner.store_chunk_opt(
+            chunk_indices.as_ref(),
+            encoded_chunk.inner(),
+            &codec_options,
+        )?;
+        Ok(())
     }
 }
 

@@ -11,7 +11,10 @@ use std::borrow::Cow;
 use pyo3::exceptions::PyValueError;
 use pyo3::prelude::*;
 use pyo3_bytes::PyBytes;
-use zarrs::array::{ArrayBytes, ArrayBytesOffsets, ArrayBytesOptional, ArrayBytesVariableLength};
+use zarrs::array::{
+    ArrayBytes, ArrayBytesOffsets, ArrayBytesOptional, ArrayBytesVariableLength, DataType,
+    ElementError, IntoArrayBytes,
+};
 
 /// Bytes for a chunk as they cross the Python boundary.
 #[pyclass(module = "zarrista", frozen, name = "ArrayBytes")]
@@ -68,6 +71,14 @@ impl PyArrayBytes {
 }
 
 impl PyArrayBytes {
+    pub fn into_inner(self) -> ArrayBytesOwned {
+        self.0
+    }
+
+    pub fn inner(&self) -> &ArrayBytesOwned {
+        &self.0
+    }
+
     /// Borrow a zarrs [`ArrayBytes`] out of `self` for the duration of a codec
     /// call. Zero-copy: every buffer is borrowed from the owned `PyBytes`.
     ///
@@ -85,13 +96,25 @@ impl PyArrayBytes {
     }
 }
 
+impl From<PyArrayBytes> for ArrayBytesOwned {
+    fn from(py_bytes: PyArrayBytes) -> Self {
+        py_bytes.0
+    }
+}
+
+impl From<ArrayBytesOwned> for PyArrayBytes {
+    fn from(bytes: ArrayBytesOwned) -> Self {
+        Self(bytes)
+    }
+}
+
 /// The owned representation, mirroring zarrs' [`ArrayBytes`] sum type.
 ///
 /// - Element buffers (fixed/variable payloads and the optional mask) are stored
 ///   as [`PyBytes`] and borrowed zero-copy.
 /// - Offsets are copied into a `Vec<usize>` (they need a per-element cast from
 ///   Python ints and are tiny metadata relative to the payload).
-enum ArrayBytesOwned {
+pub enum ArrayBytesOwned {
     Fixed(PyBytes),
     Variable {
         bytes: PyBytes,
@@ -167,6 +190,30 @@ impl From<ArrayBytes<'_>> for ArrayBytesOwned {
                     data: Box::new(ArrayBytesOwned::from(*data)),
                     mask: cow_to_pybytes(mask),
                 }
+            }
+        }
+    }
+}
+
+impl<'a> IntoArrayBytes<'a> for &'a ArrayBytesOwned {
+    fn into_array_bytes(self, data_type: &DataType) -> Result<ArrayBytes<'a>, ElementError> {
+        match self {
+            ArrayBytesOwned::Fixed(bytes) => Ok(ArrayBytes::Fixed(Cow::Borrowed(bytes.as_ref()))),
+            ArrayBytesOwned::Variable { bytes, offsets } => {
+                let offsets = ArrayBytesOffsets::new(Cow::Borrowed(offsets.as_slice()))
+                    .map_err(|e| ElementError::Other(e.to_string()))?;
+
+                let variable =
+                    ArrayBytesVariableLength::new(Cow::Borrowed(bytes.as_ref()), offsets)
+                        .map_err(|e| ElementError::Other(e.to_string()))?;
+                Ok(ArrayBytes::Variable(variable))
+            }
+            ArrayBytesOwned::Optional { data, mask } => {
+                let data = data.into_array_bytes(data_type)?;
+                Ok(ArrayBytes::Optional(ArrayBytesOptional::new(
+                    data,
+                    Cow::Borrowed(mask.as_ref()),
+                )))
             }
         }
     }
