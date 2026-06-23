@@ -79,7 +79,7 @@ class ArrayBuilder:
         """Return a new builder with the inner (subchunk) shape, enabling sharding."""
     def create(self, store: FilesystemStore | MemoryStore, path: str) -> Array:
         """Build the array in `store` at `path` and return it."""
-    def create_async(self, store: AsyncStore, path: str) -> AsyncArray:
+    async def create_async(self, store: AsyncStore, path: str) -> AsyncArray:
         """Build the array in an async `store` at `path` and return it."""
     def create_metadata(self) -> ArrayMetadataV3:
         """Build the array's Zarr v3 metadata without touching a store."""
