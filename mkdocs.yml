@@ -22,12 +22,14 @@ nav:
   - "index.md"
   - API Reference:
       - api/array.md
+      - api/builder.md
       - api/group.md
       - api/store.md
       - api/chunk-grid.md
       - api/codec.md
       - api/decoded_array.md
       - api/dtype.md
+      - api/exceptions.md
   - Blog:
       - blog/index.md
 
