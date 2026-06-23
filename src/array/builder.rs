@@ -55,6 +55,12 @@ impl PyArrayBuilder {
         }))
     }
 
+    fn chunk_grid(&self, chunk_grid: PyChunkGrid) -> Self {
+        self.with(|builder| {
+            builder.chunk_grid(chunk_grid.into_inner());
+        })
+    }
+
     fn chunk_key_encoding(&self, chunk_key_encoding: PyChunkKeyEncoding) -> Self {
         self.with(|builder| {
             builder.chunk_key_encoding(chunk_key_encoding.into_inner());
