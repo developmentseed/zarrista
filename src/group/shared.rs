@@ -16,9 +16,12 @@ macro_rules! group_metadata_accessors {
                 ::pythonize::pythonize(py, self.inner.attributes())
             }
 
+            /// The group's metadata, always exported as Zarr V3.
             #[getter]
             fn metadata(&self) -> $crate::metadata::PyGroupMetadata {
-                self.inner.metadata().clone().into()
+                let options = ::zarrs::group::GroupMetadataOptions::default()
+                    .with_metadata_convert_version(::zarrs::config::MetadataConvertVersion::V3);
+                self.inner.metadata_opt(&options).into()
             }
 
             /// The consolidated metadata, if present in the group metadata.
