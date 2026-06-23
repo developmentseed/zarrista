@@ -7,7 +7,7 @@ class ChunkKeyEncoding:
 
     @staticmethod
     def default(sep: Literal[".", "/"]) -> ChunkKeyEncoding:
-        """The `default` chunk key encoding with the given separator."""
+        """Construct the `default` chunk key encoding with the given separator."""
     @staticmethod
     def from_metadata(metadata: NamedConfigV3) -> ChunkKeyEncoding:
         """Build a chunk key encoding from its Zarr v3 metadata."""

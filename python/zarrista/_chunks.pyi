@@ -16,19 +16,19 @@ class ChunkGrid:
 
     @staticmethod
     def regular(array_shape: Sequence[int], chunk_shape: Sequence[int]) -> ChunkGrid:
-        """A regular chunk grid with a fixed `chunk_shape` over `array_shape`."""
+        """Construct a regular grid with a fixed `chunk_shape` over `array_shape`."""
     @staticmethod
     def rectilinear(
         array_shape: Sequence[int],
         chunk_shapes: Sequence[_ChunkEdgeLengths],
     ) -> ChunkGrid:
-        """A rectilinear grid with per-dimension (possibly varying) chunk sizes."""
+        """Construct a rectilinear grid with per-dimension chunk sizes."""
     @staticmethod
     def regular_bounded(
         array_shape: Sequence[int],
         chunk_shape: Sequence[int],
     ) -> ChunkGrid:
-        """A regular grid whose final chunks are clipped to the array bounds.
+        """Construct a regular grid whose final chunks are clipped to the array bounds.
 
         Experimental and may be incompatible with other Zarr V3 implementations.
         """
