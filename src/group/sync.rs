@@ -76,7 +76,7 @@ impl PyGroup {
     }
 
     /// Every node under the group, recursively, as `(path, metadata)` pairs.
-    fn traverse<'py>(&self) -> ZarristaResult<Vec<PyArrayOrGroup>> {
+    fn traverse(&self) -> ZarristaResult<Vec<PyArrayOrGroup>> {
         self.inner
             .traverse()?
             .into_iter()
