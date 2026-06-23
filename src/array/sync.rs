@@ -116,11 +116,11 @@ impl PyArray {
         Ok(encoded.map(|buf| PyBytes::new(buf.into())))
     }
 
-    #[pyo3(signature = (chunk_indices, encoded_chunk, **codec_options))]
+    #[pyo3(signature = (chunk_indices, decoded_chunk, **codec_options))]
     fn store_chunk(
         &self,
         chunk_indices: PyChunkIndices,
-        encoded_chunk: &PyArrayBytes,
+        decoded_chunk: &PyArrayBytes,
         codec_options: Option<PyCodecOptions>,
     ) -> ZarristaResult<()> {
         let codec_options = codec_options
@@ -128,7 +128,7 @@ impl PyArray {
             .unwrap_or_default();
         self.inner.store_chunk_opt(
             chunk_indices.as_ref(),
-            encoded_chunk.as_array_bytes()?,
+            decoded_chunk.as_array_bytes()?,
             &codec_options,
         )?;
         Ok(())

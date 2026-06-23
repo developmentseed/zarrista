@@ -76,6 +76,7 @@ impl PyAsyncArray {
         })
     }
 
+    #[pyo3(signature = (chunk_indices, **codec_options))]
     fn compact_chunk<'py>(
         &self,
         py: Python<'py>,
@@ -176,12 +177,12 @@ impl PyAsyncArray {
         })
     }
 
-    #[pyo3(signature = (chunk_indices, encoded_chunk, **codec_options))]
+    #[pyo3(signature = (chunk_indices, decoded_chunk, **codec_options))]
     fn store_chunk<'py>(
         &self,
         py: Python<'py>,
         chunk_indices: PyChunkIndices,
-        encoded_chunk: PyArrayBytes,
+        decoded_chunk: PyArrayBytes,
         codec_options: Option<PyCodecOptions>,
     ) -> PyResult<Bound<'py, PyAny>> {
         let inner = self.inner.clone();
@@ -193,7 +194,7 @@ impl PyAsyncArray {
             inner
                 .async_store_chunk_opt(
                     chunk_indices.as_ref(),
-                    encoded_chunk.as_array_bytes()?,
+                    decoded_chunk.as_array_bytes()?,
                     &codec_options,
                 )
                 .await

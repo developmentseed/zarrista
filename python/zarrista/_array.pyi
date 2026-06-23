@@ -1,3 +1,4 @@
+from collections.abc import Buffer
 from types import EllipsisType
 from typing import TypeAlias, Unpack
 
@@ -10,6 +11,7 @@ from zarrista.codec import (
     CodecOptions,
 )
 
+from ._array_bytes import ArrayBytes
 from ._chunks import ChunkGrid
 from ._decoded_array import DecodedArray
 from ._dtype import DataType
@@ -26,7 +28,7 @@ indexing are not supported.
 """
 
 class Array:
-    """A read-only Zarr array."""
+    """A Zarr array."""
 
     @staticmethod
     def open(store: FilesystemStore | MemoryStore, path: str = "/") -> Array:
@@ -82,6 +84,51 @@ class Array:
 
         Keyword arguments are passed as [`CodecOptions`][zarrista.codec.CodecOptions].
         """
+    def store_chunk(
+        self,
+        chunk_indices: list[int],
+        decoded_chunk: ArrayBytes,
+        **codec_options: Unpack[CodecOptions],
+    ) -> None:
+        """Encode `decoded_chunk` and write it as the chunk at `chunk_indices`.
+
+        `decoded_chunk` holds the decoded chunk data; the array's codec pipeline
+        encodes it before it is written. If the data equals the fill value and
+        `store_empty_chunks` is `False`, the chunk is erased instead.
+
+        Keyword arguments are passed as [`CodecOptions`][zarrista.codec.CodecOptions].
+        """
+    def store_encoded_chunk(
+        self,
+        chunk_indices: list[int],
+        encoded_chunk: Buffer,
+    ) -> None:
+        """Write already-encoded bytes directly as the chunk at `chunk_indices`.
+
+        The bytes are stored verbatim with no encoding. The caller is
+        responsible for ensuring they match the array's codec pipeline; invalid
+        bytes produce a chunk that cannot be decoded.
+        """
+    def compact_chunk(
+        self,
+        chunk_indices: list[int],
+        **codec_options: Unpack[CodecOptions],
+    ) -> bool:
+        """Re-encode the stored chunk in place, returning whether it was rewritten.
+
+        Reads the encoded chunk, attempts to produce a more compact encoding,
+        and rewrites it if that succeeds. Returns `True` if the chunk was
+        rewritten, `False` if it was absent or already optimal.
+
+        Keyword arguments are passed as [`CodecOptions`][zarrista.codec.CodecOptions].
+        """
+    def erase_chunk(self, chunk_indices: list[int]) -> None:
+        """Delete the chunk at `chunk_indices` from the store.
+
+        Erasing an absent chunk is a no-op.
+        """
+    def erase_metadata(self) -> None:
+        """Delete the array's metadata from the store."""
     @property
     def shape(self) -> list[int]:
         """The array shape."""
@@ -92,7 +139,7 @@ class Array:
         """
 
 class AsyncArray:
-    """A read-only Zarr array backed by an async store."""
+    """A Zarr array backed by an async store."""
 
     @staticmethod
     async def open_async(store: AsyncStore, path: str = "/") -> AsyncArray:
@@ -151,6 +198,51 @@ class AsyncArray:
 
         Keyword arguments are passed as [`CodecOptions`][zarrista.codec.CodecOptions].
         """
+    async def store_chunk(
+        self,
+        chunk_indices: list[int],
+        decoded_chunk: ArrayBytes,
+        **codec_options: Unpack[CodecOptions],
+    ) -> None:
+        """Encode `decoded_chunk` and write it as the chunk at `chunk_indices`.
+
+        `decoded_chunk` holds the decoded chunk data; the array's codec pipeline
+        encodes it before it is written. If the data equals the fill value and
+        `store_empty_chunks` is `False`, the chunk is erased instead.
+
+        Keyword arguments are passed as [`CodecOptions`][zarrista.codec.CodecOptions].
+        """
+    async def store_encoded_chunk(
+        self,
+        chunk_indices: list[int],
+        encoded_chunk: Buffer,
+    ) -> None:
+        """Write already-encoded bytes directly as the chunk at `chunk_indices`.
+
+        The bytes are stored verbatim with no encoding. The caller is
+        responsible for ensuring they match the array's codec pipeline; invalid
+        bytes produce a chunk that cannot be decoded.
+        """
+    async def compact_chunk(
+        self,
+        chunk_indices: list[int],
+        **codec_options: Unpack[CodecOptions],
+    ) -> bool:
+        """Re-encode the stored chunk in place, returning whether it was rewritten.
+
+        Reads the encoded chunk, attempts to produce a more compact encoding,
+        and rewrites it if that succeeds. Returns `True` if the chunk was
+        rewritten, `False` if it was absent or already optimal.
+
+        Keyword arguments are passed as [`CodecOptions`][zarrista.codec.CodecOptions].
+        """
+    async def erase_chunk(self, chunk_indices: list[int]) -> None:
+        """Delete the chunk at `chunk_indices` from the store.
+
+        Erasing an absent chunk is a no-op.
+        """
+    async def erase_metadata(self) -> None:
+        """Delete the array's metadata from the store."""
     @property
     def shape(self) -> list[int]:
         """The array shape."""
