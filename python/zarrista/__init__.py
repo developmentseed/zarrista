@@ -5,10 +5,12 @@ from typing import TypeAlias
 from . import codec, exceptions
 from ._zarrista import (
     Array,
+    ArrayBuilder,
     ArrayBytes,
     AsyncArray,
     AsyncGroup,
     ChunkGrid,
+    ChunkKeyEncoding,
     DataType,
     FilesystemStore,
     FillValue,
@@ -32,10 +34,12 @@ type before using layout-specific methods.
 
 __all__ = [
     "Array",
+    "ArrayBuilder",
     "ArrayBytes",
     "AsyncArray",
     "AsyncGroup",
     "ChunkGrid",
+    "ChunkKeyEncoding",
     "DataType",
     "DecodedArray",
     "FilesystemStore",

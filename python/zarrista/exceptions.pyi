@@ -34,11 +34,19 @@ class PluginCreateError(ZarristaError):
 class SerializationError(ZarristaError):
     """Raised when (de)serializing JSON or converting to/from Python objects fails."""
 
+class ChunkGridCreateError(ZarristaError):
+    """Raised when a chunk grid cannot be created from the given shapes."""
+
+class IncompatibleDimensionalityError(ZarristaError):
+    """Raised when a shape's dimensionality is incompatible with another."""
+
 __all__ = [
     "ArrayCreateError",
     "ArrayError",
+    "ChunkGridCreateError",
     "CodecError",
     "GroupCreateError",
+    "IncompatibleDimensionalityError",
     "NodeCreateError",
     "NodePathError",
     "PluginCreateError",
