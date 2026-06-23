@@ -17,7 +17,8 @@ use zarrs::array::Array;
 use zarrs::storage::AsyncReadableWritableListableStorageTraits;
 
 /// A Zarr array.
-#[pyclass(module = "zarrista", frozen, name = "AsyncArray")]
+#[derive(Clone)]
+#[pyclass(module = "zarrista", frozen, name = "AsyncArray", from_py_object)]
 pub struct PyAsyncArray {
     pub(crate) inner: Arc<Array<dyn AsyncReadableWritableListableStorageTraits>>,
 }

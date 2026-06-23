@@ -12,9 +12,9 @@ use zarrs::node::NodePath;
 use zarrs::storage::AsyncReadableWritableListableStorageTraits;
 
 /// A Zarr group.
-#[pyclass(module = "zarrista", frozen, name = "AsyncGroup")]
+#[derive(Clone)]
+#[pyclass(module = "zarrista", frozen, name = "AsyncGroup", from_py_object)]
 pub struct PyAsyncGroup {
-    pub(crate) path: NodePath,
     pub(crate) inner: Arc<Group<dyn AsyncReadableWritableListableStorageTraits>>,
 }
 
