@@ -4,6 +4,7 @@ mod array;
 mod array_bytes;
 mod chunks;
 mod codec;
+mod config;
 mod decoded_array;
 mod dtype;
 mod error;
