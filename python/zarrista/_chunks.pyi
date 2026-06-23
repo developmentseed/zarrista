@@ -15,9 +15,7 @@ class ChunkGrid:
     """The chunk grid of an array: how its shape is partitioned into chunks."""
 
     @staticmethod
-    def regular(
-        array_shape: Sequence[int], chunk_shape: Sequence[int]
-    ) -> ChunkGrid:
+    def regular(array_shape: Sequence[int], chunk_shape: Sequence[int]) -> ChunkGrid:
         """A regular chunk grid with a fixed `chunk_shape` over `array_shape`."""
     @staticmethod
     def rectilinear(
@@ -27,16 +25,15 @@ class ChunkGrid:
         """A rectilinear grid with per-dimension (possibly varying) chunk sizes."""
     @staticmethod
     def regular_bounded(
-        array_shape: Sequence[int], chunk_shape: Sequence[int]
+        array_shape: Sequence[int],
+        chunk_shape: Sequence[int],
     ) -> ChunkGrid:
         """A regular grid whose final chunks are clipped to the array bounds.
 
         Experimental and may be incompatible with other Zarr V3 implementations.
         """
     @staticmethod
-    def from_metadata(
-        metadata: NamedConfigV3, shape: Sequence[int]
-    ) -> ChunkGrid:
+    def from_metadata(metadata: NamedConfigV3, shape: Sequence[int]) -> ChunkGrid:
         """Build a chunk grid from its Zarr v3 metadata and the array shape."""
     @property
     def metadata(self) -> NamedConfigV3:

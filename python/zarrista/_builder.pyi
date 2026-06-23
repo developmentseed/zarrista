@@ -76,7 +76,7 @@ class ArrayBuilder:
         self,
         subchunk_shape: Sequence[int] | None,
     ) -> ArrayBuilder:
-        """Return a new builder with the inner (subchunk) shape set, enabling sharding."""
+        """Return a new builder with the inner (subchunk) shape, enabling sharding."""
     def create(self, store: FilesystemStore | MemoryStore, path: str) -> Array:
         """Build the array in `store` at `path` and return it."""
     def create_async(self, store: AsyncStore, path: str) -> AsyncArray:
