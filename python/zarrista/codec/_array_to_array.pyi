@@ -1,3 +1,5 @@
+from zarr_metadata import JSONValue
+
 from zarrista._array_bytes import ArrayBytes
 from zarrista._dtype import DataType
 from zarrista._fill_value import FillValue
@@ -5,6 +7,18 @@ from zarrista._fill_value import FillValue
 class ArrayToArrayCodec:
     """A Zarr v3 array-to-array codec."""
 
+    @property
+    def name(self) -> str | None:
+        """The codec's Zarr v3 name (e.g. `"transpose"`), if any."""
+    @property
+    def configuration(self) -> JSONValue | None:
+        """The codec's Zarr v3 configuration as a dict, if any."""
+    @staticmethod
+    def from_config(metadata: JSONValue) -> ArrayToArrayCodec:
+        """Build a codec from its Zarr v3 metadata.
+
+        For example `{"name": "transpose", "configuration": {"order": [1, 0]}}`.
+        """
     def encoded_data_type(self, decoded_data_type: DataType) -> DataType:
         """Return the data type produced by encoding `decoded_data_type`."""
     def encoded_fill_value(
