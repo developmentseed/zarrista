@@ -8,7 +8,7 @@ use crate::codec::{PyArrayToArrayCodec, PyArrayToBytesCodec, PyBytesToBytesCodec
 use crate::dtype::PyDataType;
 use crate::error::ZarristaResult;
 use crate::fill_value::PyFillValue;
-use crate::metadata::PyArrayMetadataV3;
+use crate::metadata::{PyArrayMetadataV3, PyAttributes};
 use crate::storage::{PyAsyncStorage, PySyncStorage};
 
 #[pyclass(module = "zarrista.array", frozen, name = "Config")]
@@ -48,10 +48,9 @@ impl PyArrayBuilder {
         }
     }
 
-    fn attrs(&self, attrs: Bound<'_, PyAny>) -> PyResult<Self> {
-        let attributes = pythonize::depythonize(&attrs)?;
+    fn attrs(&self, attrs: PyAttributes) -> PyResult<Self> {
         Ok(self.with(|builder| {
-            builder.attributes(attributes);
+            builder.attributes(attrs.into_inner());
         }))
     }
 
@@ -78,10 +77,14 @@ impl PyArrayBuilder {
     }
 
     fn create(&self, store: PySyncStorage, path: &str) -> ZarristaResult<PyArray> {
+        // TODO: should this additionally store the metadata? Or make the user call store_metadata
+        // on the result themselves?
         Ok(self.0.build_arc(store.into_inner(), path)?.into())
     }
 
     fn create_async(&self, store: PyAsyncStorage, path: &str) -> ZarristaResult<PyAsyncArray> {
+        // TODO: should this additionally store the metadata? Or make the user call store_metadata
+        // on the result themselves?
         Ok(self.0.build_arc(store.into_inner(), path)?.into())
     }
 
