@@ -9,15 +9,12 @@ macro_rules! array_metadata_accessors {
         impl $ty {
             /// The array's user attributes as a dict.
             #[getter]
-            fn attrs<'py>(
-                &self,
-                py: ::pyo3::Python<'py>,
-            ) -> ::pythonize::Result<::pyo3::Bound<'py, ::pyo3::PyAny>> {
-                ::pythonize::pythonize(py, self.inner.attributes())
+            fn attrs(&self) -> $crate::metadata::PyAttributes {
+                self.inner.attributes().clone().into()
             }
 
             #[getter]
-            fn chunk_grid(&self) -> $crate::chunks::PyChunkGrid {
+            fn chunk_grid(&self) -> $crate::array::PyChunkGrid {
                 self.inner.chunk_grid().clone().into()
             }
 

@@ -44,7 +44,12 @@ pyo3-object_store = { version = "0.11.0", default-features = false }
 pythonize = "0.29"
 serde_json = "1"
 thiserror = "2.0.18"
-zarrs = { version = "0.23", features = ["async", "bitround", "ndarray"] }
+zarrs = { version = "0.23", features = [
+    "async",
+    "bitround",
+    "ndarray",
+    "sharding",
+] }
 zarrs_icechunk = "0.5"
 zarrs_object_store = { version = "0.6.2" }
 
@@ -55,3 +60,8 @@ pyo3 = { version = "0.29", features = ["auto-initialize"] }
 [profile.release]
 lto = true
 codegen-units = 1
+
+[patch.crates-io]
+# Branch kyle/v0.23-derive-clone
+zarrs = { git = "https://github.com/kylebarron/zarrs", rev = "e68838becd223ddb7f522b265c1b65b90fe577b1" }
+zarrs_storage = { git = "https://github.com/kylebarron/zarrs", rev = "e68838becd223ddb7f522b265c1b65b90fe577b1" }

@@ -11,12 +11,22 @@ use zarrs::array::{ArrayToBytesCodecTraits, Codec};
 use crate::error::ZarristaResult;
 use crate::metadata::{PyConfiguration, PyMetadataV3};
 
-#[pyclass(module = "zarrista.codec", frozen, name = "ArrayToBytesCodec")]
+#[derive(Debug, Clone)]
+#[pyclass(
+    module = "zarrista.codec",
+    frozen,
+    name = "ArrayToBytesCodec",
+    from_py_object
+)]
 pub struct PyArrayToBytesCodec(Arc<dyn ArrayToBytesCodecTraits>);
 
 impl PyArrayToBytesCodec {
     pub fn new(codec: Arc<dyn ArrayToBytesCodecTraits>) -> Self {
         Self(codec)
+    }
+
+    pub fn into_inner(self) -> Arc<dyn ArrayToBytesCodecTraits> {
+        self.0
     }
 }
 

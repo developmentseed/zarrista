@@ -9,11 +9,8 @@ macro_rules! group_metadata_accessors {
         impl $ty {
             /// The group's user attributes as a dict.
             #[getter]
-            fn attrs<'py>(
-                &self,
-                py: ::pyo3::Python<'py>,
-            ) -> ::pythonize::Result<::pyo3::Bound<'py, ::pyo3::PyAny>> {
-                ::pythonize::pythonize(py, self.inner.attributes())
+            fn attrs(&self) -> $crate::metadata::PyAttributes {
+                self.inner.attributes().clone().into()
             }
 
             /// The group's metadata, always exported as Zarr V3.

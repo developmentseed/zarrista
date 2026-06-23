@@ -4,7 +4,7 @@ use std::sync::Arc;
 
 use crate::array::selection::PySelection;
 use crate::array::shared::array_metadata_accessors;
-use crate::array::util::PyChunkIndices;
+use crate::array::PyChunkIndices;
 use crate::codec::PyCodecOptions;
 use crate::decoded_array::DecodedArray;
 use crate::error::ZarristaError;
@@ -26,6 +26,10 @@ pub struct PyAsyncArray {
 impl PyAsyncArray {
     pub(crate) fn new(inner: Arc<Array<dyn AsyncReadableWritableListableStorageTraits>>) -> Self {
         Self { inner }
+    }
+
+    pub fn inner(&self) -> &Arc<Array<dyn AsyncReadableWritableListableStorageTraits>> {
+        &self.inner
     }
 }
 
@@ -129,5 +133,11 @@ impl PyAsyncArray {
 impl From<Array<dyn AsyncReadableWritableListableStorageTraits>> for PyAsyncArray {
     fn from(inner: Array<dyn AsyncReadableWritableListableStorageTraits>) -> Self {
         Self::new(Arc::new(inner))
+    }
+}
+
+impl From<Arc<Array<dyn AsyncReadableWritableListableStorageTraits>>> for PyAsyncArray {
+    fn from(inner: Arc<Array<dyn AsyncReadableWritableListableStorageTraits>>) -> Self {
+        Self::new(inner)
     }
 }

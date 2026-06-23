@@ -9,8 +9,9 @@
 use pyo3::prelude::*;
 use pythonize::PythonizeError;
 use thiserror::Error;
+use zarrs::array::chunk_grid::{RectilinearChunkGridCreateError, RegularChunkGridCreateError};
 use zarrs::array::codec::TransposeOrderError;
-use zarrs::array::{ArrayCreateError, ArrayError, CodecError};
+use zarrs::array::{ArrayCreateError, ArrayError, CodecError, IncompatibleDimensionalityError};
 use zarrs::filesystem::FilesystemStoreCreateError;
 use zarrs::group::GroupCreateError;
 use zarrs::node::{NodeCreateError, NodePathError};
@@ -67,6 +68,15 @@ pub enum ZarristaError {
     /// Failed to create a codec (or other plugin) from its configuration.
     #[error(transparent)]
     PluginCreate(#[from] PluginCreateError),
+    /// Failed to create a regular chunk grid.
+    #[error(transparent)]
+    RegularChunkGridCreate(#[from] RegularChunkGridCreateError),
+    /// Failed to create a rectilinear chunk grid.
+    #[error(transparent)]
+    RectilinearChunkGridCreate(#[from] RectilinearChunkGridCreateError),
+    /// A shape's dimensionality is incompatible with another.
+    #[error(transparent)]
+    IncompatibleDimensionality(#[from] IncompatibleDimensionalityError),
 }
 
 impl From<ZarristaError> for PyErr {
@@ -89,6 +99,15 @@ impl From<ZarristaError> for PyErr {
                 exc::TransposeOrderError::new_err(err.to_string())
             }
             ZarristaError::PluginCreate(err) => exc::PluginCreateError::new_err(err.to_string()),
+            ZarristaError::RegularChunkGridCreate(err) => {
+                exc::ChunkGridCreateError::new_err(err.to_string())
+            }
+            ZarristaError::RectilinearChunkGridCreate(err) => {
+                exc::ChunkGridCreateError::new_err(err.to_string())
+            }
+            ZarristaError::IncompatibleDimensionality(err) => {
+                exc::IncompatibleDimensionalityError::new_err(err.to_string())
+            }
         }
     }
 }
