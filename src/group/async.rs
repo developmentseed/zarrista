@@ -19,11 +19,8 @@ pub struct PyAsyncGroup {
 }
 
 impl PyAsyncGroup {
-    pub(crate) fn new(
-        path: NodePath,
-        inner: Arc<Group<dyn AsyncReadableWritableListableStorageTraits>>,
-    ) -> Self {
-        Self { path, inner }
+    pub(crate) fn new(inner: Arc<Group<dyn AsyncReadableWritableListableStorageTraits>>) -> Self {
+        Self { inner }
     }
 
     fn storage(&self) -> Arc<dyn AsyncReadableWritableListableStorageTraits> {
@@ -52,7 +49,7 @@ impl PyAsyncGroup {
             let inner = Group::async_open(storage.clone(), path.as_str())
                 .await
                 .map_err(ZarristaError::from)?;
-            Ok(Self::new(path.into(), Arc::new(inner)))
+            Ok(Self::new(Arc::new(inner)))
         })
     }
 
@@ -89,7 +86,6 @@ impl PyAsyncGroup {
     /// Open a direct child array or group by name.
     fn open_child_async<'py>(&self, py: Python<'py>, name: &str) -> PyResult<Bound<'py, PyAny>> {
         let storage = self.storage();
-        let path = self.path.join(name).map_err(ZarristaError::from)?;
         future_into_py(py, async move {
             open_node_async(storage, path).await.map_err(PyErr::from)
         })
