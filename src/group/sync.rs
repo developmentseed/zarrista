@@ -6,7 +6,7 @@ use super::last_segment;
 use crate::array::PyArray;
 use crate::error::ZarristaResult;
 use crate::group::shared::group_metadata_accessors;
-use crate::node::{PyNode, PyNodePath};
+use crate::node::{flatten_nodes, PyNode, PyNodePath};
 use crate::storage::PySyncStorage;
 use pyo3::exceptions::PyKeyError;
 use pyo3::prelude::*;
@@ -78,7 +78,7 @@ impl PyGroup {
     /// If `recursive` is true, descendants are included as well (flattened).
     #[pyo3(signature = (recursive = false))]
     fn children(&self, recursive: bool) -> ZarristaResult<Vec<PyNode>> {
-        let nodes = self.inner.children(recursive)?;
+        let nodes = flatten_nodes(self.inner.children(recursive)?);
         Ok(nodes
             .into_iter()
             .map(|node| PyNode::new(node, self.storage()))
