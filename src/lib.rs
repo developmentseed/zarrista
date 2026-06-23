@@ -15,7 +15,7 @@ mod storage;
 
 use pyo3::prelude::*;
 
-use crate::array::{PyArray, PyAsyncArray, PyChunkGrid};
+use crate::array::{PyArray, PyArrayBuilder, PyAsyncArray, PyChunkGrid, PyChunkKeyEncoding};
 use crate::array_bytes::PyArrayBytes;
 use crate::codec::register_codec_module;
 use crate::decoded_array::{PyMaskedTensor, PyMaskedVariableArray, PyTensor, PyVariableArray};
@@ -31,10 +31,12 @@ fn _zarrista(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add("__version__", env!("CARGO_PKG_VERSION"))?;
 
     m.add_class::<PyArray>()?;
+    m.add_class::<PyArrayBuilder>()?;
     m.add_class::<PyArrayBytes>()?;
     m.add_class::<PyAsyncArray>()?;
     m.add_class::<PyAsyncGroup>()?;
     m.add_class::<PyChunkGrid>()?;
+    m.add_class::<PyChunkKeyEncoding>()?;
     m.add_class::<PyTensor>()?;
     m.add_class::<PyVariableArray>()?;
     m.add_class::<PyMaskedTensor>()?;

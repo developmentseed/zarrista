@@ -7,6 +7,7 @@ mod shared;
 mod sync;
 mod util;
 
+pub use builder::PyArrayBuilder;
 pub use chunk_grid::PyChunkGrid;
 pub use chunk_key_encoding::PyChunkKeyEncoding;
 pub use r#async::PyAsyncArray;
