@@ -6,12 +6,11 @@ use super::last_segment;
 use crate::array::PyArray;
 use crate::error::ZarristaResult;
 use crate::group::shared::group_metadata_accessors;
-use crate::node::{PyNode, PyNodePath};
+use crate::node::{PyArrayOrGroup, PyNode, PyNodePath};
 use crate::storage::PySyncStorage;
 use pyo3::exceptions::PyKeyError;
 use pyo3::prelude::*;
 use pyo3::pybacked::PyBackedStr;
-use pyo3::IntoPyObjectExt;
 use zarrs::array::Array;
 use zarrs::group::Group;
 use zarrs::node::NodeMetadata;
@@ -20,11 +19,11 @@ use zarrs::storage::ReadableWritableListableStorageTraits;
 /// A Zarr group.
 #[pyclass(module = "zarrista", frozen, name = "Group")]
 pub struct PyGroup {
-    pub(crate) inner: Group<dyn ReadableWritableListableStorageTraits>,
+    pub(crate) inner: Arc<Group<dyn ReadableWritableListableStorageTraits>>,
 }
 
 impl PyGroup {
-    pub(crate) fn new(inner: Group<dyn ReadableWritableListableStorageTraits>) -> Self {
+    pub(crate) fn new(inner: Arc<Group<dyn ReadableWritableListableStorageTraits>>) -> Self {
         Self { inner }
     }
 
@@ -47,7 +46,7 @@ impl PyGroup {
     fn open(store: PySyncStorage, path: PyNodePath) -> ZarristaResult<Self> {
         let store = store.into_inner();
         let inner = Group::open(store, path.as_str())?;
-        Ok(Self::new(inner))
+        Ok(Self::new(Arc::new(inner)))
     }
 
     /// Names of the direct child arrays.
@@ -77,7 +76,7 @@ impl PyGroup {
     }
 
     /// Every node under the group, recursively, as `(path, metadata)` pairs.
-    fn traverse<'py>(&self, py: Python<'py>) -> ZarristaResult<Vec<Bound<'py, PyAny>>> {
+    fn traverse<'py>(&self) -> ZarristaResult<Vec<PyArrayOrGroup>> {
         self.inner
             .traverse()?
             .into_iter()
@@ -87,12 +86,12 @@ impl PyGroup {
                     NodeMetadata::Array(array_metadata) => {
                         let array =
                             Array::new_with_metadata(storage, path.as_str(), array_metadata)?;
-                        Ok(PyArray::new(array).into_bound_py_any(py)?)
+                        Ok(PyArray::new(Arc::new(array)).into())
                     }
                     NodeMetadata::Group(group_metadata) => {
                         let group =
                             Group::new_with_metadata(storage, path.as_str(), group_metadata)?;
-                        Ok(PyGroup::new(group).into_bound_py_any(py)?)
+                        Ok(PyGroup::new(Arc::new(group)).into())
                     }
                 }
             })
@@ -105,12 +104,12 @@ impl PyGroup {
             .inner
             .child_arrays()?
             .into_iter()
-            .map(PyArray::new)
+            .map(|array| array.into())
             .collect())
     }
 
     /// The direct child groups of the group.
-    fn child_groups(&self) -> ZarristaResult<Vec<Self>> {
+    fn child_groups(&self) -> ZarristaResult<Vec<PyGroup>> {
         Ok(self
             .inner
             .child_groups()?
@@ -168,6 +167,12 @@ impl PyGroup {
 
 impl From<Group<dyn ReadableWritableListableStorageTraits>> for PyGroup {
     fn from(inner: Group<dyn ReadableWritableListableStorageTraits>) -> Self {
+        Self::new(Arc::new(inner))
+    }
+}
+
+impl From<Arc<Group<dyn ReadableWritableListableStorageTraits>>> for PyGroup {
+    fn from(inner: Arc<Group<dyn ReadableWritableListableStorageTraits>>) -> Self {
         Self::new(inner)
     }
 }
