@@ -8,6 +8,7 @@ use crate::array::util::PyChunkIndices;
 use crate::chunks::PyChunkGrid;
 use crate::codec::{PyArrayToArrayCodec, PyBytesToBytesCodec, PyCodecChain, PyCodecOptions};
 use crate::decoded_array::DecodedArray;
+use crate::dtype::PyDataType;
 use crate::error::ZarristaResult;
 use crate::fill_value::PyFillValue;
 use crate::node::PyNodePath;
