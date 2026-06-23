@@ -11,10 +11,7 @@ use std::borrow::Cow;
 use pyo3::exceptions::PyValueError;
 use pyo3::prelude::*;
 use pyo3_bytes::PyBytes;
-use zarrs::array::{
-    ArrayBytes, ArrayBytesOffsets, ArrayBytesOptional, ArrayBytesVariableLength, DataType,
-    ElementError, IntoArrayBytes,
-};
+use zarrs::array::{ArrayBytes, ArrayBytesOffsets, ArrayBytesOptional, ArrayBytesVariableLength};
 
 /// Bytes for a chunk as they cross the Python boundary.
 #[derive(Clone)]
@@ -72,14 +69,6 @@ impl PyArrayBytes {
 }
 
 impl PyArrayBytes {
-    pub fn into_inner(self) -> ArrayBytesOwned {
-        self.0
-    }
-
-    pub fn inner(&self) -> &ArrayBytesOwned {
-        &self.0
-    }
-
     /// Borrow a zarrs [`ArrayBytes`] out of `self` for the duration of a codec
     /// call. Zero-copy: every buffer is borrowed from the owned `PyBytes`.
     ///
@@ -195,30 +184,6 @@ impl From<ArrayBytes<'_>> for ArrayBytesOwned {
                     data: Box::new(ArrayBytesOwned::from(*data)),
                     mask: cow_to_pybytes(mask),
                 }
-            }
-        }
-    }
-}
-
-impl<'a> IntoArrayBytes<'a> for &'a ArrayBytesOwned {
-    fn into_array_bytes(self, data_type: &DataType) -> Result<ArrayBytes<'a>, ElementError> {
-        match self {
-            ArrayBytesOwned::Fixed(bytes) => Ok(ArrayBytes::Fixed(Cow::Borrowed(bytes.as_ref()))),
-            ArrayBytesOwned::Variable { bytes, offsets } => {
-                let offsets = ArrayBytesOffsets::new(Cow::Borrowed(offsets.as_slice()))
-                    .map_err(|e| ElementError::Other(e.to_string()))?;
-
-                let variable =
-                    ArrayBytesVariableLength::new(Cow::Borrowed(bytes.as_ref()), offsets)
-                        .map_err(|e| ElementError::Other(e.to_string()))?;
-                Ok(ArrayBytes::Variable(variable))
-            }
-            ArrayBytesOwned::Optional { data, mask } => {
-                let data = data.into_array_bytes(data_type)?;
-                Ok(ArrayBytes::Optional(ArrayBytesOptional::new(
-                    data,
-                    Cow::Borrowed(mask.as_ref()),
-                )))
             }
         }
     }

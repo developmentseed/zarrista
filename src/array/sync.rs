@@ -104,7 +104,7 @@ impl PyArray {
             .unwrap_or_default();
         self.inner.store_chunk_opt(
             chunk_indices.as_ref(),
-            encoded_chunk.inner(),
+            encoded_chunk.as_array_bytes()?,
             &codec_options,
         )?;
         Ok(())
