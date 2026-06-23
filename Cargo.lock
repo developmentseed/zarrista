@@ -5270,8 +5270,7 @@ dependencies = [
 [[package]]
 name = "zarrs"
 version = "0.23.13"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8132307b8fc041fd21f68c7987103fb6e038b11f9838c16ec43b798f5480ccf5"
+source = "git+https://github.com/kylebarron/zarrs?rev=e68838becd223ddb7f522b265c1b65b90fe577b1#e68838becd223ddb7f522b265c1b65b90fe577b1"
 dependencies = [
  "async-generic",
  "async-lock",
@@ -5315,15 +5314,14 @@ dependencies = [
  "zarrs_metadata",
  "zarrs_metadata_ext",
  "zarrs_plugin",
- "zarrs_storage",
+ "zarrs_storage 0.4.3 (git+https://github.com/kylebarron/zarrs?rev=e68838becd223ddb7f522b265c1b65b90fe577b1)",
  "zstd",
 ]
 
 [[package]]
 name = "zarrs_chunk_grid"
 version = "0.5.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1cf67386fd96a0336cd3e5ab5ca6cb14e0e05aee80f1acae8c4d3cf562a8bb65"
+source = "git+https://github.com/kylebarron/zarrs?rev=e68838becd223ddb7f522b265c1b65b90fe577b1#e68838becd223ddb7f522b265c1b65b90fe577b1"
 dependencies = [
  "derive_more",
  "inventory",
@@ -5338,21 +5336,19 @@ dependencies = [
 [[package]]
 name = "zarrs_chunk_key_encoding"
 version = "0.2.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9040e7feaa92d1904d492acd0cd91b97214f1791c5b5738e6c05b2ca4145a382"
+source = "git+https://github.com/kylebarron/zarrs?rev=e68838becd223ddb7f522b265c1b65b90fe577b1#e68838becd223ddb7f522b265c1b65b90fe577b1"
 dependencies = [
  "derive_more",
  "inventory",
  "zarrs_metadata",
  "zarrs_plugin",
- "zarrs_storage",
+ "zarrs_storage 0.4.3 (git+https://github.com/kylebarron/zarrs?rev=e68838becd223ddb7f522b265c1b65b90fe577b1)",
 ]
 
 [[package]]
 name = "zarrs_codec"
 version = "0.2.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "383a129a6a0cbb2c80cdba23809e5cab85159756464b7d0f112468a495c128da"
+source = "git+https://github.com/kylebarron/zarrs?rev=e68838becd223ddb7f522b265c1b65b90fe577b1#e68838becd223ddb7f522b265c1b65b90fe577b1"
 dependencies = [
  "async-trait",
  "bytemuck",
@@ -5367,14 +5363,13 @@ dependencies = [
  "zarrs_data_type",
  "zarrs_metadata",
  "zarrs_plugin",
- "zarrs_storage",
+ "zarrs_storage 0.4.3 (git+https://github.com/kylebarron/zarrs?rev=e68838becd223ddb7f522b265c1b65b90fe577b1)",
 ]
 
 [[package]]
 name = "zarrs_data_type"
 version = "0.9.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1bc7c594c9363278fcd9db4c205514f009944206eb093ea7ad40b85f50009f31"
+source = "git+https://github.com/kylebarron/zarrs?rev=e68838becd223ddb7f522b265c1b65b90fe577b1#e68838becd223ddb7f522b265c1b65b90fe577b1"
 dependencies = [
  "derive_more",
  "half",
@@ -5391,8 +5386,7 @@ dependencies = [
 [[package]]
 name = "zarrs_filesystem"
 version = "0.3.9"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "270efeb0181651aee5460b3232f2fc83e91bd646cefe75001d1c8f9a4f3abf81"
+source = "git+https://github.com/kylebarron/zarrs?rev=e68838becd223ddb7f522b265c1b65b90fe577b1#e68838becd223ddb7f522b265c1b65b90fe577b1"
 dependencies = [
  "bytes",
  "derive_more",
@@ -5403,7 +5397,7 @@ dependencies = [
  "positioned-io",
  "thiserror 2.0.18",
  "walkdir",
- "zarrs_storage",
+ "zarrs_storage 0.4.3 (git+https://github.com/kylebarron/zarrs?rev=e68838becd223ddb7f522b265c1b65b90fe577b1)",
 ]
 
 [[package]]
@@ -5416,14 +5410,13 @@ dependencies = [
  "futures",
  "icechunk",
  "tokio",
- "zarrs_storage",
+ "zarrs_storage 0.4.3 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
 name = "zarrs_metadata"
 version = "0.7.5"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d60c4c363a8a302d7babb3c29017850a7b4e0af6ca5f9ba2946263a185b62fea"
+source = "git+https://github.com/kylebarron/zarrs?rev=e68838becd223ddb7f522b265c1b65b90fe577b1#e68838becd223ddb7f522b265c1b65b90fe577b1"
 dependencies = [
  "derive_more",
  "half",
@@ -5436,8 +5429,7 @@ dependencies = [
 [[package]]
 name = "zarrs_metadata_ext"
 version = "0.4.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2048e07848ca99c7450518e0584929300b1b6a3cf442f18b26ffd3520814bd5b"
+source = "git+https://github.com/kylebarron/zarrs?rev=e68838becd223ddb7f522b265c1b65b90fe577b1#e68838becd223ddb7f522b265c1b65b90fe577b1"
 dependencies = [
  "derive_more",
  "monostate",
@@ -5458,14 +5450,13 @@ dependencies = [
  "async-trait",
  "futures",
  "object_store",
- "zarrs_storage",
+ "zarrs_storage 0.4.3 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
 name = "zarrs_plugin"
 version = "0.4.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5cbe0ed432aee86856f70ca33be36eaf4a0dae21ab730750d9280a7ca1e95046"
+source = "git+https://github.com/kylebarron/zarrs?rev=e68838becd223ddb7f522b265c1b65b90fe577b1#e68838becd223ddb7f522b265c1b65b90fe577b1"
 dependencies = [
  "paste",
  "regex",
@@ -5478,6 +5469,21 @@ name = "zarrs_storage"
 version = "0.4.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7d098796d2ed4cf94896569615101e0432e870a7665396da5cc32300fb68f7c1"
+dependencies = [
+ "async-trait",
+ "auto_impl",
+ "bytes",
+ "derive_more",
+ "futures",
+ "itertools",
+ "thiserror 2.0.18",
+ "unsafe_cell_slice",
+]
+
+[[package]]
+name = "zarrs_storage"
+version = "0.4.3"
+source = "git+https://github.com/kylebarron/zarrs?rev=e68838becd223ddb7f522b265c1b65b90fe577b1#e68838becd223ddb7f522b265c1b65b90fe577b1"
 dependencies = [
  "async-trait",
  "auto_impl",
