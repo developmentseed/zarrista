@@ -1,14 +1,18 @@
+use std::borrow::Cow;
 use std::num::NonZeroU64;
 use std::sync::Arc;
 
+use pyo3::exceptions::PyValueError;
 use pyo3::prelude::*;
+use zarrs::array::codec::api::CodecMetadata;
 use zarrs::array::codec::{BitroundCodec, TransposeCodec, TransposeOrder};
-use zarrs::array::{ArrayToArrayCodecTraits, CodecOptions};
+use zarrs::array::{ArrayToArrayCodecTraits, Codec, CodecOptions};
 
 use crate::array_bytes::PyArrayBytes;
 use crate::dtype::PyDataType;
 use crate::error::ZarristaResult;
 use crate::fill_value::PyFillValue;
+use crate::metadata::{PyConfiguration, PyMetadataV3};
 
 #[pyfunction]
 pub fn transpose(order: Vec<usize>) -> ZarristaResult<PyArrayToArrayCodec> {
@@ -33,6 +37,30 @@ impl PyArrayToArrayCodec {
 
 #[pymethods]
 impl PyArrayToArrayCodec {
+    fn __repr__(&self) -> String {
+        format!("ArrayToArrayCodec({:?})", self.0)
+    }
+
+    /// Build a codec from its Zarr v3 metadata,
+    #[staticmethod]
+    fn from_config(metadata: PyMetadataV3) -> ZarristaResult<Self> {
+        let codec = Codec::from_metadata(CodecMetadata::V3(metadata.as_ref()))?;
+        match codec {
+            Codec::ArrayToArray(c) => Ok(Self::new(c)),
+            _ => Err(
+                PyValueError::new_err("metadata does not describe an ArrayToArray codec").into(),
+            ),
+        }
+    }
+
+    /// The codec's Zarr v3 configuration
+    #[getter]
+    fn config(&self) -> Option<PyConfiguration> {
+        self.0
+            .configuration_v3(&Default::default())
+            .map(|config| config.into())
+    }
+
     fn encoded_data_type(&self, decoded_data_type: &PyDataType) -> ZarristaResult<PyDataType> {
         Ok(self.0.encoded_data_type(decoded_data_type.inner())?.into())
     }
@@ -93,7 +121,9 @@ impl PyArrayToArrayCodec {
         Ok(self.0.decoded_shape(&encoded_shape)?)
     }
 
-    fn __repr__(&self) -> String {
-        format!("ArrayToArrayCodec({:?})", self.0)
+    /// The codec's Zarr v3 name if it has one.
+    #[getter]
+    fn name(&self) -> Option<Cow<'static, str>> {
+        self.0.name_v3()
     }
 }
