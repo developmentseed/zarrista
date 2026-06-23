@@ -3,7 +3,7 @@ use pyo3::prelude::*;
 use zarrs::array::ArrayBuilder;
 
 use crate::array::util::PyArrayShape;
-use crate::array::{PyArray, PyAsyncArray};
+use crate::array::{PyArray, PyAsyncArray, PyChunkKeyEncoding};
 use crate::codec::{PyArrayToArrayCodec, PyArrayToBytesCodec, PyBytesToBytesCodec};
 use crate::dtype::PyDataType;
 use crate::error::ZarristaResult;
@@ -43,6 +43,12 @@ impl PyArrayBuilder {
         Ok(self.with(|builder| {
             builder.attributes(attributes);
         }))
+    }
+
+    fn chunk_key_encoding(&self, chunk_key_encoding: PyChunkKeyEncoding) -> Self {
+        self.with(|builder| {
+            builder.chunk_key_encoding(chunk_key_encoding.into_inner());
+        })
     }
 
     // TODO:

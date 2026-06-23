@@ -1,7 +1,11 @@
 use std::borrow::Cow;
+use std::sync::Arc;
 
+use pyo3::exceptions::PyValueError;
 use pyo3::prelude::*;
-use zarrs::array::ChunkKeyEncoding;
+use pyo3::pybacked::PyBackedStr;
+use zarrs::array::chunk_key_encoding::DefaultChunkKeyEncoding;
+use zarrs::array::{ChunkKeyEncoding, ChunkKeySeparator};
 
 use crate::error::ZarristaResult;
 use crate::metadata::PyMetadataV3;
@@ -26,6 +30,13 @@ impl PyChunkKeyEncoding {
         format!("ChunkKeyEncoding({:?})", self.0)
     }
 
+    // TODO: not sure whether we want constructors as classmethods or as free functions.
+    #[staticmethod]
+    fn default(sep: PyChunkKeySeparator) -> Self {
+        let encoding = DefaultChunkKeyEncoding::new(sep.0);
+        Self(Arc::new(encoding).into())
+    }
+
     #[staticmethod]
     fn from_metadata(metadata: PyMetadataV3) -> ZarristaResult<Self> {
         Ok(Self::new(ChunkKeyEncoding::from_metadata(
@@ -43,5 +54,24 @@ impl PyChunkKeyEncoding {
     #[getter]
     fn name(&self) -> Option<Cow<'static, str>> {
         self.0.name_v3()
+    }
+}
+
+#[derive(Debug, Clone)]
+pub struct PyChunkKeySeparator(ChunkKeySeparator);
+
+impl FromPyObject<'_, '_> for PyChunkKeySeparator {
+    type Error = PyErr;
+
+    fn extract(obj: Borrowed<'_, '_, PyAny>) -> Result<Self, Self::Error> {
+        let s = obj.extract::<PyBackedStr>()?;
+        match s.to_ascii_lowercase().as_str() {
+            "." => Ok(Self(ChunkKeySeparator::Dot)),
+            "/" => Ok(Self(ChunkKeySeparator::Slash)),
+            _ => Err(PyValueError::new_err(format!(
+                "Invalid chunk key separator: {}",
+                s
+            ))),
+        }
     }
 }
