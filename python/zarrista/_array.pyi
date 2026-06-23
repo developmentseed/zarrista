@@ -3,10 +3,14 @@ from typing import TypeAlias, Unpack
 
 from zarr_metadata import ArrayMetadataV3, JSONValue
 
-from zarrista.codec import CodecOptions
+from zarrista.codec import (
+    ArrayToArrayCodec,
+    ArrayToBytesCodec,
+    BytesToBytesCodec,
+    CodecOptions,
+)
 
 from ._chunks import ChunkGrid
-from ._codec import CodecChain
 from ._decoded_array import DecodedArray
 from ._dtype import DataType
 from ._store import AsyncStore, FilesystemStore, MemoryStore
@@ -34,8 +38,14 @@ class Array:
     def chunk_grid(self) -> ChunkGrid:
         """The chunk grid of the array."""
     @property
-    def codecs(self) -> CodecChain:
-        """The codec chain used to encode and decode the array's chunks."""
+    def compressors(self) -> list[BytesToBytesCodec]:
+        """The bytes-to-bytes codecs ("compressors")."""
+    @property
+    def filters(self) -> list[ArrayToArrayCodec]:
+        """The array-to-array codecs ("filters")."""
+    @property
+    def serializer(self) -> ArrayToBytesCodec:
+        """The array-to-bytes codec ("serializer")."""
     @property
     def dimension_names(self) -> list[str | None] | None:
         """The dimension names, if any were specified."""
@@ -97,8 +107,14 @@ class AsyncArray:
     def chunk_grid(self) -> ChunkGrid:
         """The chunk grid of the array."""
     @property
-    def codecs(self) -> CodecChain:
-        """The codec chain used to encode and decode the array's chunks."""
+    def compressors(self) -> list[BytesToBytesCodec]:
+        """The bytes-to-bytes codecs ("compressors")."""
+    @property
+    def filters(self) -> list[ArrayToArrayCodec]:
+        """The array-to-array codecs ("filters")."""
+    @property
+    def serializer(self) -> ArrayToBytesCodec:
+        """The array-to-bytes codec ("serializer")."""
     @property
     def dimension_names(self) -> list[str | None] | None:
         """The dimension names, if any were specified."""
