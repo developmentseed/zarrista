@@ -101,7 +101,7 @@ impl PyArrayBuilder {
 
     fn subchunk_shape(&self, subchunk_shape: Option<PyArrayShape>) -> Self {
         self.with(|builder| {
-            builder.subchunk_shape(subchunk_shape);
+            builder.subchunk_shape(subchunk_shape.map(|s| s.into()));
         })
     }
 
