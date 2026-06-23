@@ -1,5 +1,6 @@
 use pyo3::exceptions::PyTypeError;
 use pyo3::prelude::*;
+use pyo3_async_runtimes::tokio::future_into_py;
 use zarrs::array::ArrayBuilder;
 
 use crate::array::util::PyArrayShape;
@@ -7,6 +8,7 @@ use crate::array::{PyArray, PyAsyncArray, PyChunkGrid, PyChunkKeyEncoding};
 use crate::codec::{PyArrayToArrayCodec, PyArrayToBytesCodec, PyBytesToBytesCodec};
 use crate::dtype::PyDataType;
 use crate::error::ZarristaResult;
+use crate::exceptions::ZarristaError;
 use crate::fill_value::PyFillValue;
 use crate::metadata::{PyArrayMetadataV3, PyAttributes};
 use crate::storage::{PyAsyncStorage, PySyncStorage};
@@ -77,15 +79,29 @@ impl PyArrayBuilder {
     }
 
     fn create(&self, store: PySyncStorage, path: &str) -> ZarristaResult<PyArray> {
-        // TODO: should this additionally store the metadata? Or make the user call store_metadata
-        // on the result themselves?
-        Ok(self.0.build_arc(store.into_inner(), path)?.into())
+        let array = self.0.build_arc(store.into_inner(), path)?;
+        array.store_metadata()?;
+        Ok(array.into())
     }
 
-    fn create_async(&self, store: PyAsyncStorage, path: &str) -> ZarristaResult<PyAsyncArray> {
-        // TODO: should this additionally store the metadata? Or make the user call store_metadata
-        // on the result themselves?
-        Ok(self.0.build_arc(store.into_inner(), path)?.into())
+    fn create_async<'py>(
+        &self,
+        py: Python<'py>,
+        store: PyAsyncStorage,
+        path: &str,
+    ) -> PyResult<Bound<'py, PyAny>> {
+        let array = self
+            .0
+            .build_arc(store.into_inner(), path)
+            .map_err(ZarristaError::from)?;
+
+        future_into_py(py, async move {
+            array
+                .async_store_metadata()
+                .await
+                .map_err(ZarristaError::from)?;
+            Ok(())
+        })
     }
 
     fn create_metadata(&self) -> ZarristaResult<PyArrayMetadataV3> {
