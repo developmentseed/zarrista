@@ -14,7 +14,8 @@ use pyo3_bytes::PyBytes;
 use zarrs::array::{ArrayBytes, ArrayBytesOffsets, ArrayBytesOptional, ArrayBytesVariableLength};
 
 /// Bytes for a chunk as they cross the Python boundary.
-#[pyclass(module = "zarrista", frozen, name = "ArrayBytes")]
+#[derive(Clone)]
+#[pyclass(module = "zarrista", frozen, name = "ArrayBytes", from_py_object)]
 pub struct PyArrayBytes(ArrayBytesOwned);
 
 #[pymethods]
@@ -85,16 +86,32 @@ impl PyArrayBytes {
     }
 }
 
+impl From<PyArrayBytes> for ArrayBytesOwned {
+    fn from(py_bytes: PyArrayBytes) -> Self {
+        py_bytes.0
+    }
+}
+
+impl From<ArrayBytesOwned> for PyArrayBytes {
+    fn from(bytes: ArrayBytesOwned) -> Self {
+        Self(bytes)
+    }
+}
+
 /// The owned representation, mirroring zarrs' [`ArrayBytes`] sum type.
 ///
 /// - Element buffers (fixed/variable payloads and the optional mask) are stored
 ///   as [`PyBytes`] and borrowed zero-copy.
 /// - Offsets are copied into a `Vec<usize>` (they need a per-element cast from
 ///   Python ints and are tiny metadata relative to the payload).
-enum ArrayBytesOwned {
+#[derive(Clone)]
+pub enum ArrayBytesOwned {
     Fixed(PyBytes),
     Variable {
         bytes: PyBytes,
+        // Note: Cloning actually memcpy's the offsets; to avoid that would require Arc<[usize]>,
+        // but then it's not zero-copy to create from a Vec<usize>
+        // This is currently mostly hit on the async store_chunk path
         offsets: Vec<usize>,
     },
     Optional {
