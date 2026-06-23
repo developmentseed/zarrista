@@ -17,7 +17,7 @@ macro_rules! array_metadata_accessors {
             }
 
             #[getter]
-            fn chunk_grid(&self) -> $crate::chunks::PyChunkGrid {
+            fn chunk_grid(&self) -> $crate::array::PyChunkGrid {
                 self.inner.chunk_grid().clone().into()
             }
 
