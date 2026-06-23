@@ -78,6 +78,18 @@ create_exception!(
     ZarristaError,
     "Raised when (de)serializing JSON or converting to/from Python objects fails."
 );
+create_exception!(
+    zarrista.exceptions,
+    ChunkGridCreateError,
+    ZarristaError,
+    "Raised when a chunk grid cannot be created from the given shapes."
+);
+create_exception!(
+    zarrista.exceptions,
+    IncompatibleDimensionalityError,
+    ZarristaError,
+    "Raised when a shape's dimensionality is incompatible with another."
+);
 
 /// Build the `zarrista.exceptions` submodule and attach it to `parent`.
 ///
@@ -100,6 +112,14 @@ pub fn register_exceptions_module(parent: &Bound<'_, PyModule>) -> PyResult<()> 
     exceptions.add("TransposeOrderError", py.get_type::<TransposeOrderError>())?;
     exceptions.add("PluginCreateError", py.get_type::<PluginCreateError>())?;
     exceptions.add("SerializationError", py.get_type::<SerializationError>())?;
+    exceptions.add(
+        "ChunkGridCreateError",
+        py.get_type::<ChunkGridCreateError>(),
+    )?;
+    exceptions.add(
+        "IncompatibleDimensionalityError",
+        py.get_type::<IncompatibleDimensionalityError>(),
+    )?;
 
     py.import("sys")?
         .getattr("modules")?
