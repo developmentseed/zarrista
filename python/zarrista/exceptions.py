@@ -3,8 +3,10 @@
 from zarrista._zarrista.exceptions import (
     ArrayCreateError,
     ArrayError,
+    ChunkGridCreateError,
     CodecError,
     GroupCreateError,
+    IncompatibleDimensionalityError,
     NodeCreateError,
     NodePathError,
     PluginCreateError,
@@ -17,8 +19,10 @@ from zarrista._zarrista.exceptions import (
 __all__ = [
     "ArrayCreateError",
     "ArrayError",
+    "ChunkGridCreateError",
     "CodecError",
     "GroupCreateError",
+    "IncompatibleDimensionalityError",
     "NodeCreateError",
     "NodePathError",
     "PluginCreateError",
