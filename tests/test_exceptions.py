@@ -10,7 +10,6 @@ from zarrista import FilesystemStore, Group
 from zarrista import exceptions as exc
 
 LEAF_EXCEPTIONS = [
-    "NotFoundError",
     "ArrayCreateError",
     "ArrayError",
     "GroupCreateError",
@@ -41,7 +40,6 @@ def test_leaf_subclasses_base(name):
 def test_importable_by_name():
     from zarrista.exceptions import (  # noqa: F401
         CodecError,
-        NotFoundError,
         ZarristaError,
     )
 
