@@ -20,12 +20,6 @@ create_exception!(
 );
 create_exception!(
     zarrista.exceptions,
-    NotFoundError,
-    ZarristaError,
-    "Raised when no array or group exists at a path."
-);
-create_exception!(
-    zarrista.exceptions,
     ArrayCreateError,
     ZarristaError,
     "Raised when an array cannot be opened or created."
@@ -96,7 +90,6 @@ pub fn register_exceptions_module(parent: &Bound<'_, PyModule>) -> PyResult<()> 
     let exceptions = PyModule::new(py, "exceptions")?;
 
     exceptions.add("ZarristaError", py.get_type::<ZarristaError>())?;
-    exceptions.add("NotFoundError", py.get_type::<NotFoundError>())?;
     exceptions.add("ArrayCreateError", py.get_type::<ArrayCreateError>())?;
     exceptions.add("ArrayError", py.get_type::<ArrayError>())?;
     exceptions.add("GroupCreateError", py.get_type::<GroupCreateError>())?;
