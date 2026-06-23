@@ -1,9 +1,9 @@
-# DataType
+# Array creation
 
-::: zarrista.DataType
+::: zarrista.ArrayBuilder
     options:
       show_bases: false
 
-::: zarrista.FillValue
+::: zarrista.ArrayBytes
     options:
       show_bases: false
