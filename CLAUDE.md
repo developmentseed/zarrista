@@ -3,6 +3,23 @@
 A small, prototypical zarrita-like Python Zarr implementation on top of `zarrs`,
 exposed to Python via `pyo3`.
 
+## Design philosophy
+
+- **Type-driven design, "parse, don't validate."** Encode invariants in types so
+  that illegal states are unrepresentable, rather than accepting loose inputs and
+  checking them afterward.
+- **The `FromPyObject` extractor is the validator.** Parse each input at the pyo3
+  boundary into its final, already-valid typed form (use `#[derive(FromPyObject)]`
+  enums / unions for inputs that can take several shapes). The rest of the code
+  then handles only well-formed values, and the parsing logic lives once on the
+  type and is reused by every entry point.
+- **No manual validation in function bodies.** Prefer a richly-typed single
+  argument over several nullable, mutually-dependent keywords (which force
+  cross-field checks). Example: sharding is an array→bytes codec, so it occupies
+  the single `serializer` slot — there is no separate `shards` keyword to
+  cross-check against it. Avoid `Option`-everything-then-validate; reserve
+  `Option` for genuinely optional settings with meaningful defaults.
+
 ## Rust / pyo3 conventions
 
 - **Prefix every `#[pyclass]` type with `Py`, and set the macro `name` to the
