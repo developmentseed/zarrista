@@ -103,6 +103,15 @@ def test_to_dataarray_indexing_matches_numpy(int32_array):
     np.testing.assert_array_equal(da.to_numpy(), data)
 
 
+def test_array_xr_accessor_matches_to_dataarray(int32_array):
+    path, data = int32_array
+    arr = Array.open(FilesystemStore(path))
+    da = arr.xr
+    assert da.dims == ("t", "y", "x")
+    assert da.shape == (9, 64, 100)
+    np.testing.assert_array_equal(da.to_numpy(), data)
+
+
 def test_to_dataarray_synthesizes_dim_names(tmp_path: Path):
     path = tmp_path / "nodims.zarr"
     data = np.arange(2 * 3, dtype="int16").reshape(2, 3)

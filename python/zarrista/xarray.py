@@ -10,17 +10,12 @@ layouts, slices with `step != 1`, and async stores are out of scope.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
-
 import numpy as np
 import xarray as xr
 from xarray.backends.common import BackendArray
 from xarray.core import indexing
 
-from zarrista import Tensor
-
-if TYPE_CHECKING:
-    from zarrista import Array
+from zarrista import Array, Tensor
 
 
 class ZarristaBackendArray(BackendArray):
@@ -100,9 +95,23 @@ def to_dataarray(array: Array, *, name: str | None = None) -> xr.DataArray:
     backend_array = ZarristaBackendArray(array)
     names = array.dimension_names or [None] * array.ndim
     dims = [
-        name_i if name_i is not None else f"dim_{i}"
-        for i, name_i in enumerate(names)
+        name_i if name_i is not None else f"dim_{i}" for i, name_i in enumerate(names)
     ]
     data = indexing.LazilyIndexedArray(backend_array)
     variable = xr.Variable(dims, data, attrs=dict(array.attrs))
     return xr.DataArray(variable, name=name)
+
+
+def _array_xr(array: Array) -> xr.DataArray:
+    """Return this `Array` as a lazily-indexed `xarray.DataArray`.
+
+    Convenience accessor equivalent to `to_dataarray(array)`.
+    """
+    return to_dataarray(array)
+
+
+# Attach a read-only `.xr` accessor to the core `Array` class. This lives in
+# Python (rather than Rust) so the xarray integration stays optional and fully
+# decoupled from the extension module; it becomes available once this module is
+# imported.
+Array.xr = property(_array_xr)  # type: ignore[attr-defined]
