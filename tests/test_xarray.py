@@ -10,9 +10,10 @@ import numpy as np
 import pytest
 import zarr
 from numpy.typing import NDArray
+from xarray.core import indexing
 
 from zarrista import Array, FilesystemStore
-from zarrista.xarray import ZarristaBackendArray
+from zarrista.xarray import ZarristaBackendArray, to_dataarray
 
 
 @pytest.fixture
@@ -78,3 +79,39 @@ def test_variable_length_dtype_raises(tmp_path: Path):
     assert arr.dtype.size is None  # precondition: variable-length
     with pytest.raises(NotImplementedError):
         ZarristaBackendArray(arr)
+
+
+def test_to_dataarray_dims_attrs_and_lazy(int32_array):
+    path, _data = int32_array
+    arr = Array.open(FilesystemStore(path))
+    da = to_dataarray(arr, name="temp")
+
+    assert da.name == "temp"
+    assert da.dims == ("t", "y", "x")
+    assert da.shape == (9, 64, 100)
+    assert da.dtype == np.dtype("int32")
+    assert da.attrs["units"] == "m"
+    # The data is wrapped lazily and not yet loaded into memory.
+    assert isinstance(da.variable._data, indexing.LazilyIndexedArray)
+
+
+def test_to_dataarray_indexing_matches_numpy(int32_array):
+    path, data = int32_array
+    da = to_dataarray(Array.open(FilesystemStore(path)))
+    np.testing.assert_array_equal(da[0:2, :, 5:7].to_numpy(), data[0:2, :, 5:7])
+    np.testing.assert_array_equal(da[5].to_numpy(), data[5])
+    np.testing.assert_array_equal(da.to_numpy(), data)
+
+
+def test_to_dataarray_synthesizes_dim_names(tmp_path: Path):
+    path = tmp_path / "nodims.zarr"
+    data = np.arange(2 * 3, dtype="int16").reshape(2, 3)
+    z = zarr.create_array(
+        store=str(path),
+        shape=data.shape,
+        chunks=(2, 3),
+        dtype=data.dtype,
+    )
+    z[:] = data
+    da = to_dataarray(Array.open(FilesystemStore(path)))
+    assert da.dims == ("dim_0", "dim_1")

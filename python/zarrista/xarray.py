@@ -13,6 +13,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 import numpy as np
+import xarray as xr
 from xarray.backends.common import BackendArray
 from xarray.core import indexing
 
@@ -86,3 +87,22 @@ class ZarristaBackendArray(BackendArray):
         if squeeze_axes:
             result = np.squeeze(result, axis=tuple(squeeze_axes))
         return result
+
+
+def to_dataarray(array: Array, *, name: str | None = None) -> xr.DataArray:
+    """Wrap a zarrista `Array` as a lazily-indexed `xarray.DataArray`.
+
+    Dimension names are taken from the array's `dimension_names`; entries that
+    are `None` (or absent entirely) are synthesised as `dim_{i}`. The array's
+    user attributes are copied onto the variable. The returned `DataArray` reads
+    lazily: chunk data is fetched only when the array is indexed or computed.
+    """
+    backend_array = ZarristaBackendArray(array)
+    names = array.dimension_names or [None] * array.ndim
+    dims = [
+        name_i if name_i is not None else f"dim_{i}"
+        for i, name_i in enumerate(names)
+    ]
+    data = indexing.LazilyIndexedArray(backend_array)
+    variable = xr.Variable(dims, data, attrs=dict(array.attrs))
+    return xr.DataArray(variable, name=name)
