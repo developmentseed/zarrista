@@ -2,8 +2,7 @@ version = 1
 revision = 3
 requires-python = ">=3.11"
 resolution-markers = [
-    "python_full_version >= '3.13'",
-    "python_full_version == '3.12.*'",
+    "python_full_version >= '3.12'",
     "python_full_version < '3.12'",
 ]
 
@@ -592,8 +591,7 @@ name = "icechunk"
 version = "2.0.6"
 source = { registry = "https://pypi.org/simple" }
 resolution-markers = [
-    "python_full_version >= '3.13'",
-    "python_full_version == '3.12.*'",
+    "python_full_version >= '3.12'",
 ]
 dependencies = [
     { name = "zarr", version = "3.2.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.12'" },
@@ -1502,18 +1500,6 @@ wheels = [
 ]
 
 [[package]]
-name = "pytest-run-parallel"
-version = "0.9.1"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "pytest", marker = "python_full_version >= '3.13'" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/e9/c2/e94d5db442c975425ec7da0f66d29e191371a3aad4f4d9872bfeaf506cf7/pytest_run_parallel-0.9.1.tar.gz", hash = "sha256:9972ad8e66340a83819abae9cb3cefd7b3ca7b69b884d19521137767c6a69b58", size = 66001, upload-time = "2026-06-03T20:14:11.678Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/19/88/b09e7e1be1847e61f0602fe691cefb3363dc45bb08564568999a23e484c4/pytest_run_parallel-0.9.1-py3-none-any.whl", hash = "sha256:623d1fc7f7a2bec5487addf791f559e7814de5b135c43434e1740fd63eff3c7f", size = 19506, upload-time = "2026-06-03T20:14:10.328Z" },
-]
-
-[[package]]
 name = "python-dateutil"
 version = "2.9.0.post0"
 source = { registry = "https://pypi.org/simple" }
@@ -1882,8 +1868,7 @@ name = "zarr"
 version = "3.2.1"
 source = { registry = "https://pypi.org/simple" }
 resolution-markers = [
-    "python_full_version >= '3.13'",
-    "python_full_version == '3.12.*'",
+    "python_full_version >= '3.12'",
 ]
 dependencies = [
     { name = "donfig", marker = "python_full_version >= '3.12'" },
@@ -1928,7 +1913,6 @@ dev = [
     { name = "obstore" },
     { name = "pytest" },
     { name = "pytest-asyncio" },
-    { name = "pytest-run-parallel", marker = "python_full_version >= '3.13'" },
     { name = "ruff" },
     { name = "zarr", version = "3.1.6", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.12'" },
     { name = "zarr", version = "3.2.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.12'" },
@@ -1956,7 +1940,6 @@ dev = [
     { name = "obstore", specifier = ">=0.10.1" },
     { name = "pytest", specifier = ">=8.0" },
     { name = "pytest-asyncio", specifier = ">=1.4" },
-    { name = "pytest-run-parallel", marker = "python_full_version >= '3.13'", specifier = ">=0.3.0" },
     { name = "ruff", specifier = ">=0.6" },
     { name = "zarr", specifier = ">=3" },
 ]

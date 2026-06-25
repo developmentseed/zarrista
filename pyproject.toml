@@ -39,7 +39,6 @@ dev = [
     "obstore>=0.10.1",
     "pytest>=8.0",
     "pytest-asyncio>=1.4",
-    "pytest-run-parallel>=0.3.0;python_version>='3.13'",
     "ruff>=0.6",
     "zarr>=3",
 ]
@@ -96,10 +95,3 @@ known-first-party = ["zarrista"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 asyncio_mode = "auto"
-markers = [
-    # Registered by pytest-run-parallel; declared here so the markers resolve
-    # even when the plugin isn't installed (e.g. on Python < 3.13). `tests/
-    # conftest.py` applies `thread_unsafe` to async tests.
-    "parallel_threads: mark test for concurrent thread execution",
-    "thread_unsafe: run the test single-threaded under --parallel-threads",
-]

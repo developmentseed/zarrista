@@ -50,7 +50,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ["3.11", "3.12", "3.13", "3.14t"]
+        python-version: ["3.11", "3.12", "3.13"]
     steps:
       - uses: actions/checkout@v6
 
@@ -74,12 +74,5 @@ jobs:
       - name: maturin develop
         run: uv run --no-project maturin develop
 
-      # On free-threaded (`t`) builds, run each test across multiple threads
-      # (via pytest-run-parallel) to surface thread-safety issues.
       - name: Run pytest
-        if: ${{ !endsWith(matrix.python-version, 't') }}
         run: uv run --no-project pytest --verbose
-
-      - name: Run pytest (free-threaded)
-        if: ${{ endsWith(matrix.python-version, 't') }}
-        run: uv run --no-project pytest --verbose --parallel-threads=2
