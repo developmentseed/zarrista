@@ -84,17 +84,16 @@ impl PyMemoryStore {
     }
 }
 
-/// Wraps a readable + listable store, rejecting every write with
-/// [`StorageError::ReadOnly`].
-pub struct ReadOnly(Arc<dyn ReadableListableStorageTraits>);
+/// A storage adapter that reads and lists transparently but rejects all writes at runtime.
+pub struct ReadOnlyStorageAdapter(Arc<dyn ReadableListableStorageTraits>);
 
-impl ReadOnly {
+impl ReadOnlyStorageAdapter {
     pub fn new(inner: Arc<dyn ReadableListableStorageTraits>) -> Self {
         Self(inner)
     }
 }
 
-impl ReadableStorageTraits for ReadOnly {
+impl ReadableStorageTraits for ReadOnlyStorageAdapter {
     fn get(&self, key: &StoreKey) -> Result<MaybeBytes, StorageError> {
         self.0.get(key)
     }
@@ -124,7 +123,7 @@ impl ReadableStorageTraits for ReadOnly {
     }
 }
 
-impl ListableStorageTraits for ReadOnly {
+impl ListableStorageTraits for ReadOnlyStorageAdapter {
     fn list(&self) -> Result<StoreKeys, StorageError> {
         self.0.list()
     }
@@ -142,7 +141,7 @@ impl ListableStorageTraits for ReadOnly {
     }
 }
 
-impl WritableStorageTraits for ReadOnly {
+impl WritableStorageTraits for ReadOnlyStorageAdapter {
     fn set(&self, _key: &StoreKey, _value: Bytes) -> Result<(), StorageError> {
         Err(StorageError::ReadOnly)
     }

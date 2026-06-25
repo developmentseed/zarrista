@@ -11,7 +11,7 @@ use crate::decoded_array::DecodedArray;
 use crate::error::ZarristaResult;
 use crate::metadata::PyArrayMetadata;
 use crate::node::PyNodePath;
-use crate::storage::PySyncStorage;
+use crate::storage::{PySyncStorage, ReadOnlyStorageAdapter};
 use pyo3::prelude::*;
 use pyo3_bytes::PyBytes;
 use zarrs::array::Array;
@@ -105,8 +105,8 @@ impl PyArray {
     }
 
     fn read_only(&self) -> Self {
-        let inner = self.inner.storage().readable_listable();
-        let storage = Arc::new(crate::storage::ReadOnly::new(inner));
+        let read_list_storage = self.inner.storage().readable_listable();
+        let storage = Arc::new(ReadOnlyStorageAdapter::new(read_list_storage));
         Self::new(Arc::new(self.inner.with_storage(storage)))
     }
 

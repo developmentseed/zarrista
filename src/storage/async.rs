@@ -132,16 +132,16 @@ impl FromPyObject<'_, '_> for PyAsyncIcechunkStore {
 }
 
 /// An async storage adapter that reads and lists transparently but rejects all writes at runtime.
-pub struct AsyncReadOnly(Arc<dyn AsyncReadableListableStorageTraits>);
+pub struct AsyncReadOnlyStorageAdapter(Arc<dyn AsyncReadableListableStorageTraits>);
 
-impl AsyncReadOnly {
+impl AsyncReadOnlyStorageAdapter {
     pub fn new(inner: Arc<dyn AsyncReadableListableStorageTraits>) -> Self {
         Self(inner)
     }
 }
 
 #[async_trait]
-impl AsyncReadableStorageTraits for AsyncReadOnly {
+impl AsyncReadableStorageTraits for AsyncReadOnlyStorageAdapter {
     async fn get(&self, key: &StoreKey) -> Result<MaybeBytes, StorageError> {
         self.0.get(key).await
     }
@@ -164,7 +164,7 @@ impl AsyncReadableStorageTraits for AsyncReadOnly {
 }
 
 #[async_trait]
-impl AsyncListableStorageTraits for AsyncReadOnly {
+impl AsyncListableStorageTraits for AsyncReadOnlyStorageAdapter {
     async fn list(&self) -> Result<StoreKeys, StorageError> {
         self.0.list().await
     }
@@ -183,7 +183,7 @@ impl AsyncListableStorageTraits for AsyncReadOnly {
 }
 
 #[async_trait]
-impl AsyncWritableStorageTraits for AsyncReadOnly {
+impl AsyncWritableStorageTraits for AsyncReadOnlyStorageAdapter {
     async fn set(&self, _key: &StoreKey, _value: Bytes) -> Result<(), StorageError> {
         Err(StorageError::ReadOnly)
     }
