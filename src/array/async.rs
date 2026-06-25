@@ -8,9 +8,10 @@ use crate::array::PyChunkIndices;
 use crate::array_bytes::PyArrayBytes;
 use crate::codec::PyCodecOptions;
 use crate::decoded_array::DecodedArray;
-use crate::error::ZarristaError;
+use crate::error::{ZarristaError, ZarristaResult};
+use crate::metadata::PyArrayMetadata;
 use crate::node::PyNodePath;
-use crate::storage::PyAsyncStorage;
+use crate::storage::{AsyncReadOnlyStorageAdapter, PyAsyncStorage};
 use pyo3::prelude::*;
 use pyo3_async_runtimes::tokio::future_into_py;
 use pyo3_bytes::PyBytes;
@@ -54,6 +55,24 @@ impl PyAsyncArray {
             self.inner.shape(),
             self.dtype().__repr__()
         )
+    }
+
+    /// Use the provided metadata to open a new array at `path` in `store`.
+    ///
+    /// This does **not** write to the store, use `store_metadata` to write metadata to storage.
+    #[staticmethod]
+    #[pyo3(
+        signature = (metadata, store, path = PyNodePath::root()),
+        text_signature = "(metadata, store, path='/')"
+    )]
+    fn from_metadata(
+        metadata: PyArrayMetadata,
+        store: PyAsyncStorage,
+        path: PyNodePath,
+    ) -> ZarristaResult<Self> {
+        let inner =
+            Array::new_with_metadata(store.into_inner(), path.as_str(), metadata.into_inner())?;
+        Ok(Self::new(Arc::new(inner)))
     }
 
     /// Open the array stored at `path` in `store`.
@@ -110,6 +129,13 @@ impl PyAsyncArray {
                 .map_err(ZarristaError::from)?;
             Ok(())
         })
+    }
+
+    /// Return a read-only view of this array; writes raise at runtime.
+    fn read_only(&self) -> Self {
+        let read_list_storage = self.inner.storage().readable_listable();
+        let storage = Arc::new(AsyncReadOnlyStorageAdapter::new(read_list_storage));
+        Self::new(Arc::new(self.inner.with_storage(storage)))
     }
 
     fn erase_metadata<'py>(&self, py: Python<'py>) -> PyResult<Bound<'py, PyAny>> {

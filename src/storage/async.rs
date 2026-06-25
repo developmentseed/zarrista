@@ -1,12 +1,19 @@
 use std::sync::Arc;
 
+use async_trait::async_trait;
 use object_store::ObjectStore;
 use pyo3::exceptions::{PyTypeError, PyValueError};
 use pyo3::prelude::*;
 use pyo3::pybacked::PyBackedStr;
 use pyo3_bytes::PyBytes;
 use pyo3_object_store::AnyObjectStore;
+use zarrs::storage::byte_range::ByteRangeIterator;
 use zarrs::storage::AsyncReadableWritableListableStorageTraits;
+use zarrs::storage::{
+    AsyncListableStorageTraits, AsyncMaybeBytesIterator, AsyncReadableListableStorageTraits,
+    AsyncReadableStorageTraits, AsyncWritableStorageTraits, Bytes, MaybeBytes, OffsetBytesIterator,
+    StorageError, StoreKey, StoreKeys, StoreKeysPrefixes, StorePrefix,
+};
 use zarrs_icechunk::AsyncIcechunkStore;
 use zarrs_object_store::AsyncObjectStore;
 
@@ -121,5 +128,83 @@ impl FromPyObject<'_, '_> for PyAsyncIcechunkStore {
                 ))
             })?;
         Ok(Self(AsyncIcechunkStore::new(session)))
+    }
+}
+
+/// An async storage adapter that reads and lists transparently but rejects all writes at runtime.
+pub struct AsyncReadOnlyStorageAdapter(Arc<dyn AsyncReadableListableStorageTraits>);
+
+impl AsyncReadOnlyStorageAdapter {
+    pub fn new(inner: Arc<dyn AsyncReadableListableStorageTraits>) -> Self {
+        Self(inner)
+    }
+}
+
+#[async_trait]
+impl AsyncReadableStorageTraits for AsyncReadOnlyStorageAdapter {
+    async fn get(&self, key: &StoreKey) -> Result<MaybeBytes, StorageError> {
+        self.0.get(key).await
+    }
+
+    async fn get_partial_many<'a>(
+        &'a self,
+        key: &StoreKey,
+        byte_ranges: ByteRangeIterator<'a>,
+    ) -> Result<AsyncMaybeBytesIterator<'a>, StorageError> {
+        self.0.get_partial_many(key, byte_ranges).await
+    }
+
+    async fn size_key(&self, key: &StoreKey) -> Result<Option<u64>, StorageError> {
+        self.0.size_key(key).await
+    }
+
+    fn supports_get_partial(&self) -> bool {
+        self.0.supports_get_partial()
+    }
+}
+
+#[async_trait]
+impl AsyncListableStorageTraits for AsyncReadOnlyStorageAdapter {
+    async fn list(&self) -> Result<StoreKeys, StorageError> {
+        self.0.list().await
+    }
+
+    async fn list_prefix(&self, prefix: &StorePrefix) -> Result<StoreKeys, StorageError> {
+        self.0.list_prefix(prefix).await
+    }
+
+    async fn list_dir(&self, prefix: &StorePrefix) -> Result<StoreKeysPrefixes, StorageError> {
+        self.0.list_dir(prefix).await
+    }
+
+    async fn size_prefix(&self, prefix: &StorePrefix) -> Result<u64, StorageError> {
+        self.0.size_prefix(prefix).await
+    }
+}
+
+#[async_trait]
+impl AsyncWritableStorageTraits for AsyncReadOnlyStorageAdapter {
+    async fn set(&self, _key: &StoreKey, _value: Bytes) -> Result<(), StorageError> {
+        Err(StorageError::ReadOnly)
+    }
+
+    async fn set_partial_many<'a>(
+        &'a self,
+        _key: &StoreKey,
+        _offset_values: OffsetBytesIterator<'a>,
+    ) -> Result<(), StorageError> {
+        Err(StorageError::ReadOnly)
+    }
+
+    async fn erase(&self, _key: &StoreKey) -> Result<(), StorageError> {
+        Err(StorageError::ReadOnly)
+    }
+
+    async fn erase_prefix(&self, _prefix: &StorePrefix) -> Result<(), StorageError> {
+        Err(StorageError::ReadOnly)
+    }
+
+    fn supports_set_partial(&self) -> bool {
+        false
     }
 }

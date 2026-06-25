@@ -33,6 +33,16 @@ class Array:
     @staticmethod
     def open(store: FilesystemStore | MemoryStore, path: str = "/") -> Array:
         """Open the array stored at `path` in `store`."""
+    @staticmethod
+    def from_metadata(
+        metadata: ArrayMetadataV3,
+        store: FilesystemStore | MemoryStore,
+        path: str = "/",
+    ) -> Array:
+        """Use the provided metadata to open a new array at `path` in `store`.
+
+        This does **not** write the metadata to the store.
+        """
     @property
     def attrs(self) -> dict[str, JSONValue]:
         """The array's user attributes as a dict."""
@@ -129,6 +139,12 @@ class Array:
         """
     def erase_metadata(self) -> None:
         """Delete the array's metadata from the store."""
+    def read_only(self) -> Array:
+        """Return a read-only view of this array.
+
+        Reads behave identically, but any write (`store_chunk`, `erase_chunk`,
+        `erase_metadata`, ...) raises at runtime.
+        """
     @property
     def shape(self) -> list[int]:
         """The array shape."""
@@ -146,6 +162,16 @@ class AsyncArray:
         """Open the array stored at `path` in `store`.
 
         `store` may be an obstore `ObjectStore` or an icechunk `Session`.
+        """
+    @staticmethod
+    def from_metadata(
+        metadata: ArrayMetadataV3,
+        store: AsyncStore,
+        path: str = "/",
+    ) -> AsyncArray:
+        """Use the provided metadata to open a new array at `path` in `store`.
+
+        This does **not** write the metadata to the store.
         """
     @property
     def attrs(self) -> dict[str, JSONValue]:
@@ -243,6 +269,12 @@ class AsyncArray:
         """
     async def erase_metadata(self) -> None:
         """Delete the array's metadata from the store."""
+    def read_only(self) -> AsyncArray:
+        """Return a read-only view of this array.
+
+        Reads behave identically, but any write (`store_chunk`, `erase_chunk`,
+        `erase_metadata`, ...) raises at runtime.
+        """
     @property
     def shape(self) -> list[int]:
         """The array shape."""

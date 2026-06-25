@@ -23,6 +23,7 @@ abi3-py311 = ["pyo3/abi3-py311"]
 arrow-array = "59"
 arrow-buffer = "59"
 arrow-schema = "59"
+async-trait = "0.1"
 bytes = "1.12.0"
 dlpark = { git = "https://github.com/kylebarron/dlpark", rev = "31c6f49c064e634326c97172d39a00acecd854b6", features = [
     "pyo3",
