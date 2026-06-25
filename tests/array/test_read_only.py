@@ -3,20 +3,25 @@
 import numpy as np
 import pytest
 
-from zarrista import ArrayBytes, ArrayBuilder, ChunkGrid, DataType, FillValue, MemoryStore
+from zarrista import (
+    Array,
+    ArrayBuilder,
+    ArrayBytes,
+    ChunkGrid,
+    DataType,
+    FillValue,
+    MemoryStore,
+)
 from zarrista.exceptions import ZarristaError
 
 
-def _writable_array():
+def _writable_array() -> Array:
     """A 4x4 int8 array (single 4x4 chunk, fill 0) created in a MemoryStore."""
-    return (
-        ArrayBuilder(
-            ChunkGrid.regular([4, 4], [4, 4]),
-            DataType.from_string("int8"),
-            FillValue(b"\x00"),
-        )
-        .create(MemoryStore(), "/a")
-    )
+    return ArrayBuilder(
+        ChunkGrid.regular([4, 4], [4, 4]),
+        DataType.from_string("int8"),
+        FillValue(b"\x00"),
+    ).create(MemoryStore(), "/a")
 
 
 def test_read_only_still_reads():
@@ -79,7 +84,8 @@ async def test_async_read_only_still_reads(tmp_path):
     ro = arr.read_only()
     chunk = await ro.retrieve_chunk([0, 0])
     np.testing.assert_array_equal(
-        chunk.to_numpy(), np.arange(16, dtype="int8").reshape(4, 4)
+        chunk.to_numpy(),
+        np.arange(16, dtype="int8").reshape(4, 4),
     )
 
 
