@@ -1,5 +1,17 @@
 name: Build wheels
 
+# Each platform builds two wheels from the same crate:
+#   1. an abi3 wheel (`--features abi3-py311`, built with a GIL-enabled 3.11)
+#      that works on every GIL-enabled CPython 3.11+, and
+#   2. a version-specific free-threaded `cp314-cp314t` wheel (`-i 3.14t`, no
+#      abi3) — free-threaded CPython 3.14 has no stable ABI, so it needs its own
+#      wheel.
+#
+# A third, abi3t wheel (free-threaded stable ABI, PEP 803) for Python 3.15+ is
+# scaffolded but commented out below: it needs a 3.15 interpreter, and 3.15 is
+# still in beta. Uncomment the `abi3t` steps (and the `3.15t` interpreter
+# installs) once 3.15 is released.
+
 on:
   push:
     tags:
@@ -26,13 +38,38 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+        with:
+          enable-cache: true
+
+      - name: Install Python versions
+        run: uv python install 3.11 3.14t
+        # When 3.15 is released, add `3.15t` above for the abi3t build.
+
       - name: Build abi3 wheel
         uses: PyO3/maturin-action@v1
         with:
           target: ${{ matrix.platform.target }}
-          args: --release --out dist
+          args: --release --out dist --features abi3-py311 -i 3.11
           sccache: "true"
           manylinux: "2_28"
+
+      - name: Build free-threaded (cp314t) wheel
+        uses: PyO3/maturin-action@v1
+        with:
+          target: ${{ matrix.platform.target }}
+          args: --release --out dist -i 3.14t
+          sccache: "true"
+          manylinux: "2_28"
+
+      # - name: Build abi3t wheel (Python 3.15+)
+      #   uses: PyO3/maturin-action@v1
+      #   with:
+      #     target: ${{ matrix.platform.target }}
+      #     args: --release --out dist --features abi3t-py315 -i 3.15t
+      #     sccache: "true"
+      #     manylinux: "2_28"
 
       - name: Upload wheels
         uses: actions/upload-artifact@v7
@@ -52,13 +89,38 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+        with:
+          enable-cache: true
+
+      - name: Install Python versions
+        run: uv python install 3.11 3.14t
+        # When 3.15 is released, add `3.15t` above for the abi3t build.
+
       - name: Build abi3 wheel
         uses: PyO3/maturin-action@v1
         with:
           target: ${{ matrix.platform.target }}
-          args: --release --out dist
+          args: --release --out dist --features abi3-py311 -i 3.11
           sccache: "true"
           manylinux: musllinux_1_2
+
+      - name: Build free-threaded (cp314t) wheel
+        uses: PyO3/maturin-action@v1
+        with:
+          target: ${{ matrix.platform.target }}
+          args: --release --out dist -i 3.14t
+          sccache: "true"
+          manylinux: musllinux_1_2
+
+      # - name: Build abi3t wheel (Python 3.15+)
+      #   uses: PyO3/maturin-action@v1
+      #   with:
+      #     target: ${{ matrix.platform.target }}
+      #     args: --release --out dist --features abi3t-py315 -i 3.15t
+      #     sccache: "true"
+      #     manylinux: musllinux_1_2
 
       - name: Upload wheels
         uses: actions/upload-artifact@v7
@@ -72,7 +134,9 @@ jobs:
       - uses: actions/checkout@v6
 
       # uv-provided Python has linking issues on Windows with maturin, so use
-      # the GitHub-actions-provided interpreter.
+      # the GitHub-actions-provided interpreter. `generate-import-lib` lets
+      # maturin build the version-specific wheels (e.g. 3.14t) without each of
+      # those interpreters installed.
       - uses: actions/setup-python@v6
         with:
           python-version: "3.12"
@@ -81,8 +145,22 @@ jobs:
         uses: PyO3/maturin-action@v1
         with:
           target: x64
-          args: --release --out dist
+          args: --release --out dist --features abi3-py311 --features generate-import-lib -i 3.11
           sccache: "true"
+
+      - name: Build free-threaded (cp314t) wheel
+        uses: PyO3/maturin-action@v1
+        with:
+          target: x64
+          args: --release --out dist --features generate-import-lib -i 3.14t
+          sccache: "true"
+
+      # - name: Build abi3t wheel (Python 3.15+)
+      #   uses: PyO3/maturin-action@v1
+      #   with:
+      #     target: x64
+      #     args: --release --out dist --features abi3t-py315 --features generate-import-lib -i 3.15t
+      #     sccache: "true"
 
       - name: Upload wheels
         uses: actions/upload-artifact@v7
@@ -102,16 +180,35 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
-      - uses: actions/setup-python@v6
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
         with:
-          python-version: "3.12"
+          enable-cache: true
+
+      - name: Install Python versions
+        run: uv python install 3.11 3.14t
+        # When 3.15 is released, add `3.15t` above for the abi3t build.
 
       - name: Build abi3 wheel
         uses: PyO3/maturin-action@v1
         with:
           target: ${{ matrix.platform.target }}
-          args: --release --out dist
+          args: --release --out dist --features abi3-py311 -i 3.11
           sccache: "true"
+
+      - name: Build free-threaded (cp314t) wheel
+        uses: PyO3/maturin-action@v1
+        with:
+          target: ${{ matrix.platform.target }}
+          args: --release --out dist -i 3.14t
+          sccache: "true"
+
+      # - name: Build abi3t wheel (Python 3.15+)
+      #   uses: PyO3/maturin-action@v1
+      #   with:
+      #     target: ${{ matrix.platform.target }}
+      #     args: --release --out dist --features abi3t-py315 -i 3.15t
+      #     sccache: "true"
 
       - name: Upload wheels
         uses: actions/upload-artifact@v7
