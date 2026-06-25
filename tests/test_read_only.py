@@ -56,3 +56,35 @@ def test_writable_array_still_writes():
         array.retrieve_chunk([0, 0]).to_numpy(),
         np.ones((4, 4), dtype="int8"),
     )
+
+
+# --- async ---------------------------------------------------------------
+
+import zarr  # noqa: E402
+from obstore.store import LocalStore  # noqa: E402
+
+from zarrista import AsyncArray  # noqa: E402
+
+
+async def _async_writable_array(tmp_path):
+    """A 4x4 int8 array written with zarr-python, opened async over obstore."""
+    path = tmp_path / "a.zarr"
+    z = zarr.create_array(store=str(path), shape=(4, 4), chunks=(4, 4), dtype="int8")
+    z[:] = np.arange(16, dtype="int8").reshape(4, 4)
+    return await AsyncArray.open_async(LocalStore(str(path)))
+
+
+async def test_async_read_only_still_reads(tmp_path):
+    arr = await _async_writable_array(tmp_path)
+    ro = arr.read_only()
+    chunk = await ro.retrieve_chunk([0, 0])
+    np.testing.assert_array_equal(
+        chunk.to_numpy(), np.arange(16, dtype="int8").reshape(4, 4)
+    )
+
+
+async def test_async_read_only_store_chunk_raises(tmp_path):
+    arr = await _async_writable_array(tmp_path)
+    ro = arr.read_only()
+    with pytest.raises(ZarristaError, match="read only"):
+        await ro.store_chunk([0, 0], ArrayBytes(np.zeros(16, dtype="int8").tobytes()))

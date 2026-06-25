@@ -5247,6 +5247,7 @@ dependencies = [
  "arrow-array",
  "arrow-buffer",
  "arrow-schema",
+ "async-trait",
  "bytes",
  "dlpark",
  "half",

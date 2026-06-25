@@ -112,6 +112,13 @@ impl PyAsyncArray {
         })
     }
 
+    /// Return a read-only view of this array; writes raise at runtime.
+    fn read_only(&self) -> Self {
+        let inner = self.inner.storage().readable_listable();
+        let storage = Arc::new(crate::storage::AsyncReadOnly::new(inner));
+        Self::new(Arc::new(self.inner.with_storage(storage)))
+    }
+
     fn erase_metadata<'py>(&self, py: Python<'py>) -> PyResult<Bound<'py, PyAny>> {
         let inner = self.inner.clone();
         future_into_py(py, async move {
