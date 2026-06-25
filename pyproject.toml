@@ -39,6 +39,7 @@ dev = [
     "obstore>=0.10.1",
     "pytest>=8.0",
     "pytest-asyncio>=1.4",
+    "pytest-run-parallel>=0.3.0;python_version>='3.13'",
     "ruff>=0.6",
     "zarr>=3",
 ]
