@@ -9,6 +9,7 @@ use crate::array_bytes::PyArrayBytes;
 use crate::codec::PyCodecOptions;
 use crate::decoded_array::DecodedArray;
 use crate::error::ZarristaResult;
+use crate::metadata::PyArrayMetadata;
 use crate::node::PyNodePath;
 use crate::storage::PySyncStorage;
 use pyo3::prelude::*;
@@ -50,6 +51,24 @@ impl PyArray {
         )
     }
 
+    /// Use the provided metadata to open a new array at `path` in `store`.
+    ///
+    /// This does **not** write to the store, use `store_metadata` to write metadata to storage.
+    #[staticmethod]
+    #[pyo3(
+        signature = (metadata, store, path = PyNodePath::root()),
+        text_signature = "(metadata, store, path='/')"
+    )]
+    fn from_metadata(
+        metadata: PyArrayMetadata,
+        store: PySyncStorage,
+        path: PyNodePath,
+    ) -> ZarristaResult<Self> {
+        let inner =
+            Array::new_with_metadata(store.into_inner(), path.as_str(), metadata.into_inner())?;
+        Ok(Self::new(Arc::new(inner)))
+    }
+
     /// Open the array stored at `path` in `store`.
     #[staticmethod]
     #[pyo3(
@@ -83,6 +102,12 @@ impl PyArray {
     fn erase_metadata(&self) -> ZarristaResult<()> {
         self.inner.erase_metadata()?;
         Ok(())
+    }
+
+    fn read_only(&self) -> Self {
+        let inner = self.inner.storage().readable_listable();
+        let storage = Arc::new(crate::storage::ReadOnly::new(inner));
+        Self::new(Arc::new(self.inner.with_storage(storage)))
     }
 
     /// Read a region of the array, using numpy-style basic indexing.
