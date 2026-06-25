@@ -71,7 +71,7 @@ from obstore.store import LocalStore  # noqa: E402
 from zarrista import AsyncArray  # noqa: E402
 
 
-async def _async_writable_array(tmp_path):
+async def _async_writable_array(tmp_path) -> AsyncArray:
     """A 4x4 int8 array written with zarr-python, opened async over obstore."""
     path = tmp_path / "a.zarr"
     z = zarr.create_array(store=str(path), shape=(4, 4), chunks=(4, 4), dtype="int8")
