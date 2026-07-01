@@ -1,5 +1,10 @@
-from zarr_metadata import ArrayMetadataV3
+
+from typing import TYPE_CHECKING
+
 import zarrista
+
+if TYPE_CHECKING:
+    from zarr_metadata import ArrayMetadataV3
 
 
 def test_array_from_metadata():
@@ -20,4 +25,4 @@ def test_array_from_metadata():
         "codecs": ({"name": "bytes"},),
     }
 
-    a = zarrista.Array.from_metadata(meta, store)
+    zarrista.Array.from_metadata(meta, store)
