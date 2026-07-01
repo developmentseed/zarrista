@@ -67,3 +67,4 @@ codegen-units = 1
 # Branch kyle/v0.23-derive-clone
 zarrs = { git = "https://github.com/kylebarron/zarrs", rev = "e68838becd223ddb7f522b265c1b65b90fe577b1" }
 zarrs_storage = { git = "https://github.com/kylebarron/zarrs", rev = "e68838becd223ddb7f522b265c1b65b90fe577b1" }
+monostate = { git = "https://github.com/kylebarron/monostate", rev = "b62913f1076318b1bced0f199cd4de036dc61e46" }

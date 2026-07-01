@@ -1,4 +1,3 @@
-use pyo3::exceptions::PyValueError;
 use pyo3::prelude::*;
 use pythonize::{depythonize, pythonize, PythonizeError};
 use serde_json::{Map, Value};
@@ -21,17 +20,10 @@ macro_rules! pythonized_metadata {
         }
 
         impl<'a, 'py> FromPyObject<'a, 'py> for $name {
-            type Error = PyErr;
+            type Error = PythonizeError;
 
             fn extract(obj: Borrowed<'a, 'py, PyAny>) -> Result<Self, Self::Error> {
-                // depythonize into a serde `Value`` to ensure that whole numbers are
-                // stored with u64, which zarrs_metadata expects for e.g. the zarr_format
-                // field
-                let val: Value = depythonize(&obj)?;
-                Ok($name(
-                    serde_json::from_value(val)
-                        .map_err(|e| PyValueError::new_err(e.to_string()))?,
-                ))
+                Ok($name(depythonize(&obj)?))
             }
         }
 
