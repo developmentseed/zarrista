@@ -1,6 +1,6 @@
 [package]
 name = "zarrista"
-version = "0.1.0-beta.5"
+version = "0.1.0-beta.6"
 authors = ["Kyle Barron <kyle@developmentseed.org>"]
 edition = "2021"
 description = "A small, prototypical zarrita-like Python Zarr implementation on top of zarrs."
@@ -67,4 +67,5 @@ codegen-units = 1
 # Branch kyle/v0.23-derive-clone
 zarrs = { git = "https://github.com/kylebarron/zarrs", rev = "e68838becd223ddb7f522b265c1b65b90fe577b1" }
 zarrs_storage = { git = "https://github.com/kylebarron/zarrs", rev = "e68838becd223ddb7f522b265c1b65b90fe577b1" }
+# https://github.com/dtolnay/monostate/pull/32
 monostate = { git = "https://github.com/kylebarron/monostate", rev = "b62913f1076318b1bced0f199cd4de036dc61e46" }
