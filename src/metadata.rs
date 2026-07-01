@@ -1,5 +1,5 @@
-use pyo3::prelude::*;
 use pyo3::exceptions::PyValueError;
+use pyo3::prelude::*;
 use pythonize::{depythonize, pythonize, PythonizeError};
 use serde_json::{Map, Value};
 use zarrs::metadata::v2::{ArrayMetadataV2, GroupMetadataV2, MetadataV2};
@@ -24,11 +24,14 @@ macro_rules! pythonized_metadata {
             type Error = PyErr;
 
             fn extract(obj: Borrowed<'a, 'py, PyAny>) -> Result<Self, Self::Error> {
-                // depythonize into a serde `Value`` to ensure that whole numbers are 
+                // depythonize into a serde `Value`` to ensure that whole numbers are
                 // stored with u64, which zarrs_metadata expects for e.g. the zarr_format
                 // field
                 let val: Value = depythonize(&obj)?;
-                Ok($name(serde_json::from_value(val).map_err(|e| PyValueError::new_err(e.to_string()))?))
+                Ok($name(
+                    serde_json::from_value(val)
+                        .map_err(|e| PyValueError::new_err(e.to_string()))?,
+                ))
             }
         }
 
