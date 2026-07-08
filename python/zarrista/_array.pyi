@@ -124,6 +124,12 @@ class Array:
 
         Keyword arguments are passed as [`CodecOptions`][zarrista.codec.CodecOptions].
         """
+    def retrieve_encoded_chunk(self, chunk_indices: list[int]) -> Buffer | None:
+        """Read the raw, still-encoded bytes of the chunk at `chunk_indices`.
+
+        The bytes are returned verbatim, without running the codec pipeline.
+        Returns `None` if the chunk is absent from the store.
+        """
     def store_chunk(
         self,
         chunk_indices: list[int],
@@ -315,6 +321,12 @@ class AsyncArray:
         """Read and decode the chunk at the given chunk grid indices.
 
         Keyword arguments are passed as [`CodecOptions`][zarrista.codec.CodecOptions].
+        """
+    async def retrieve_encoded_chunk(self, chunk_indices: list[int]) -> Buffer | None:
+        """Read the raw, still-encoded bytes of the chunk at `chunk_indices`.
+
+        The bytes are returned verbatim, without running the codec pipeline.
+        Returns `None` if the chunk is absent from the store.
         """
     async def store_chunk(
         self,
