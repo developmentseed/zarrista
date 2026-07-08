@@ -1,6 +1,7 @@
 import sys
 from typing import Any, TypeAlias
 
+import numpy as np
 from numpy.typing import DTypeLike, NDArray
 
 from ._dtype import DataType
@@ -88,7 +89,8 @@ class VariableArray:
 class MaskedTensor:
     """Fixed-width decoded data with a validity mask.
 
-    Not yet exposed to NumPy.
+    Use `to_numpy` (or `np.asarray`/`np.array`) to get a `numpy.ma.MaskedArray`
+    view over the underlying Rust memory.
     """
 
     @property
@@ -97,6 +99,24 @@ class MaskedTensor:
     @property
     def dtype(self) -> DataType:
         """The Zarr data type."""
+    @property
+    def data(self) -> Tensor:
+        """The values, without the mask applied."""
+    @property
+    def mask(self) -> Tensor:
+        """The validity mask (`bool`, `True` = valid/present)."""
+    def to_numpy(self) -> np.ma.MaskedArray:
+        """Convert to a `numpy.ma.MaskedArray` view over Rust memory.
+
+        NumPy's masked-array convention is the inverse of ours: `True` marks
+        *masked* (missing) elements, so the validity mask is negated.
+        """
+    def __array__(
+        self,
+        dtype: DTypeLike | None = None,
+        copy: bool | None = None,
+    ) -> np.ma.MaskedArray:
+        """NumPy array-coercion protocol backing `np.asarray`/`np.array`."""
 
 class MaskedVariableArray:
     """Variable-length decoded data with a validity mask.

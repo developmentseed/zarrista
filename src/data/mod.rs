@@ -27,11 +27,12 @@ pub use tensor::{PyMaskedTensor, PyTensor};
 pub use variable::{PyMaskedVariableArray, PyVariableArray};
 
 use std::borrow::Cow;
+use std::sync::Arc;
 
 use bytes::Bytes;
 use pyo3::IntoPyObjectExt;
 use pyo3::prelude::*;
-use zarrs::array::{ArrayBytes, ArrayError, DataType, FromArrayBytes};
+use zarrs::array::{ArrayBytes, ArrayError, DataType, FromArrayBytes, data_type};
 
 /// Internal decoded result, produced by our [`FromArrayBytes`] impl. Carries the
 /// post-codec bytes (zero-copy), the data type, and the region shape (which
@@ -49,7 +50,7 @@ impl FromArrayBytes for DecodedArray {
         shape: &[u64],
         data_type: &DataType,
     ) -> Result<Self, ArrayError> {
-        let shape = shape.to_vec();
+        let shape = Arc::from(shape);
         let data_type = data_type.clone();
         Ok(match bytes {
             ArrayBytes::Fixed(bytes) => {
@@ -68,10 +69,8 @@ impl FromArrayBytes for DecodedArray {
                 let (data, mask) = optional.into_parts();
                 match *data {
                     ArrayBytes::Fixed(fixed) => DecodedArray::MaskedTensor(PyMaskedTensor::new(
-                        cow_to_bytes(fixed),
-                        cow_to_bytes(mask),
-                        data_type,
-                        shape,
+                        PyTensor::new(cow_to_bytes(fixed), data_type, shape.clone()),
+                        PyTensor::new(cow_to_bytes(mask), data_type::bool(), shape),
                     )),
                     ArrayBytes::Variable(variable) => {
                         let (buf, offsets) = variable.into_parts();
