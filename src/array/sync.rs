@@ -7,7 +7,7 @@ use crate::array::selection::PySelection;
 use crate::array::shared::array_metadata_accessors;
 use crate::array_bytes::PyArrayBytes;
 use crate::codec::PyCodecOptions;
-use crate::decoded_array::DecodedArray;
+use crate::data::DecodedArray;
 use crate::error::ZarristaResult;
 use crate::metadata::PyArrayMetadata;
 use crate::node::PyNodePath;

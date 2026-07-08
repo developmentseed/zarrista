@@ -18,8 +18,12 @@ else:
 class Tensor:
     """Fixed-width, dense decoded array data.
 
-    The decoded bytes are held zero-copy. Reinterpret them as a NumPy array with
-    `to_numpy()`, or get the raw bytes as a buffer-protocol object via `buffer()`.
+    `Tensor` implements the buffer protocol directly as an N-dimensional, typed,
+    read-only view, so for any type supported by the buffer protocol it works with
+    `memoryview(tensor)` and `np.asarray(tensor)`.
+
+    Or, use `to_numpy` to get a NumPy array view over the Rust memory. This is
+    zero-copy whenever possible.
     """
 
     @property
@@ -33,7 +37,14 @@ class Tensor:
     def to_numpy(self) -> NDArray[Any]:
         """Access a NumPy array view over Rust memory.
 
-        This is a zero-copy view via `np.frombuffer`.
+        This is a zero-copy view via `np.frombuffer`. Unlike the buffer protocol,
+        this path covers the full NumPy dtype set (e.g. complex).
+        """
+    def __buffer__(self, flags: int, /) -> memoryview:
+        """Export an N-dimensional, typed, read-only PEP 3118 buffer view.
+
+        Raises `BufferError` if a writable buffer is requested, or if the dtype has no
+        standard format code.
         """
     def __dlpack__(
         self,
