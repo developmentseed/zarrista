@@ -19,6 +19,7 @@
 //! (it sets `aligned=False`), and any consumer that materializes an owned array
 //! pays the alignment copy as part of the copy it was already doing.
 
+mod buffer_protocol;
 mod tensor;
 mod variable;
 
