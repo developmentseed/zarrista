@@ -3,8 +3,7 @@ use pyo3::prelude::*;
 use pyo3_async_runtimes::tokio::future_into_py;
 use zarrs::array::ArrayBuilder;
 
-use crate::array::util::PyArrayShape;
-use crate::array::{PyArray, PyAsyncArray, PyChunkGrid, PyChunkKeyEncoding};
+use crate::array::{PyArray, PyArrayShape, PyAsyncArray, PyChunkGrid, PyChunkKeyEncoding};
 use crate::codec::{PyArrayToArrayCodec, PyArrayToBytesCodec, PyBytesToBytesCodec};
 use crate::dtype::PyDataType;
 use crate::error::ZarristaError;

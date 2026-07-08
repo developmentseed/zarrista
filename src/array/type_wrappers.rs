@@ -3,7 +3,8 @@
 //! These wrappers are **not** standalone Python classes; they only define serde
 
 use pyo3::prelude::*;
-use zarrs::array::{ArrayIndices, ArrayShape, ChunkShape};
+use pyo3::types::{PySlice, PyTuple};
+use zarrs::array::{ArrayIndices, ArrayShape, ArraySubset, ChunkShape};
 
 /// An ND index to an element in an array or chunk.
 #[derive(Debug, Clone, PartialEq, Eq, Hash, FromPyObject, IntoPyObject, IntoPyObjectRef)]
@@ -50,6 +51,47 @@ impl From<PyArrayShape> for ArrayShape {
 
 impl AsRef<[u64]> for PyArrayShape {
     fn as_ref(&self) -> &[u64] {
+        &self.0
+    }
+}
+
+/// An array subset.
+#[derive(Clone, Debug)]
+pub struct PyArraySubset(ArraySubset);
+
+impl<'py> IntoPyObject<'py> for PyArraySubset {
+    type Target = PyTuple;
+    type Error = PyErr;
+    type Output = Bound<'py, Self::Target>;
+
+    fn into_pyobject(self, py: Python<'py>) -> Result<Self::Output, Self::Error> {
+        let ranges = self.0.to_ranges();
+        let slices = ranges.into_iter().map(|range| {
+            PySlice::new(
+                py,
+                range.start.try_into().expect("u64 to i64 overflow"),
+                range.end.try_into().expect("u64 to i64 overflow"),
+                1,
+            )
+        });
+        PyTuple::new(py, slices)
+    }
+}
+
+impl From<PyArraySubset> for ArraySubset {
+    fn from(subset: PyArraySubset) -> Self {
+        subset.0
+    }
+}
+
+impl From<ArraySubset> for PyArraySubset {
+    fn from(subset: ArraySubset) -> Self {
+        Self(subset)
+    }
+}
+
+impl AsRef<ArraySubset> for PyArraySubset {
+    fn as_ref(&self) -> &ArraySubset {
         &self.0
     }
 }

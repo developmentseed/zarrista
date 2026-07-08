@@ -18,6 +18,39 @@ macro_rules! array_metadata_accessors {
                 self.inner.chunk_grid().clone().into()
             }
 
+            #[getter]
+            fn chunk_grid_shape(&self) -> &[u64] {
+                self.inner.chunk_grid_shape()
+            }
+
+            fn chunk_key(
+                &self,
+                chunk_indices: $crate::array::PyChunkIndices,
+            ) -> $crate::storage::PyStoreKey {
+                self.inner.chunk_key(chunk_indices.as_ref()).into()
+            }
+
+            fn chunk_origin(
+                &self,
+                chunk_indices: $crate::array::PyChunkIndices,
+            ) -> $crate::error::ZarristaResult<$crate::array::PyArrayIndices> {
+                Ok(self.inner.chunk_origin(chunk_indices.as_ref())?.into())
+            }
+
+            fn chunk_shape(
+                &self,
+                chunk_indices: $crate::array::PyChunkIndices,
+            ) -> $crate::error::ZarristaResult<$crate::array::PyChunkShape> {
+                Ok(self.inner.chunk_shape(chunk_indices.as_ref())?.into())
+            }
+
+            fn chunk_subset(
+                &self,
+                chunk_indices: $crate::array::PyChunkIndices,
+            ) -> $crate::error::ZarristaResult<$crate::array::PyArraySubset> {
+                Ok(self.inner.chunk_subset(chunk_indices.as_ref())?.into())
+            }
+
             /// The bytes-to-bytes codecs ("compressors").
             #[getter]
             fn compressors(&self) -> Vec<$crate::codec::PyBytesToBytesCodec> {
