@@ -4,7 +4,7 @@ use std::sync::Arc;
 
 use crate::array::PyChunkIndices;
 use crate::array::selection::PySelection;
-use crate::array::shared::array_metadata_accessors;
+use crate::array::shared::shared_array_methods;
 use crate::array_bytes::PyArrayBytes;
 use crate::codec::PyCodecOptions;
 use crate::data::DecodedArray;
@@ -36,7 +36,7 @@ impl PyAsyncArray {
 }
 
 // Metadata accessors shared with `PyArray`; see `array/shared.rs`.
-array_metadata_accessors!(PyAsyncArray);
+shared_array_methods!(PyAsyncArray);
 
 #[pymethods]
 impl PyAsyncArray {
