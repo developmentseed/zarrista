@@ -1,4 +1,5 @@
 use std::ffi::{c_int, c_void};
+use std::sync::Arc;
 
 use bytes::Bytes;
 use dlpark::SafeManagedTensor;
@@ -24,12 +25,12 @@ use crate::error::{ZarristaError, ZarristaResult};
 pub struct PyTensor {
     bytes: Bytes,
     data_type: DataType,
-    shape: Vec<u64>,
+    shape: Arc<[u64]>,
 }
 
 impl PyTensor {
     /// Construct a new PyTensor from the given bytes, data type, and shape.
-    pub fn new(bytes: Bytes, data_type: DataType, shape: Vec<u64>) -> Self {
+    pub fn new(bytes: Bytes, data_type: DataType, shape: Arc<[u64]>) -> Self {
         Self {
             bytes,
             data_type,
@@ -37,7 +38,7 @@ impl PyTensor {
         }
     }
 
-    pub fn into_inner(self) -> (Bytes, DataType, Vec<u64>) {
+    pub fn into_inner(self) -> (Bytes, DataType, Arc<[u64]>) {
         (self.bytes, self.data_type, self.shape)
     }
 }
@@ -72,7 +73,7 @@ impl PyTensor {
         })?;
         let np = py.import("numpy")?;
         let flat = np.call_method1("frombuffer", (self.buffer(), name.into_owned()))?;
-        flat.call_method1("reshape", (&self.shape,))
+        flat.call_method1("reshape", (&*self.shape,))
     }
 
     /// NumPy array-coercion protocol backing `np.asarray(tensor)` /
@@ -208,24 +209,15 @@ impl TensorLike<RowMajorCompactLayout> for PyTensor {
 /// Fixed-width data with a validity mask. Skeleton.
 #[pyclass(module = "zarrista", frozen, name = "MaskedTensor")]
 pub struct PyMaskedTensor {
-    #[expect(dead_code)]
-    bytes: Bytes,
+    data: PyTensor,
     /// The mask is 1 byte per element where 0 = invalid/missing, non-zero = valid/present.
-    #[expect(dead_code)]
-    mask: Bytes,
-    data_type: DataType,
-    shape: Vec<u64>,
+    mask: PyTensor,
 }
 
 impl PyMaskedTensor {
     /// Construct a new PyMaskedTensor from the given bytes, mask, data type, and shape.
-    pub fn new(bytes: Bytes, mask: Bytes, data_type: DataType, shape: Vec<u64>) -> Self {
-        Self {
-            bytes,
-            mask,
-            data_type,
-            shape,
-        }
+    pub fn new(data: PyTensor, mask: PyTensor) -> Self {
+        Self { data, mask }
     }
 }
 
@@ -233,11 +225,21 @@ impl PyMaskedTensor {
 impl PyMaskedTensor {
     #[getter]
     fn shape(&self) -> &[u64] {
-        &self.shape
+        &self.data.shape
+    }
+
+    #[getter]
+    fn data(&self) -> PyTensor {
+        self.data.clone()
     }
 
     #[getter]
     fn dtype(&self) -> PyDataType {
-        self.data_type.clone().into()
+        self.data.data_type.clone().into()
+    }
+
+    #[getter]
+    fn mask(&self) -> PyTensor {
+        self.mask.clone()
     }
 }

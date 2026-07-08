@@ -19,11 +19,11 @@ pub struct PyVariableArray {
     bytes: Bytes,
     offsets: Vec<usize>,
     data_type: DataType,
-    shape: Vec<u64>,
+    shape: Arc<[u64]>,
 }
 
 impl PyVariableArray {
-    pub fn new(bytes: Bytes, offsets: Vec<usize>, data_type: DataType, shape: Vec<u64>) -> Self {
+    pub fn new(bytes: Bytes, offsets: Vec<usize>, data_type: DataType, shape: Arc<[u64]>) -> Self {
         Self {
             bytes,
             offsets,
@@ -123,7 +123,7 @@ pub struct PyMaskedVariableArray {
     #[expect(dead_code)]
     mask: Bytes,
     data_type: DataType,
-    shape: Vec<u64>,
+    shape: Arc<[u64]>,
 }
 
 impl PyMaskedVariableArray {
@@ -133,7 +133,7 @@ impl PyMaskedVariableArray {
         offsets: Vec<usize>,
         mask: Bytes,
         data_type: DataType,
-        shape: Vec<u64>,
+        shape: Arc<[u64]>,
     ) -> Self {
         Self {
             bytes,
