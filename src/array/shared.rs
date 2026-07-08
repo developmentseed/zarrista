@@ -69,7 +69,7 @@ macro_rules! array_metadata_accessors {
 
             /// The dimension names, if any were specified.
             #[getter]
-            fn dimension_names(&self) -> &Option<Vec<Option<String>>> {
+            fn dimension_names(&self) -> &Option<Vec<$crate::array::PyDimensionName>> {
                 self.inner.dimension_names()
             }
 

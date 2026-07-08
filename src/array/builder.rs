@@ -3,6 +3,7 @@ use pyo3::prelude::*;
 use pyo3_async_runtimes::tokio::future_into_py;
 use zarrs::array::ArrayBuilder;
 
+use crate::array::type_wrappers::PyDimensionName;
 use crate::array::{
     PyArray, PyArrayShape, PyAsyncArray, PyChunkGrid, PyChunkKeyEncoding, PyFillValue,
 };
@@ -115,7 +116,7 @@ impl PyArrayBuilder {
         })
     }
 
-    fn dimension_names(&self, dimension_names: Option<Vec<Option<String>>>) -> Self {
+    fn dimension_names(&self, dimension_names: Option<Vec<PyDimensionName>>) -> Self {
         self.with(|builder| {
             builder.dimension_names(dimension_names);
         })
@@ -142,7 +143,7 @@ impl PyArrayBuilder {
 
     fn subchunk_shape(&self, subchunk_shape: Option<PyArrayShape>) -> Self {
         self.with(|builder| {
-            builder.subchunk_shape(subchunk_shape.map(|s| s.into()));
+            builder.subchunk_shape(subchunk_shape);
         })
     }
 

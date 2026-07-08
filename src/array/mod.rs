@@ -15,5 +15,5 @@ pub use fill_value::PyFillValue;
 pub use r#async::PyAsyncArray;
 pub use sync::PyArray;
 pub use type_wrappers::{
-    PyArrayIndices, PyArrayShape, PyArraySubset, PyChunkIndices, PyChunkShape,
+    PyArrayIndices, PyArrayShape, PyArraySubset, PyChunkIndices, PyChunkShape, PyDimensionName,
 };
