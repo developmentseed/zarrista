@@ -30,6 +30,11 @@ macro_rules! array_metadata_accessors {
                 self.inner.chunk_key(chunk_indices.as_ref()).into()
             }
 
+            #[getter]
+            fn chunk_key_encoding(&self) -> $crate::array::PyChunkKeyEncoding {
+                self.inner.chunk_key_encoding().clone().into()
+            }
+
             fn chunk_origin(
                 &self,
                 chunk_indices: $crate::array::PyChunkIndices,
@@ -74,6 +79,11 @@ macro_rules! array_metadata_accessors {
                 self.inner.data_type().clone().into()
             }
 
+            #[getter]
+            fn fill_value(&self) -> $crate::array::PyFillValue {
+                self.inner.fill_value().clone().into()
+            }
+
             /// The array-to-array codecs ("filters").
             #[getter]
             fn filters(&self) -> Vec<$crate::codec::PyArrayToArrayCodec> {
@@ -98,8 +108,8 @@ macro_rules! array_metadata_accessors {
 
             /// The array's path in the store.
             #[getter]
-            fn path(&self) -> &str {
-                self.inner.path().as_str()
+            fn path(&self) -> $crate::node::PyNodePath {
+                self.inner.path().clone().into()
             }
 
             /// The array-to-bytes codec ("serializer").
@@ -113,6 +123,11 @@ macro_rules! array_metadata_accessors {
             #[getter]
             fn shape(&self) -> &[u64] {
                 self.inner.shape()
+            }
+
+            #[getter]
+            fn subset_all(&self) -> $crate::array::PyArraySubset {
+                self.inner.subset_all().into()
             }
         }
     };
