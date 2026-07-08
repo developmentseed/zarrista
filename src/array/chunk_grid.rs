@@ -2,11 +2,11 @@ use std::sync::Arc;
 
 use pyo3::prelude::*;
 use pyo3::types::PyInt;
+use zarrs::array::ChunkGrid;
 use zarrs::array::chunk_grid::{
     ChunkEdgeLengths, RectilinearChunkGrid, RegularBoundedChunkGrid, RegularChunkGrid,
     RunLengthElement,
 };
-use zarrs::array::ChunkGrid;
 
 use crate::array::{PyArrayShape, PyChunkShape};
 use crate::error::ZarristaResult;

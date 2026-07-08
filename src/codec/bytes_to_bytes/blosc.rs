@@ -31,7 +31,7 @@ impl FromPyObject<'_, '_> for PyBloscCompressor {
                 return Err(PyValueError::new_err(format!(
                     "unknown blosc compressor {other:?}; expected one of \
                      'blosclz', 'lz4', 'lz4hc', 'snappy', 'zlib', 'zstd'"
-                )))
+                )));
             }
         };
         Ok(Self(compressor))
@@ -75,7 +75,7 @@ impl FromPyObject<'_, '_> for PyBloscShuffleMode {
                 return Err(PyValueError::new_err(format!(
                     "unknown blosc shuffle mode {other:?}; expected one of \
                      'noshuffle', 'shuffle', 'bitshuffle'"
-                )))
+                )));
             }
         };
         Ok(Self(shuffle))
