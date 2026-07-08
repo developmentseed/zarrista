@@ -8,7 +8,6 @@ use pyo3::prelude::*;
 use zarrs::array::DataType;
 
 use crate::data::PyTensor;
-use crate::error::ZarristaError;
 
 /// Internal TensorBuffer that implements the buffer protocol
 #[pyclass(
@@ -28,7 +27,7 @@ pub struct PyTensorBuffer {
 }
 
 impl TryFrom<PyTensor> for PyTensorBuffer {
-    type Error = ZarristaError;
+    type Error = PyErr;
 
     fn try_from(tensor: PyTensor) -> Result<Self, Self::Error> {
         let (bytes, data_type, shape) = tensor.into_inner();
@@ -37,9 +36,9 @@ impl TryFrom<PyTensor> for PyTensorBuffer {
         let shape = shape
             .iter()
             .map(|&s| {
-                Ok(isize::try_from(s).map_err(|err| {
+                isize::try_from(s).map_err(|err| {
                     PyOverflowError::new_err(format!("shape {s} overflows isize: {err}"))
-                })?)
+                })
             })
             .collect::<PyResult<Vec<isize>>>()?;
 
@@ -69,7 +68,7 @@ impl TryFrom<PyTensor> for PyTensorBuffer {
     }
 }
 
-#[pymethods]
+// #[pymethods]
 impl PyTensorBuffer {
     /// Export as a PEP 3118 buffer: an N-dimensional, typed, read-only,
     /// zero-copy view. Powers `memoryview(tensor)` and `np.asarray(tensor)`.
@@ -77,7 +76,7 @@ impl PyTensorBuffer {
     /// Raises `BufferError` if a writable buffer is requested (the data is
     /// immutable) or if the dtype has no standard format code (e.g. bfloat16,
     /// complex — use `to_numpy` or `__dlpack__` for those).
-    unsafe fn __getbuffer__(
+    pub unsafe fn __getbuffer__(
         slf: PyRef<Self>,
         view: *mut ffi::Py_buffer,
         flags: c_int,
