@@ -1,5 +1,5 @@
 use pyo3::prelude::*;
-use pythonize::{depythonize, pythonize, PythonizeError};
+use pythonize::{PythonizeError, depythonize, pythonize};
 use serde_json::{Map, Value};
 use zarrs::metadata::v2::{ArrayMetadataV2, GroupMetadataV2, MetadataV2};
 use zarrs::metadata::v3::{ArrayMetadataV3, GroupMetadataV3, MetadataV3};

@@ -2,9 +2,9 @@
 
 use std::sync::Arc;
 
+use crate::array::PyChunkIndices;
 use crate::array::selection::PySelection;
 use crate::array::shared::array_metadata_accessors;
-use crate::array::PyChunkIndices;
 use crate::array_bytes::PyArrayBytes;
 use crate::codec::PyCodecOptions;
 use crate::decoded_array::DecodedArray;

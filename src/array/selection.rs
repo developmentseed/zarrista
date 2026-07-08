@@ -7,10 +7,10 @@
 
 use std::ops::Range;
 
+use pyo3::Borrowed;
 use pyo3::exceptions::{PyIndexError, PyNotImplementedError};
 use pyo3::prelude::*;
 use pyo3::types::{PyBool, PyEllipsis, PySlice, PyTuple};
-use pyo3::Borrowed;
 use zarrs::array::ArraySubset;
 
 use crate::error::ZarristaResult;
