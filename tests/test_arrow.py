@@ -12,7 +12,8 @@ import zarr
 from arro3.core import Array as Arro3Array
 from arro3.core import DataType
 
-from zarrista import Array, FilesystemStore, VariableArray
+from zarrista import Array, VariableArray
+from zarrista.store import FilesystemStore
 
 
 def test_variable_length_string_to_arrow(tmp_path: Path):

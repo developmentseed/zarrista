@@ -6,8 +6,9 @@ from pathlib import Path
 import pytest
 import zarr
 
-from zarrista import FilesystemStore, Group
+from zarrista import Group
 from zarrista import exceptions as exc
+from zarrista.store import FilesystemStore
 
 LEAF_EXCEPTIONS = [
     "ArrayCreateError",
