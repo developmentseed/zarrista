@@ -8,11 +8,11 @@ from zarrista import (
     ChunkKeyEncoding,
     DataType,
     FillValue,
-    MemoryStore,
     codec,
 )
 from zarrista.codec import ArrayToBytesCodec
 from zarrista.exceptions import ChunkGridCreateError, ZarristaError
+from zarrista.store import MemoryStore
 
 
 def _builder() -> ArrayBuilder:
