@@ -1,7 +1,7 @@
 import sys
 from typing import Any, TypeAlias
 
-from numpy.typing import NDArray
+from numpy.typing import DTypeLike, NDArray
 
 from ._dtype import DataType
 
@@ -46,6 +46,12 @@ class Tensor:
         Raises `BufferError` if a writable buffer is requested, or if the dtype has no
         standard format code.
         """
+    def __array__(
+        self,
+        dtype: DTypeLike | None = None,
+        copy: bool | None = None,
+    ) -> NDArray[Any]:
+        """NumPy array-coercion protocol backing `np.asarray`/`np.array`."""
     def __dlpack__(
         self,
         *,

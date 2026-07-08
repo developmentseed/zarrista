@@ -111,3 +111,45 @@ def test_raw_buffer_still_flat_u8(tmp_path: Path):
     raw = memoryview(tensor.buffer())
     assert raw.format == "B"
     assert raw.nbytes == data.nbytes
+
+
+def test_array_protocol_roundtrips(tmp_path: Path):
+    data = np.arange(2 * 3 * 4, dtype="int32").reshape(2, 3, 4)
+    result = np.array(_tensor(tmp_path / "a.zarr", data))
+    assert result.dtype == data.dtype
+    np.testing.assert_array_equal(result, data)
+
+
+def test_asarray_complex_is_real_array_not_object(tmp_path: Path):
+    """Regression for #66: complex has no buffer format code, so without the
+    `__array__` protocol `np.asarray` silently yields a 0-d object array."""
+    data = (
+        (np.arange(12, dtype="float32") + 1j * np.arange(12, dtype="float32"))
+        .astype("complex64")
+        .reshape(3, 4)
+    )
+    result = np.asarray(_tensor(tmp_path / "c.zarr", data))
+    assert result.dtype == np.dtype("complex64")
+    assert result.shape == (3, 4)
+    np.testing.assert_array_equal(result, data)
+
+
+def test_array_honors_dtype_cast(tmp_path: Path):
+    data = np.arange(6, dtype="int32").reshape(2, 3)
+    result = np.asarray(_tensor(tmp_path / "d.zarr", data), dtype="float64")
+    assert result.dtype == np.dtype("float64")
+    np.testing.assert_array_equal(result, data.astype("float64"))
+
+
+def test_array_copy_true_returns_independent_copy(tmp_path: Path):
+    data = np.arange(6, dtype="int32").reshape(2, 3)
+    result = np.array(_tensor(tmp_path / "e.zarr", data), copy=True)
+    assert result.flags.writeable is True
+    np.testing.assert_array_equal(result, data)
+
+
+def test_array_copy_false_differing_dtype_raises(tmp_path: Path):
+    data = np.arange(6, dtype="int32").reshape(2, 3)
+    tensor = _tensor(tmp_path / "f.zarr", data)
+    with pytest.raises(ValueError, match="zero-copy"):
+        tensor.__array__(np.dtype("float64"), copy=False)
