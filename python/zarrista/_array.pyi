@@ -50,6 +50,28 @@ class Array:
     def chunk_grid(self) -> ChunkGrid:
         """The chunk grid of the array."""
     @property
+    def chunk_grid_shape(self) -> list[int]:
+        """The shape of the chunk grid (i.e. the number of chunks per dimension)."""
+    def chunk_key(self, chunk_indices: list[int]) -> str:
+        """Return the store key of the chunk at `chunk_indices`."""
+    def chunk_origin(self, chunk_indices: list[int]) -> list[int]:
+        """Return the origin of the chunk at `chunk_indices`.
+
+        Raises if `chunk_indices` are incompatible with the chunk grid.
+        """
+    def chunk_shape(self, chunk_indices: list[int]) -> list[int]:
+        """Return the shape of the chunk at `chunk_indices`.
+
+        Raises if `chunk_indices` are incompatible with the chunk grid.
+        """
+    def chunk_subset(self, chunk_indices: list[int]) -> tuple[slice, ...]:
+        """Return the array subset spanned by the chunk at `chunk_indices`.
+
+        Returned as a tuple of slices, one per dimension.
+
+        Raises if `chunk_indices` are incompatible with the chunk grid.
+        """
+    @property
     def compressors(self) -> list[BytesToBytesCodec]:
         """The bytes-to-bytes codecs ("compressors")."""
     @property
@@ -179,6 +201,28 @@ class AsyncArray:
     @property
     def chunk_grid(self) -> ChunkGrid:
         """The chunk grid of the array."""
+    @property
+    def chunk_grid_shape(self) -> list[int]:
+        """The shape of the chunk grid (i.e. the number of chunks per dimension)."""
+    def chunk_key(self, chunk_indices: list[int]) -> str:
+        """Return the store key of the chunk at `chunk_indices`."""
+    def chunk_origin(self, chunk_indices: list[int]) -> list[int]:
+        """Return the origin of the chunk at `chunk_indices`.
+
+        Raises if `chunk_indices` are incompatible with the chunk grid.
+        """
+    def chunk_shape(self, chunk_indices: list[int]) -> list[int]:
+        """Return the shape of the chunk at `chunk_indices`.
+
+        Raises if `chunk_indices` are incompatible with the chunk grid.
+        """
+    def chunk_subset(self, chunk_indices: list[int]) -> tuple[slice, ...]:
+        """Return the array subset spanned by the chunk at `chunk_indices`.
+
+        Returned as a tuple of slices, one per dimension.
+
+        Raises if `chunk_indices` are incompatible with the chunk grid.
+        """
     @property
     def compressors(self) -> list[BytesToBytesCodec]:
         """The bytes-to-bytes codecs ("compressors")."""
