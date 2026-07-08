@@ -1,7 +1,9 @@
+#[cfg(feature = "async")]
 mod r#async;
 mod shared;
 mod sync;
 
+#[cfg(feature = "async")]
 pub use r#async::PyAsyncGroup;
 pub use sync::PyGroup;
 

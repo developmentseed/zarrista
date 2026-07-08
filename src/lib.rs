@@ -36,7 +36,9 @@ fn _zarrista(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<PyArray>()?;
     m.add_class::<PyArrayBuilder>()?;
     m.add_class::<PyArrayBytes>()?;
+    #[cfg(feature = "async")]
     m.add_class::<PyAsyncArray>()?;
+    #[cfg(feature = "async")]
     m.add_class::<PyAsyncGroup>()?;
     m.add_class::<PyChunkGrid>()?;
     m.add_class::<PyChunkKeyEncoding>()?;
