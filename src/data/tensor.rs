@@ -242,4 +242,51 @@ impl PyMaskedTensor {
     fn mask(&self) -> PyTensor {
         self.mask.clone()
     }
+
+    /// Convert to a NumPy masked array (`numpy.ma.MaskedArray`).
+    ///
+    /// The data and mask are NumPy views over the underlying Rust memory. NumPy's
+    /// masked-array convention is the inverse of ours — `True` marks *masked*
+    /// (missing) elements — so our validity mask (non-zero = valid) is negated.
+    fn to_numpy<'py>(&self, py: Python<'py>) -> PyResult<Bound<'py, PyAny>> {
+        let data = self.data.to_numpy(py)?;
+        let valid = self.mask.to_numpy(py)?;
+        let np = py.import("numpy")?;
+        let masked = np.call_method1("logical_not", (valid,))?;
+        np.getattr("ma")?.call_method1("masked_array", (data, masked))
+    }
+
+    /// NumPy array-coercion protocol backing `np.asarray(tensor)` /
+    /// `np.array(tensor)`. Returns a `numpy.ma.MaskedArray`.
+    #[pyo3(signature = (dtype=None, copy=None))]
+    fn __array__<'py>(
+        &self,
+        py: Python<'py>,
+        dtype: Option<Bound<'py, PyAny>>,
+        copy: Option<bool>,
+    ) -> PyResult<Bound<'py, PyAny>> {
+        let arr = self.to_numpy(py)?;
+
+        // copy=False demands zero-copy, so we can only hand back our own view.
+        if copy == Some(false) {
+            if let Some(dt) = &dtype {
+                let requested = py.import("numpy")?.call_method1("dtype", (dt,))?;
+                let current = arr.getattr("dtype")?;
+                if !requested.eq(&current)? {
+                    return Err(PyValueError::new_err(
+                        "cannot return a zero-copy array with a different dtype",
+                    ));
+                }
+            }
+            return Ok(arr);
+        }
+
+        if let Some(dt) = dtype {
+            arr.call_method1("astype", (dt,))
+        } else if copy == Some(true) {
+            arr.call_method0("copy")
+        } else {
+            Ok(arr)
+        }
+    }
 }
