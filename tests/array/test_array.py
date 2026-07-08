@@ -1,6 +1,7 @@
 from typing import TYPE_CHECKING
 
-import zarrista
+from zarrista import Array
+from zarrista.store import MemoryStore
 
 if TYPE_CHECKING:
     from zarr_metadata import ArrayMetadataV3
@@ -10,7 +11,7 @@ def test_array_from_metadata():
     """
     Test that Array.from_metadata works
     """
-    store = zarrista.MemoryStore()
+    store = MemoryStore()
 
     meta: ArrayMetadataV3 = {
         "zarr_format": 3,
@@ -24,4 +25,4 @@ def test_array_from_metadata():
         "codecs": ({"name": "bytes"},),
     }
 
-    zarrista.Array.from_metadata(meta, store)
+    Array.from_metadata(meta, store)
