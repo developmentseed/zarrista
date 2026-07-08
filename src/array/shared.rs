@@ -3,7 +3,7 @@
 //! These accessors only read from `self.inner` and perform no I/O, so they are
 //! identical between the sync and async variants. The macro emits a separate
 //! `#[pymethods]` block (requires the `multiple-pymethods` pyo3 feature).
-macro_rules! array_metadata_accessors {
+macro_rules! shared_array_methods {
     ($ty:ty) => {
         #[::pyo3::pymethods]
         impl $ty {
@@ -80,6 +80,13 @@ macro_rules! array_metadata_accessors {
             }
 
             #[getter]
+            fn effective_subchunk_shape(&self) -> Option<$crate::array::PyChunkShape> {
+                use zarrs::array::ArrayShardedExt;
+
+                self.inner.effective_subchunk_shape()
+            }
+
+            #[getter]
             fn fill_value(&self) -> $crate::array::PyFillValue {
                 self.inner.fill_value().clone().into()
             }
@@ -93,6 +100,13 @@ macro_rules! array_metadata_accessors {
                     .iter()
                     .map(|f| $crate::codec::PyArrayToArrayCodec::new(f.clone()))
                     .collect()
+            }
+
+            #[getter]
+            fn is_sharded(&self) -> bool {
+                use zarrs::array::ArrayShardedExt;
+
+                self.inner.is_sharded()
             }
 
             #[getter]
@@ -126,6 +140,27 @@ macro_rules! array_metadata_accessors {
             }
 
             #[getter]
+            fn subchunk_grid(&self) -> $crate::array::PyChunkGrid {
+                use zarrs::array::ArrayShardedExt;
+
+                self.inner.subchunk_grid().into()
+            }
+
+            #[getter]
+            fn subchunk_grid_shape(&self) -> $crate::array::PyArrayShape {
+                use zarrs::array::ArrayShardedExt;
+
+                self.inner.subchunk_grid_shape()
+            }
+
+            #[getter]
+            fn subchunk_shape(&self) -> Option<$crate::array::PyChunkShape> {
+                use zarrs::array::ArrayShardedExt;
+
+                self.inner.subchunk_shape()
+            }
+
+            #[getter]
             fn subset_all(&self) -> $crate::array::PyArraySubset {
                 self.inner.subset_all().into()
             }
@@ -133,4 +168,4 @@ macro_rules! array_metadata_accessors {
     };
 }
 
-pub(crate) use array_metadata_accessors;
+pub(crate) use shared_array_methods;

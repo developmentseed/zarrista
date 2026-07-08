@@ -124,6 +124,12 @@ class Array:
 
         Keyword arguments are passed as [`CodecOptions`][zarrista.codec.CodecOptions].
         """
+    def retrieve_encoded_chunk(self, chunk_indices: list[int]) -> Buffer | None:
+        """Read the raw, still-encoded bytes of the chunk at `chunk_indices`.
+
+        The bytes are returned verbatim, without running the codec pipeline.
+        Returns `None` if the chunk is absent from the store.
+        """
     def store_chunk(
         self,
         chunk_indices: list[int],
@@ -174,6 +180,37 @@ class Array:
 
         Reads behave identically, but any write (`store_chunk`, `erase_chunk`,
         `erase_metadata`, ...) raises at runtime.
+        """
+    @property
+    def is_sharded(self) -> bool:
+        """Whether the array's array-to-bytes codec is `sharding_indexed`."""
+    @property
+    def subchunk_shape(self) -> list[int] | None:
+        """The inner-chunk shape from the `sharding_indexed` codec metadata.
+
+        `None` if the array is not sharded.
+        """
+    @property
+    def effective_subchunk_shape(self) -> list[int] | None:
+        """The subchunk shape's effective "read granularity".
+
+        Accounts for array-to-array codecs (e.g. `transpose`) that precede the
+        sharding codec and reshape the subset spanned by one subchunk. `None` if
+        the array is not sharded or the effective shape is indeterminate.
+        """
+    @property
+    def subchunk_grid(self) -> ChunkGrid:
+        """The subchunk grid.
+
+        Built from the effective subchunk shape so that reading one subchunk reads
+        a single contiguous byte range. For an unsharded array this is the normal
+        chunk grid.
+        """
+    @property
+    def subchunk_grid_shape(self) -> list[int]:
+        """The shape of the subchunk grid (the number of subchunks per dimension).
+
+        For an unsharded array this is the normal chunk grid shape.
         """
     @property
     def shape(self) -> list[int]:
@@ -285,6 +322,12 @@ class AsyncArray:
 
         Keyword arguments are passed as [`CodecOptions`][zarrista.codec.CodecOptions].
         """
+    async def retrieve_encoded_chunk(self, chunk_indices: list[int]) -> Buffer | None:
+        """Read the raw, still-encoded bytes of the chunk at `chunk_indices`.
+
+        The bytes are returned verbatim, without running the codec pipeline.
+        Returns `None` if the chunk is absent from the store.
+        """
     async def store_chunk(
         self,
         chunk_indices: list[int],
@@ -335,6 +378,37 @@ class AsyncArray:
 
         Reads behave identically, but any write (`store_chunk`, `erase_chunk`,
         `erase_metadata`, ...) raises at runtime.
+        """
+    @property
+    def is_sharded(self) -> bool:
+        """Whether the array's array-to-bytes codec is `sharding_indexed`."""
+    @property
+    def subchunk_shape(self) -> list[int] | None:
+        """The inner-chunk shape from the `sharding_indexed` codec metadata.
+
+        `None` if the array is not sharded.
+        """
+    @property
+    def effective_subchunk_shape(self) -> list[int] | None:
+        """The subchunk shape's effective "read granularity".
+
+        Accounts for array-to-array codecs (e.g. `transpose`) that precede the
+        sharding codec and reshape the subset spanned by one subchunk. `None` if
+        the array is not sharded or the effective shape is indeterminate.
+        """
+    @property
+    def subchunk_grid(self) -> ChunkGrid:
+        """The subchunk grid.
+
+        Built from the effective subchunk shape so that reading one subchunk reads
+        a single contiguous byte range. For an unsharded array this is the normal
+        chunk grid.
+        """
+    @property
+    def subchunk_grid_shape(self) -> list[int]:
+        """The shape of the subchunk grid (the number of subchunks per dimension).
+
+        For an unsharded array this is the normal chunk grid shape.
         """
     @property
     def shape(self) -> list[int]:
