@@ -6,13 +6,14 @@ use crate::array::type_wrappers::PyDimensionName;
 use crate::array::{PyArray, PyArrayShape, PyChunkGrid, PyChunkKeyEncoding, PyFillValue};
 use crate::codec::{PyArrayToArrayCodec, PyArrayToBytesCodec, PyBytesToBytesCodec};
 use crate::dtype::PyDataType;
-use crate::error::ZarristaError;
 use crate::error::ZarristaResult;
 use crate::metadata::{PyArrayMetadataV3, PyAttributes};
 use crate::storage::PySyncStorage;
 
 #[pyclass(module = "zarrista.array", frozen, name = "ArrayBuilder")]
 pub struct PyArrayBuilder(ArrayBuilder);
+
+crate::wasm_send_sync!(PyArrayBuilder);
 
 impl PyArrayBuilder {
     fn with(&self, f: impl FnOnce(&mut ArrayBuilder)) -> Self {
@@ -92,6 +93,8 @@ impl PyArrayBuilder {
         store: crate::storage::PyAsyncStorage,
         path: &str,
     ) -> PyResult<Bound<'py, PyAny>> {
+        use crate::error::ZarristaError;
+
         let array = self
             .0
             .build_arc(store.into_inner(), path)

@@ -14,6 +14,8 @@ use crate::metadata::PyMetadataV3;
 #[pyclass(module = "zarrista", frozen, name = "ChunkKeyEncoding", from_py_object)]
 pub struct PyChunkKeyEncoding(ChunkKeyEncoding);
 
+crate::wasm_send_sync!(PyChunkKeyEncoding);
+
 impl PyChunkKeyEncoding {
     pub fn into_inner(self) -> ChunkKeyEncoding {
         self.0

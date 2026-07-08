@@ -16,6 +16,8 @@ use crate::metadata::PyMetadataV3;
 #[pyclass(module = "zarrista", frozen, name = "ChunkGrid", from_py_object)]
 pub struct PyChunkGrid(ChunkGrid);
 
+crate::wasm_send_sync!(PyChunkGrid);
+
 impl PyChunkGrid {
     pub fn new(chunk_grid: ChunkGrid) -> Self {
         Self(chunk_grid)

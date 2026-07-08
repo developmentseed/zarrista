@@ -22,6 +22,8 @@ pub struct PyGroup {
     pub(crate) inner: Arc<Group<dyn ReadableWritableListableStorageTraits>>,
 }
 
+crate::wasm_send_sync!(PyGroup);
+
 impl PyGroup {
     pub(crate) fn new(inner: Arc<Group<dyn ReadableWritableListableStorageTraits>>) -> Self {
         Self { inner }

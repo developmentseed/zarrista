@@ -22,6 +22,8 @@ pub struct PyVariableArray {
     shape: Arc<[u64]>,
 }
 
+crate::wasm_send_sync!(PyVariableArray);
+
 impl PyVariableArray {
     pub fn new(bytes: Bytes, offsets: Vec<usize>, data_type: DataType, shape: Arc<[u64]>) -> Self {
         Self {
@@ -125,6 +127,8 @@ pub struct PyMaskedVariableArray {
     data_type: DataType,
     shape: Arc<[u64]>,
 }
+
+crate::wasm_send_sync!(PyMaskedVariableArray);
 
 impl PyMaskedVariableArray {
     /// Construct a new PyMaskedVariableArray from the given bytes, offsets, mask, data type, and shape.

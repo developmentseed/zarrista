@@ -35,6 +35,8 @@ pub fn bitround(keepbits: u32) -> PyArrayToArrayCodec {
 )]
 pub struct PyArrayToArrayCodec(Arc<dyn ArrayToArrayCodecTraits>);
 
+crate::wasm_send_sync!(PyArrayToArrayCodec);
+
 impl PyArrayToArrayCodec {
     pub fn into_inner(self) -> Arc<dyn ArrayToArrayCodecTraits> {
         self.0

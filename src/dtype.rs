@@ -15,6 +15,8 @@ pub struct PyDataType {
     inner: DataType,
 }
 
+crate::wasm_send_sync!(PyDataType);
+
 impl PyDataType {
     pub(crate) fn inner(&self) -> &DataType {
         &self.inner

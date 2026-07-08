@@ -14,6 +14,7 @@ mod group;
 mod metadata;
 mod node;
 mod storage;
+mod wasm;
 
 use pyo3::prelude::*;
 
