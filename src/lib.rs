@@ -1,11 +1,12 @@
 //! zarrista: a small, read-only, zarrita-flavored Python binding to zarrs.
 
 #![cfg_attr(not(test), deny(unused_crate_dependencies))]
+#![warn(missing_docs)]
 
 mod array;
 mod array_bytes;
 mod codec;
-mod decoded_array;
+mod data;
 mod dtype;
 mod error;
 mod exceptions;
@@ -21,7 +22,7 @@ use crate::array::{
 };
 use crate::array_bytes::PyArrayBytes;
 use crate::codec::register_codec_module;
-use crate::decoded_array::{PyMaskedTensor, PyMaskedVariableArray, PyTensor, PyVariableArray};
+use crate::data::{PyMaskedTensor, PyMaskedVariableArray, PyTensor, PyVariableArray};
 use crate::dtype::PyDataType;
 use crate::exceptions::register_exceptions_module;
 use crate::group::{PyAsyncGroup, PyGroup};
