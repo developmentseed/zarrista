@@ -22,8 +22,8 @@ class Tensor:
     read-only view, so for any type supported by the buffer protocol it works with
     `memoryview(tensor)` and `np.asarray(tensor)`.
 
-    Or, use `to_numpy` to get a NumPy array view over the Rust memory. This zero-copy
-    whenever possible.
+    Or, use `to_numpy` to get a NumPy array view over the Rust memory. This is
+    zero-copy whenever possible.
     """
 
     @property
@@ -39,6 +39,12 @@ class Tensor:
 
         This is a zero-copy view via `np.frombuffer`. Unlike the buffer protocol,
         this path covers the full NumPy dtype set (e.g. complex).
+        """
+    def __buffer__(self, flags: int, /) -> memoryview:
+        """Export an N-dimensional, typed, read-only PEP 3118 buffer view.
+
+        Raises `BufferError` if a writable buffer is requested, or if the dtype has no
+        standard format code.
         """
     def __dlpack__(
         self,
