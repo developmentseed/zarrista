@@ -2,7 +2,7 @@
 
 from typing import TypeAlias
 
-from . import codec, exceptions
+from . import codec, exceptions, store
 from ._zarrista import (
     Array,
     ArrayBuilder,
@@ -12,12 +12,10 @@ from ._zarrista import (
     ChunkGrid,
     ChunkKeyEncoding,
     DataType,
-    FilesystemStore,
     FillValue,
     Group,
     MaskedTensor,
     MaskedVariableArray,
-    MemoryStore,
     Tensor,
     VariableArray,
     __version__,
@@ -42,15 +40,14 @@ __all__ = [
     "ChunkKeyEncoding",
     "DataType",
     "DecodedArray",
-    "FilesystemStore",
     "FillValue",
     "Group",
     "MaskedTensor",
     "MaskedVariableArray",
-    "MemoryStore",
     "Tensor",
     "VariableArray",
     "__version__",
     "codec",
     "exceptions",
+    "store",
 ]

@@ -10,7 +10,8 @@ import numpy as np
 import pytest
 import zarr
 
-from zarrista import Array, FilesystemStore, Group
+from zarrista import Array, Group
+from zarrista.store import FilesystemStore
 
 
 @pytest.fixture

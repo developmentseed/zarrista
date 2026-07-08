@@ -43,7 +43,8 @@ This project is for **evaluation**, to consider whether natively binding to [Zar
 Open a store, then open an `Array` from it:
 
 ```py
-from zarrista import Array, FilesystemStore
+from zarrista import Array
+from zarrista.store import FilesystemStore
 
 store = FilesystemStore("data/example.zarr")
 array = Array.open(store, path="/temperature")

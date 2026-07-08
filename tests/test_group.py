@@ -14,14 +14,9 @@ import pytest
 import zarr
 from obstore.store import LocalStore
 
-from zarrista import (
-    Array,
-    AsyncArray,
-    AsyncGroup,
-    FilesystemStore,
-    Group,
-)
+from zarrista import Array, AsyncArray, AsyncGroup, Group
 from zarrista.exceptions import ZarristaError
+from zarrista.store import FilesystemStore
 
 
 @pytest.fixture

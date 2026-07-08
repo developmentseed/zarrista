@@ -13,7 +13,8 @@ import zarr
 from numpy.typing import NDArray
 from obstore.store import LocalStore
 
-from zarrista import Array, AsyncArray, FilesystemStore, Tensor
+from zarrista import Array, AsyncArray, Tensor
+from zarrista.store import FilesystemStore
 
 
 @pytest.fixture
