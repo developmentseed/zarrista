@@ -17,15 +17,13 @@ mod storage;
 
 use pyo3::prelude::*;
 
-use crate::array::{
-    PyArray, PyArrayBuilder, PyAsyncArray, PyChunkGrid, PyChunkKeyEncoding, PyFillValue,
-};
+use crate::array::{PyArray, PyArrayBuilder, PyChunkGrid, PyChunkKeyEncoding, PyFillValue};
 use crate::array_bytes::PyArrayBytes;
 use crate::codec::register_codec_module;
 use crate::data::{PyMaskedTensor, PyMaskedVariableArray, PyTensor, PyVariableArray};
 use crate::dtype::PyDataType;
 use crate::exceptions::register_exceptions_module;
-use crate::group::{PyAsyncGroup, PyGroup};
+use crate::group::PyGroup;
 use crate::storage::{PyFilesystemStore, PyMemoryStore};
 
 /// The compiled core of zarrista, imported as `zarrista._zarrista`.
@@ -37,9 +35,9 @@ fn _zarrista(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<PyArrayBuilder>()?;
     m.add_class::<PyArrayBytes>()?;
     #[cfg(feature = "async")]
-    m.add_class::<PyAsyncArray>()?;
+    m.add_class::<crate::array::PyAsyncArray>()?;
     #[cfg(feature = "async")]
-    m.add_class::<PyAsyncGroup>()?;
+    m.add_class::<crate::group::PyAsyncGroup>()?;
     m.add_class::<PyChunkGrid>()?;
     m.add_class::<PyChunkKeyEncoding>()?;
     m.add_class::<PyTensor>()?;
