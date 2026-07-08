@@ -15,7 +15,7 @@ use crate::storage::{AsyncReadOnlyStorageAdapter, PyAsyncStorage};
 use pyo3::prelude::*;
 use pyo3_async_runtimes::tokio::future_into_py;
 use pyo3_bytes::PyBytes;
-use zarrs::array::Array;
+use zarrs::array::{Array, AsyncArrayShardedReadableExt, AsyncArrayShardedReadableExtCache};
 use zarrs::storage::AsyncReadableWritableListableStorageTraits;
 
 /// A Zarr array.
@@ -109,7 +109,7 @@ impl PyAsyncArray {
 
         future_into_py(py, async move {
             let result = inner
-                .async_compact_chunk(chunk_indices.as_ref(), &codec_options)
+                .async_compact_chunk(&chunk_indices, &codec_options)
                 .await
                 .map_err(ZarristaError::from)?;
             Ok(result)
@@ -124,7 +124,7 @@ impl PyAsyncArray {
         let inner = self.inner.clone();
         future_into_py(py, async move {
             inner
-                .async_erase_chunk(chunk_indices.as_ref())
+                .async_erase_chunk(&chunk_indices)
                 .await
                 .map_err(ZarristaError::from)?;
             Ok(())
@@ -181,7 +181,7 @@ impl PyAsyncArray {
 
         future_into_py(py, async move {
             let decoded = inner
-                .async_retrieve_chunk_opt::<DecodedArray>(chunk_indices.as_ref(), &codec_options)
+                .async_retrieve_chunk_opt::<DecodedArray>(&chunk_indices, &codec_options)
                 .await
                 .map_err(ZarristaError::from)?;
             Ok(decoded)
@@ -196,10 +196,56 @@ impl PyAsyncArray {
         let inner = self.inner.clone();
         future_into_py(py, async move {
             let encoded = inner
-                .async_retrieve_encoded_chunk(chunk_indices.as_ref())
+                .async_retrieve_encoded_chunk(&chunk_indices)
                 .await
                 .map_err(ZarristaError::from)?;
             Ok(encoded.map(PyBytes::new))
+        })
+    }
+
+    fn retrieve_encoded_subchunk<'py>(
+        &self,
+        py: Python<'py>,
+        subchunk_indices: PyChunkIndices,
+    ) -> PyResult<Bound<'py, PyAny>> {
+        // TODO: allow user to manage shard cache
+        let subchunk_cache = AsyncArrayShardedReadableExtCache::new(&self.inner);
+
+        let inner = self.inner.clone();
+        future_into_py(py, async move {
+            let encoded = inner
+                .async_retrieve_encoded_subchunk(&subchunk_cache, &subchunk_indices)
+                .await
+                .map_err(ZarristaError::from)?;
+            Ok(encoded.map(|buf| PyBytes::new(buf.into())))
+        })
+    }
+
+    #[pyo3(signature = (subchunk_indices, **codec_options))]
+    fn retrieve_subchunk<'py>(
+        &self,
+        py: Python<'py>,
+        subchunk_indices: PyChunkIndices,
+        codec_options: Option<PyCodecOptions>,
+    ) -> PyResult<Bound<'py, PyAny>> {
+        let codec_options = codec_options
+            .map(|opts| opts.into_inner())
+            .unwrap_or_default();
+
+        // TODO: allow user to manage shard cache
+        let subchunk_cache = AsyncArrayShardedReadableExtCache::new(&self.inner);
+
+        let inner = self.inner.clone();
+        future_into_py(py, async move {
+            let decoded = inner
+                .async_retrieve_subchunk_opt::<DecodedArray>(
+                    &subchunk_cache,
+                    &subchunk_indices,
+                    &codec_options,
+                )
+                .await
+                .map_err(ZarristaError::from)?;
+            Ok(decoded)
         })
     }
 
@@ -219,7 +265,7 @@ impl PyAsyncArray {
         future_into_py(py, async move {
             inner
                 .async_store_chunk_opt(
-                    chunk_indices.as_ref(),
+                    &chunk_indices,
                     decoded_chunk.as_array_bytes()?,
                     &codec_options,
                 )
@@ -241,7 +287,7 @@ impl PyAsyncArray {
             // The responsibility is on the caller to ensure the chunk is encoded correctly
             unsafe {
                 inner
-                    .async_store_encoded_chunk(chunk_indices.as_ref(), encoded_chunk.into_inner())
+                    .async_store_encoded_chunk(&chunk_indices, encoded_chunk.into_inner())
                     .await
                     .map_err(ZarristaError::from)?;
             }

@@ -14,7 +14,7 @@ use crate::node::PyNodePath;
 use crate::storage::{PySyncStorage, ReadOnlyStorageAdapter};
 use pyo3::prelude::*;
 use pyo3_bytes::PyBytes;
-use zarrs::array::Array;
+use zarrs::array::{Array, ArrayShardedReadableExt, ArrayShardedReadableExtCache};
 use zarrs::storage::ReadableWritableListableStorageTraits;
 
 /// A Zarr array.
@@ -89,13 +89,11 @@ impl PyArray {
         let codec_options = codec_options
             .map(|opts| opts.into_inner())
             .unwrap_or_default();
-        Ok(self
-            .inner
-            .compact_chunk(chunk_indices.as_ref(), &codec_options)?)
+        Ok(self.inner.compact_chunk(&chunk_indices, &codec_options)?)
     }
 
     fn erase_chunk(&self, chunk_indices: PyChunkIndices) -> ZarristaResult<()> {
-        self.inner.erase_chunk(chunk_indices.as_ref())?;
+        self.inner.erase_chunk(&chunk_indices)?;
         Ok(())
     }
 
@@ -130,15 +128,46 @@ impl PyArray {
             .unwrap_or_default();
         Ok(self
             .inner
-            .retrieve_chunk_opt(chunk_indices.as_ref(), &codec_options)?)
+            .retrieve_chunk_opt(&chunk_indices, &codec_options)?)
     }
 
     fn retrieve_encoded_chunk(
         &self,
         chunk_indices: PyChunkIndices,
     ) -> ZarristaResult<Option<PyBytes>> {
-        let encoded = self.inner.retrieve_encoded_chunk(chunk_indices.as_ref())?;
+        let encoded = self.inner.retrieve_encoded_chunk(&chunk_indices)?;
         Ok(encoded.map(|buf| PyBytes::new(buf.into())))
+    }
+
+    fn retrieve_encoded_subchunk(
+        &self,
+        subchunk_indices: PyChunkIndices,
+    ) -> ZarristaResult<Option<PyBytes>> {
+        // TODO: allow user to manage shard cache
+        let subchunk_cache = ArrayShardedReadableExtCache::new(&self.inner);
+
+        let encoded = self
+            .inner
+            .retrieve_encoded_subchunk(&subchunk_cache, &subchunk_indices)?;
+        Ok(encoded.map(|buf| PyBytes::new(buf.into())))
+    }
+
+    #[pyo3(signature = (subchunk_indices, **codec_options))]
+    fn retrieve_subchunk(
+        &self,
+        subchunk_indices: PyChunkIndices,
+        codec_options: Option<PyCodecOptions>,
+    ) -> ZarristaResult<DecodedArray> {
+        let codec_options = codec_options
+            .map(|opts| opts.into_inner())
+            .unwrap_or_default();
+
+        // TODO: allow user to manage shard cache
+        let subchunk_cache = ArrayShardedReadableExtCache::new(&self.inner);
+
+        Ok(self
+            .inner
+            .retrieve_subchunk_opt(&subchunk_cache, &subchunk_indices, &codec_options)?)
     }
 
     #[pyo3(signature = (chunk_indices, decoded_chunk, **codec_options))]
@@ -152,7 +181,7 @@ impl PyArray {
             .map(|opts| opts.into_inner())
             .unwrap_or_default();
         self.inner.store_chunk_opt(
-            chunk_indices.as_ref(),
+            &chunk_indices,
             decoded_chunk.as_array_bytes()?,
             &codec_options,
         )?;
@@ -168,7 +197,7 @@ impl PyArray {
         // The responsibility is on the caller to ensure the chunk is encoded correctly
         unsafe {
             self.inner
-                .store_encoded_chunk(chunk_indices.as_ref(), encoded_chunk.into_inner())?;
+                .store_encoded_chunk(&chunk_indices, encoded_chunk.into_inner())?;
         }
         Ok(())
     }
