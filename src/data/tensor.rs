@@ -111,44 +111,6 @@ impl PyTensor {
     unsafe fn __releasebuffer__(&self, _view: *mut ffi::Py_buffer) {}
 }
 
-/// Convert a zarrs [`DataType`] to a [`dlpark::ffi::DataType`].
-///
-/// # Errors
-/// Returns [`TensorError::UnsupportedDataType`] if the data type is not supported.
-fn data_type_to_dlpack(data_type: &DataType) -> ZarristaResult<dlpark::ffi::DataType> {
-    use zarrs::array::data_type::*;
-
-    if data_type.is::<BoolDataType>() {
-        Ok(dlpark::ffi::DataType::BOOL)
-    } else if data_type.is::<Int8DataType>() {
-        Ok(dlpark::ffi::DataType::I8)
-    } else if data_type.is::<Int16DataType>() {
-        Ok(dlpark::ffi::DataType::I16)
-    } else if data_type.is::<Int32DataType>() {
-        Ok(dlpark::ffi::DataType::I32)
-    } else if data_type.is::<Int64DataType>() {
-        Ok(dlpark::ffi::DataType::I64)
-    } else if data_type.is::<UInt8DataType>() {
-        Ok(dlpark::ffi::DataType::U8)
-    } else if data_type.is::<UInt16DataType>() {
-        Ok(dlpark::ffi::DataType::U16)
-    } else if data_type.is::<UInt32DataType>() {
-        Ok(dlpark::ffi::DataType::U32)
-    } else if data_type.is::<UInt64DataType>() {
-        Ok(dlpark::ffi::DataType::U64)
-    } else if data_type.is::<Float16DataType>() {
-        Ok(dlpark::ffi::DataType::F16)
-    } else if data_type.is::<Float32DataType>() {
-        Ok(dlpark::ffi::DataType::F32)
-    } else if data_type.is::<Float64DataType>() {
-        Ok(dlpark::ffi::DataType::F64)
-    } else if data_type.is::<BFloat16DataType>() {
-        Ok(dlpark::ffi::DataType::BF16)
-    } else {
-        Err(PyValueError::new_err("Unsupported data type in dlpack").into())
-    }
-}
-
 impl TensorLike<RowMajorCompactLayout> for PyTensor {
     type Error = ZarristaError;
 
@@ -174,7 +136,38 @@ impl TensorLike<RowMajorCompactLayout> for PyTensor {
     }
 
     fn data_type(&self) -> Result<dlpark::ffi::DataType, Self::Error> {
-        data_type_to_dlpack(&self.data_type)
+        use zarrs::array::data_type::*;
+
+        let dtype = &self.data_type;
+        if dtype.is::<BoolDataType>() {
+            Ok(dlpark::ffi::DataType::BOOL)
+        } else if dtype.is::<Int8DataType>() {
+            Ok(dlpark::ffi::DataType::I8)
+        } else if dtype.is::<Int16DataType>() {
+            Ok(dlpark::ffi::DataType::I16)
+        } else if dtype.is::<Int32DataType>() {
+            Ok(dlpark::ffi::DataType::I32)
+        } else if dtype.is::<Int64DataType>() {
+            Ok(dlpark::ffi::DataType::I64)
+        } else if dtype.is::<UInt8DataType>() {
+            Ok(dlpark::ffi::DataType::U8)
+        } else if dtype.is::<UInt16DataType>() {
+            Ok(dlpark::ffi::DataType::U16)
+        } else if dtype.is::<UInt32DataType>() {
+            Ok(dlpark::ffi::DataType::U32)
+        } else if dtype.is::<UInt64DataType>() {
+            Ok(dlpark::ffi::DataType::U64)
+        } else if dtype.is::<Float16DataType>() {
+            Ok(dlpark::ffi::DataType::F16)
+        } else if dtype.is::<Float32DataType>() {
+            Ok(dlpark::ffi::DataType::F32)
+        } else if dtype.is::<Float64DataType>() {
+            Ok(dlpark::ffi::DataType::F64)
+        } else if dtype.is::<BFloat16DataType>() {
+            Ok(dlpark::ffi::DataType::BF16)
+        } else {
+            Err(PyValueError::new_err("Unsupported data type in dlpack").into())
+        }
     }
 }
 
