@@ -23,6 +23,7 @@ abi3-py311 = ["pyo3/abi3-py311"]
 # both GIL-enabled and free-threaded Python 3.15+.
 abi3t-py315 = ["pyo3/abi3t-py315"]
 async = [
+    "dep:async-trait",
     "dep:icechunk",
     "dep:object_store",
     "dep:pyo3-async-runtimes",
@@ -37,7 +38,7 @@ generate-import-lib = ["pyo3/generate-import-lib"]
 arrow-array = "59"
 arrow-buffer = "59"
 arrow-schema = "59"
-async-trait = "0.1"
+async-trait = { version = "0.1", optional = true }
 bytes = "1.12.0"
 dlpark = { git = "https://github.com/kylebarron/dlpark", rev = "31c6f49c064e634326c97172d39a00acecd854b6", features = [
     "pyo3",
