@@ -130,6 +130,25 @@ class Array:
         The bytes are returned verbatim, without running the codec pipeline.
         Returns `None` if the chunk is absent from the store.
         """
+    def retrieve_subchunk(
+        self,
+        subchunk_indices: list[int],
+        **codec_options: Unpack[CodecOptions],
+    ) -> DecodedArray:
+        """Read and decode a single subchunk (inner chunk) of a sharded array.
+
+        `subchunk_indices` index the subchunk grid (see `subchunk_grid_shape`). For
+        an unsharded array a subchunk is a whole chunk. Only the addressed inner
+        chunk is read from its shard rather than the entire shard.
+
+        Keyword arguments are passed as [`CodecOptions`][zarrista.codec.CodecOptions].
+        """
+    def retrieve_encoded_subchunk(self, subchunk_indices: list[int]) -> Buffer | None:
+        """Read the raw, still-encoded bytes of a subchunk of a sharded array.
+
+        The bytes are returned verbatim, without running the codec pipeline.
+        Returns `None` if the subchunk is absent from the store.
+        """
     def store_chunk(
         self,
         chunk_indices: list[int],
@@ -327,6 +346,28 @@ class AsyncArray:
 
         The bytes are returned verbatim, without running the codec pipeline.
         Returns `None` if the chunk is absent from the store.
+        """
+    async def retrieve_subchunk(
+        self,
+        subchunk_indices: list[int],
+        **codec_options: Unpack[CodecOptions],
+    ) -> DecodedArray:
+        """Read and decode a single subchunk (inner chunk) of a sharded array.
+
+        `subchunk_indices` index the subchunk grid (see `subchunk_grid_shape`). For
+        an unsharded array a subchunk is a whole chunk. Only the addressed inner
+        chunk is read from its shard rather than the entire shard.
+
+        Keyword arguments are passed as [`CodecOptions`][zarrista.codec.CodecOptions].
+        """
+    async def retrieve_encoded_subchunk(
+        self,
+        subchunk_indices: list[int],
+    ) -> Buffer | None:
+        """Read the raw, still-encoded bytes of a subchunk of a sharded array.
+
+        The bytes are returned verbatim, without running the codec pipeline.
+        Returns `None` if the subchunk is absent from the store.
         """
     async def store_chunk(
         self,
