@@ -75,6 +75,40 @@ impl PyTensor {
         flat.call_method1("reshape", (&self.shape,))
     }
 
+    /// NumPy array-coercion protocol backing `np.asarray(tensor)` /
+    /// `np.array(tensor)`.
+    #[pyo3(signature = (dtype=None, copy=None))]
+    fn __array__<'py>(
+        &self,
+        py: Python<'py>,
+        dtype: Option<Bound<'py, PyAny>>,
+        copy: Option<bool>,
+    ) -> PyResult<Bound<'py, PyAny>> {
+        let arr = self.to_numpy(py)?;
+
+        // copy=False demands zero-copy, so we can only hand back our own view.
+        if copy == Some(false) {
+            if let Some(dt) = &dtype {
+                let requested = py.import("numpy")?.call_method1("dtype", (dt,))?;
+                let current = arr.getattr("dtype")?;
+                if !requested.eq(&current)? {
+                    return Err(PyValueError::new_err(
+                        "cannot return a zero-copy array with a different dtype",
+                    ));
+                }
+            }
+            return Ok(arr);
+        }
+
+        if let Some(dt) = dtype {
+            arr.call_method1("astype", (dt,))
+        } else if copy == Some(true) {
+            arr.call_method0("copy")
+        } else {
+            Ok(arr)
+        }
+    }
+
     /// Export via the DLPack protocol so consumers (e.g. `np.from_dlpack`) can
     /// import this data zero-copy.
     #[pyo3(signature = (**_kwargs))]
