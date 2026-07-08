@@ -1,5 +1,7 @@
 //! zarrista: a small, read-only, zarrita-flavored Python binding to zarrs.
 
+#![cfg_attr(not(test), deny(unused_crate_dependencies))]
+
 mod array;
 mod array_bytes;
 mod codec;
