@@ -8,10 +8,10 @@ use zarrs::array::codec::api::CodecMetadata;
 use zarrs::array::codec::{BitroundCodec, TransposeCodec, TransposeOrder};
 use zarrs::array::{ArrayToArrayCodecTraits, Codec, CodecOptions};
 
+use crate::array::PyFillValue;
 use crate::array_bytes::PyArrayBytes;
 use crate::dtype::PyDataType;
 use crate::error::ZarristaResult;
-use crate::fill_value::PyFillValue;
 use crate::metadata::{PyConfiguration, PyMetadataV3};
 
 #[pyfunction]

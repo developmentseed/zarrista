@@ -18,6 +18,44 @@ macro_rules! array_metadata_accessors {
                 self.inner.chunk_grid().clone().into()
             }
 
+            #[getter]
+            fn chunk_grid_shape(&self) -> &[u64] {
+                self.inner.chunk_grid_shape()
+            }
+
+            fn chunk_key(
+                &self,
+                chunk_indices: $crate::array::PyChunkIndices,
+            ) -> $crate::storage::PyStoreKey {
+                self.inner.chunk_key(chunk_indices.as_ref()).into()
+            }
+
+            #[getter]
+            fn chunk_key_encoding(&self) -> $crate::array::PyChunkKeyEncoding {
+                self.inner.chunk_key_encoding().clone().into()
+            }
+
+            fn chunk_origin(
+                &self,
+                chunk_indices: $crate::array::PyChunkIndices,
+            ) -> $crate::error::ZarristaResult<$crate::array::PyArrayIndices> {
+                Ok(self.inner.chunk_origin(chunk_indices.as_ref())?.into())
+            }
+
+            fn chunk_shape(
+                &self,
+                chunk_indices: $crate::array::PyChunkIndices,
+            ) -> $crate::error::ZarristaResult<$crate::array::PyChunkShape> {
+                Ok(self.inner.chunk_shape(chunk_indices.as_ref())?.into())
+            }
+
+            fn chunk_subset(
+                &self,
+                chunk_indices: $crate::array::PyChunkIndices,
+            ) -> $crate::error::ZarristaResult<$crate::array::PyArraySubset> {
+                Ok(self.inner.chunk_subset(chunk_indices.as_ref())?.into())
+            }
+
             /// The bytes-to-bytes codecs ("compressors").
             #[getter]
             fn compressors(&self) -> Vec<$crate::codec::PyBytesToBytesCodec> {
@@ -31,7 +69,7 @@ macro_rules! array_metadata_accessors {
 
             /// The dimension names, if any were specified.
             #[getter]
-            fn dimension_names(&self) -> &Option<Vec<Option<String>>> {
+            fn dimension_names(&self) -> &Option<Vec<$crate::array::PyDimensionName>> {
                 self.inner.dimension_names()
             }
 
@@ -39,6 +77,11 @@ macro_rules! array_metadata_accessors {
             #[getter]
             fn dtype(&self) -> $crate::dtype::PyDataType {
                 self.inner.data_type().clone().into()
+            }
+
+            #[getter]
+            fn fill_value(&self) -> $crate::array::PyFillValue {
+                self.inner.fill_value().clone().into()
             }
 
             /// The array-to-array codecs ("filters").
@@ -65,8 +108,8 @@ macro_rules! array_metadata_accessors {
 
             /// The array's path in the store.
             #[getter]
-            fn path(&self) -> &str {
-                self.inner.path().as_str()
+            fn path(&self) -> $crate::node::PyNodePath {
+                self.inner.path().clone().into()
             }
 
             /// The array-to-bytes codec ("serializer").
@@ -80,6 +123,11 @@ macro_rules! array_metadata_accessors {
             #[getter]
             fn shape(&self) -> &[u64] {
                 self.inner.shape()
+            }
+
+            #[getter]
+            fn subset_all(&self) -> $crate::array::PyArraySubset {
+                self.inner.subset_all().into()
             }
         }
     };

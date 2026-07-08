@@ -7,7 +7,6 @@ mod decoded_array;
 mod dtype;
 mod error;
 mod exceptions;
-mod fill_value;
 mod group;
 mod metadata;
 mod node;
@@ -15,13 +14,14 @@ mod storage;
 
 use pyo3::prelude::*;
 
-use crate::array::{PyArray, PyArrayBuilder, PyAsyncArray, PyChunkGrid, PyChunkKeyEncoding};
+use crate::array::{
+    PyArray, PyArrayBuilder, PyAsyncArray, PyChunkGrid, PyChunkKeyEncoding, PyFillValue,
+};
 use crate::array_bytes::PyArrayBytes;
 use crate::codec::register_codec_module;
 use crate::decoded_array::{PyMaskedTensor, PyMaskedVariableArray, PyTensor, PyVariableArray};
 use crate::dtype::PyDataType;
 use crate::exceptions::register_exceptions_module;
-use crate::fill_value::PyFillValue;
 use crate::group::{PyAsyncGroup, PyGroup};
 use crate::storage::{PyFilesystemStore, PyMemoryStore};
 

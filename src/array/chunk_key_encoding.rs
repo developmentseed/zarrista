@@ -57,6 +57,18 @@ impl PyChunkKeyEncoding {
     }
 }
 
+impl From<PyChunkKeyEncoding> for ChunkKeyEncoding {
+    fn from(encoding: PyChunkKeyEncoding) -> Self {
+        encoding.0
+    }
+}
+
+impl From<ChunkKeyEncoding> for PyChunkKeyEncoding {
+    fn from(encoding: ChunkKeyEncoding) -> Self {
+        Self(encoding)
+    }
+}
+
 #[derive(Debug, Clone)]
 pub struct PyChunkKeySeparator(ChunkKeySeparator);
 

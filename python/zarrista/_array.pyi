@@ -12,9 +12,11 @@ from zarrista.codec import (
 )
 
 from ._array_bytes import ArrayBytes
+from ._chunk_key_encoding import ChunkKeyEncoding
 from ._chunks import ChunkGrid
 from ._decoded_array import DecodedArray
 from ._dtype import DataType
+from ._fill_value import FillValue
 from ._store import AsyncStore, FilesystemStore, MemoryStore
 
 _AxisSelector: TypeAlias = int | slice | EllipsisType
@@ -50,6 +52,31 @@ class Array:
     def chunk_grid(self) -> ChunkGrid:
         """The chunk grid of the array."""
     @property
+    def chunk_grid_shape(self) -> list[int]:
+        """The shape of the chunk grid (i.e. the number of chunks per dimension)."""
+    def chunk_key(self, chunk_indices: list[int]) -> str:
+        """Return the store key of the chunk at `chunk_indices`."""
+    @property
+    def chunk_key_encoding(self) -> ChunkKeyEncoding:
+        """The chunk key encoding, mapping chunk grid indices to store keys."""
+    def chunk_origin(self, chunk_indices: list[int]) -> list[int]:
+        """Return the origin of the chunk at `chunk_indices`.
+
+        Raises if `chunk_indices` are incompatible with the chunk grid.
+        """
+    def chunk_shape(self, chunk_indices: list[int]) -> list[int]:
+        """Return the shape of the chunk at `chunk_indices`.
+
+        Raises if `chunk_indices` are incompatible with the chunk grid.
+        """
+    def chunk_subset(self, chunk_indices: list[int]) -> tuple[slice, ...]:
+        """Return the array subset spanned by the chunk at `chunk_indices`.
+
+        Returned as a tuple of slices, one per dimension.
+
+        Raises if `chunk_indices` are incompatible with the chunk grid.
+        """
+    @property
     def compressors(self) -> list[BytesToBytesCodec]:
         """The bytes-to-bytes codecs ("compressors")."""
     @property
@@ -64,6 +91,9 @@ class Array:
     @property
     def dtype(self) -> DataType:
         """The Zarr data type."""
+    @property
+    def fill_value(self) -> FillValue:
+        """The array's fill value."""
     @property
     def metadata(self) -> ArrayMetadataV3:
         """The array's full Zarr v3 metadata."""
@@ -148,6 +178,9 @@ class Array:
     @property
     def shape(self) -> list[int]:
         """The array shape."""
+    @property
+    def subset_all(self) -> tuple[slice, ...]:
+        """The array subset that spans the entire array, as a tuple of slices."""
     def __getitem__(self, selection: Selection) -> DecodedArray:
         """Read a region with numpy-style basic indexing, e.g. `arr[0:10, :, 5]`.
 
@@ -180,6 +213,31 @@ class AsyncArray:
     def chunk_grid(self) -> ChunkGrid:
         """The chunk grid of the array."""
     @property
+    def chunk_grid_shape(self) -> list[int]:
+        """The shape of the chunk grid (i.e. the number of chunks per dimension)."""
+    def chunk_key(self, chunk_indices: list[int]) -> str:
+        """Return the store key of the chunk at `chunk_indices`."""
+    @property
+    def chunk_key_encoding(self) -> ChunkKeyEncoding:
+        """The chunk key encoding, mapping chunk grid indices to store keys."""
+    def chunk_origin(self, chunk_indices: list[int]) -> list[int]:
+        """Return the origin of the chunk at `chunk_indices`.
+
+        Raises if `chunk_indices` are incompatible with the chunk grid.
+        """
+    def chunk_shape(self, chunk_indices: list[int]) -> list[int]:
+        """Return the shape of the chunk at `chunk_indices`.
+
+        Raises if `chunk_indices` are incompatible with the chunk grid.
+        """
+    def chunk_subset(self, chunk_indices: list[int]) -> tuple[slice, ...]:
+        """Return the array subset spanned by the chunk at `chunk_indices`.
+
+        Returned as a tuple of slices, one per dimension.
+
+        Raises if `chunk_indices` are incompatible with the chunk grid.
+        """
+    @property
     def compressors(self) -> list[BytesToBytesCodec]:
         """The bytes-to-bytes codecs ("compressors")."""
     @property
@@ -194,6 +252,9 @@ class AsyncArray:
     @property
     def dtype(self) -> DataType:
         """The Zarr data type."""
+    @property
+    def fill_value(self) -> FillValue:
+        """The array's fill value."""
     @property
     def metadata(self) -> ArrayMetadataV3:
         """The array's full Zarr v3 metadata."""
@@ -278,6 +339,9 @@ class AsyncArray:
     @property
     def shape(self) -> list[int]:
         """The array shape."""
+    @property
+    def subset_all(self) -> tuple[slice, ...]:
+        """The array subset that spans the entire array, as a tuple of slices."""
     async def __getitem__(self, selection: Selection) -> DecodedArray:
         """Read a region with numpy-style basic indexing: `await arr[0:10, :, 5]`.
 
