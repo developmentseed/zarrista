@@ -253,7 +253,8 @@ impl PyMaskedTensor {
         let valid = self.mask.to_numpy(py)?;
         let np = py.import("numpy")?;
         let masked = np.call_method1("logical_not", (valid,))?;
-        np.getattr("ma")?.call_method1("masked_array", (data, masked))
+        np.getattr("ma")?
+            .call_method1("masked_array", (data, masked))
     }
 
     /// NumPy array-coercion protocol backing `np.asarray(tensor)` /
