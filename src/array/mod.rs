@@ -5,11 +5,11 @@ mod chunk_key_encoding;
 mod selection;
 mod shared;
 mod sync;
-mod util;
+mod type_wrappers;
 
 pub use builder::PyArrayBuilder;
 pub use chunk_grid::PyChunkGrid;
 pub use chunk_key_encoding::PyChunkKeyEncoding;
 pub use r#async::PyAsyncArray;
 pub use sync::PyArray;
-pub use util::{PyArrayShape, PyChunkIndices, PyChunkShape};
+pub use type_wrappers::{PyArrayIndices, PyArrayShape, PyChunkIndices, PyChunkShape};
