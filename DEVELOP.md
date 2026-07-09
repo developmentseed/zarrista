@@ -30,32 +30,35 @@ uv run --group docs mkdocs serve
 Emscripten wheels (PEP 783) are built once per Python version. The entire
 toolchain config (Rust toolchain, Emscripten version, ABI tag, rustflags) is
 defined by `pyodide-build` *running under that same Python version* — e.g.
-Python 3.13 maps to ABI `2025_0`/Emscripten 4.0.9 while Python 3.14 maps to
-ABI `2026_0`/Emscripten 5.0.3. Use `uvx -p` to query the config for a given
-Python version without touching the project venv:
+Python 3.14 maps to ABI `2026_0`/Emscripten 5.0.3. Use `uvx -p` to query the
+config for a given Python version without touching the project venv:
 
 ```bash
-PYTHON_VERSION=3.14  # or 3.13
+PYTHON_VERSION=3.14
 # The `pyodide` executable lives in pyodide-cli; most subcommands (config,
 # xbuildenv) are plugins provided by pyodide-build, so both packages are
 # needed.
 pyodide_cmd() {
     uvx -p "$PYTHON_VERSION" --from pyodide-cli --with pyodide-build pyodide "$@"
 }
-RUST_TOOLCHAIN=$(pyodide_cmd config get rust_toolchain)
+PYODIDE_RUST_TOOLCHAIN=$(pyodide_cmd config get rust_toolchain)
 PYODIDE_ABI_VERSION=$(pyodide_cmd config get pyodide_abi_version)
 PYODIDE_RUSTFLAGS=$(pyodide_cmd config get rustflags)
 PYODIDE_CFLAGS=$(pyodide_cmd config get cflags)
 
-echo "RUST_TOOLCHAIN:     $RUST_TOOLCHAIN"
-echo "PYODIDE_ABI_VERSION: $PYODIDE_ABI_VERSION"
-echo "PYODIDE_RUSTFLAGS:  $PYODIDE_RUSTFLAGS"
-echo "PYODIDE_CFLAGS:     $PYODIDE_CFLAGS"
+echo "PYODIDE_RUST_TOOLCHAIN: $PYODIDE_RUST_TOOLCHAIN"
+echo "PYODIDE_ABI_VERSION:    $PYODIDE_ABI_VERSION"
+echo "PYODIDE_RUSTFLAGS:      $PYODIDE_RUSTFLAGS"
+echo "PYODIDE_CFLAGS:         $PYODIDE_CFLAGS"
 ```
 
-Install the matching Rust toolchain and wasm target:
+Install a Rust toolchain and the wasm target.
+
+Note we do **not** use the toolchain Pyodide pins for 3.14 (rustc 1.93): it is
+older than zarrista's MSRV (1.94). Force a newer version instead
 
 ```bash
+RUST_TOOLCHAIN=1.94
 rustup toolchain install $RUST_TOOLCHAIN
 rustup target add --toolchain $RUST_TOOLCHAIN wasm32-unknown-emscripten
 ```
@@ -80,7 +83,7 @@ Build the wheel. Notes on the environment variables:
   `emscripten_x_y_z` tag PyPI rejects (this also needs a recent maturin, hence
   `uvx maturin` rather than the project venv's maturin).
 - `CFLAGS_wasm32_unknown_emscripten` is needed for crates that compile C code
-  (e.g. zstd-sys in arro3-io): Pyodide's cflags include `-fPIC`, without which
+  (e.g. zstd-sys, pulled in by zarrs): Pyodide's cflags include `-fPIC`, without which
   the C objects can't be linked into a `SIDE_MODULE` (errors like "relocation
   R_WASM_MEMORY_ADDR_SLEB cannot be used ...; recompile with -fPIC").
 - Always build with `--release`: debug builds are ~10x larger (full DWARF) and
