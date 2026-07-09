@@ -246,6 +246,10 @@ jobs:
   # compiles or links for this target) before release time.
   emscripten:
     runs-on: ubuntu-latest
+    # Debug build on pull requests (faster, only checks it compiles and links);
+    # release build on tag pushes and manual dispatch.
+    env:
+      RELEASE_FLAG: ${{ github.event_name != 'pull_request' && '--release' || '' }}
     strategy:
       fail-fast: false
       matrix:
@@ -307,7 +311,7 @@ jobs:
         with:
           target: wasm32-unknown-emscripten
           rust-toolchain: ${{ matrix.rust-toolchain-override || steps.pyodide-config.outputs.rust-toolchain }}
-          args: --release --out dist -i ${{ matrix.python-version }} --no-default-features
+          args: --out dist -i ${{ matrix.python-version }} --no-default-features ${{ env.RELEASE_FLAG }}
           sccache: "true"
 
       - name: Verify pyemscripten platform tag
