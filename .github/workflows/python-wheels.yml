@@ -11,11 +11,17 @@ name: Build wheels
 # scaffolded but commented out below: it needs a 3.15 interpreter, and 3.15 is
 # still in beta. Uncomment the `abi3t` steps (and the `3.15t` interpreter
 # installs) once 3.15 is released.
+#
+# On pull requests, only the `emscripten` job runs (every other job is gated
+# with `if: github.event_name != 'pull_request'`). This catches regressions in
+# the emscripten/Pyodide build — the most fragile target — without rebuilding
+# every native wheel on every PR.
 
 on:
   push:
     tags:
       - "v*"
+  pull_request:
   workflow_dispatch:
 
 permissions:
@@ -27,6 +33,7 @@ concurrency:
 
 jobs:
   linux:
+    if: github.event_name != 'pull_request'
     runs-on: ${{ matrix.platform.runner }}
     strategy:
       matrix:
@@ -78,6 +85,7 @@ jobs:
           path: dist
 
   musllinux:
+    if: github.event_name != 'pull_request'
     runs-on: ${{ matrix.platform.runner }}
     strategy:
       matrix:
@@ -129,6 +137,7 @@ jobs:
           path: dist
 
   windows:
+    if: github.event_name != 'pull_request'
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v6
@@ -169,6 +178,7 @@ jobs:
           path: dist
 
   macos:
+    if: github.event_name != 'pull_request'
     runs-on: ${{ matrix.platform.runner }}
     strategy:
       matrix:
@@ -216,7 +226,110 @@ jobs:
           name: wheels-macos-${{ matrix.platform.target }}
           path: dist
 
+  # PEP 783 (pyemscripten) wheel for Pyodide, built for Python 3.14 only.
+  #
+  # The Emscripten version, rustflags, and platform tag are all defined by
+  # pyodide-build for the target Python version. Two things differ from the
+  # native jobs:
+  #
+  #   1. The wheel is built `--no-default-features` (sync-only). The default
+  #      `async` feature pulls in object_store / tokio / icechunk, which don't
+  #      build for emscripten.
+  #   2. We override the Rust toolchain via `matrix.rust-toolchain-override`
+  #      (falling back to the one Pyodide pins). zarrista's MSRV (1.94) is newer
+  #      than the toolchain Pyodide pins for 3.14 (1.93), so we override to the
+  #      MSRV. 3.14's ABI needs no nightly-only rustflags, so stable works. Drop
+  #      the override once Pyodide's pinned toolchain reaches the MSRV.
+  #
+  # Unlike the native jobs, this also runs on every pull request to catch
+  # emscripten build regressions (e.g. a dependency update that no longer
+  # compiles or links for this target) before release time.
+  emscripten:
+    runs-on: ubuntu-latest
+    # Debug build on pull requests (faster, only checks it compiles and links);
+    # release build on tag pushes and manual dispatch.
+    env:
+      RELEASE_FLAG: ${{ github.event_name != 'pull_request' && '--release' || '' }}
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.14"]
+        include:
+          - python-version: "3.14"
+            rust-toolchain-override: "1.94"
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+        with:
+          enable-cache: true
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install pyodide-build
+        run: uv sync --only-group pyodide
+
+      - name: Get pyodide config
+        id: pyodide-config
+        run: |
+          {
+            echo "rust-toolchain=$(uv run --no-sync pyodide config get rust_toolchain)"
+            echo "pyodide-abi-version=$(uv run --no-sync pyodide config get pyodide_abi_version)"
+            echo "rustflags=$(uv run --no-sync pyodide config get rustflags)"
+            echo "cflags=$(uv run --no-sync pyodide config get cflags)"
+          } >> "$GITHUB_OUTPUT"
+
+      # Install Emscripten via the Pyodide cross-build environment rather than a
+      # stock emsdk: this pins the Emscripten version matching the target
+      # Pyodide ABI, and applies Pyodide's patches to Emscripten, several of
+      # which affect dynamic linking of Rust side modules.
+      # https://github.com/pyodide/pyodide/tree/main/emsdk/patches
+      - name: Install emsdk (Pyodide xbuildenv)
+        env:
+          PYODIDE_XBUILDENV_PATH: ${{ github.workspace }}/.pyodide-xbuildenv
+        run: |
+          uv run --no-sync pyodide xbuildenv install
+          uv run --no-sync pyodide xbuildenv install-emscripten
+          # shellcheck disable=SC1090
+          source "$PYODIDE_XBUILDENV_PATH/$(uv run --no-sync pyodide xbuildenv version)/emsdk/emsdk_env.sh"
+          {
+            echo "EMSDK=$EMSDK"
+            echo "EMSDK_NODE=$EMSDK_NODE"
+          } >> "$GITHUB_ENV"
+          {
+            echo "$EMSDK"
+            echo "$EMSDK/upstream/emscripten"
+            dirname "$EMSDK_NODE"
+          } >> "$GITHUB_PATH"
+
+      - name: Build emscripten wheel
+        uses: PyO3/maturin-action@v1
+        env:
+          CARGO_TARGET_WASM32_UNKNOWN_EMSCRIPTEN_RUSTFLAGS: ${{ steps.pyodide-config.outputs.rustflags }}
+          CFLAGS_wasm32_unknown_emscripten: ${{ steps.pyodide-config.outputs.cflags }}
+          MATURIN_PYEMSCRIPTEN_PLATFORM_VERSION: ${{ steps.pyodide-config.outputs.pyodide-abi-version }}
+        with:
+          target: wasm32-unknown-emscripten
+          rust-toolchain: ${{ matrix.rust-toolchain-override || steps.pyodide-config.outputs.rust-toolchain }}
+          args: --out dist -i ${{ matrix.python-version }} --no-default-features ${{ env.RELEASE_FLAG }}
+          sccache: "true"
+
+      - name: Verify pyemscripten platform tag
+        # PyPI rejects the legacy `emscripten_x_y_z` tag; fail before upload if
+        # maturin didn't emit the PEP 783 `pyemscripten_*` tag (this needs
+        # `MATURIN_PYEMSCRIPTEN_PLATFORM_VERSION` and a recent maturin).
+        run: |
+          ls -lh dist/
+          ls dist/*-pyemscripten_*_wasm32.whl >/dev/null
+
+      - name: Upload wheels
+        uses: actions/upload-artifact@v7
+        with:
+          name: wheels-emscripten-py${{ matrix.python-version }}
+          path: dist
+
   sdist:
+    if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
@@ -243,7 +356,7 @@ jobs:
       # IMPORTANT: this permission is mandatory for trusted publishing
       id-token: write
     if: startsWith(github.ref, 'refs/tags/')
-    needs: [linux, musllinux, windows, macos, sdist]
+    needs: [linux, musllinux, windows, macos, emscripten, sdist]
     steps:
       - uses: actions/download-artifact@v8
         with:

@@ -28,6 +28,8 @@ pub struct PyTensor {
     shape: Arc<[u64]>,
 }
 
+crate::wasm_send_sync!(PyTensor);
+
 impl PyTensor {
     /// Construct a new PyTensor from the given bytes, data type, and shape.
     pub fn new(bytes: Bytes, data_type: DataType, shape: Arc<[u64]>) -> Self {
@@ -213,6 +215,8 @@ pub struct PyMaskedTensor {
     /// The mask is 1 byte per element where 0 = invalid/missing, non-zero = valid/present.
     mask: PyTensor,
 }
+
+crate::wasm_send_sync!(PyMaskedTensor);
 
 impl PyMaskedTensor {
     /// Construct a new PyMaskedTensor from the given bytes, mask, data type, and shape.

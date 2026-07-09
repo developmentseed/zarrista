@@ -23,6 +23,8 @@ pub struct PyArray {
     pub(crate) inner: Arc<Array<dyn ReadableWritableListableStorageTraits>>,
 }
 
+crate::wasm_send_sync!(PyArray);
+
 impl PyArray {
     pub(crate) fn new(inner: Arc<Array<dyn ReadableWritableListableStorageTraits>>) -> Self {
         Self { inner }

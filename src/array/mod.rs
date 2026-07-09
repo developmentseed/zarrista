@@ -1,3 +1,4 @@
+#[cfg(feature = "async")]
 mod r#async;
 mod builder;
 mod chunk_grid;
@@ -8,6 +9,7 @@ mod shared;
 mod sync;
 mod type_wrappers;
 
+#[cfg(feature = "async")]
 pub use r#async::PyAsyncArray;
 pub use builder::PyArrayBuilder;
 pub use chunk_grid::PyChunkGrid;

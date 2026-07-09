@@ -48,6 +48,8 @@ pub struct PyFilesystemStore {
     pub(crate) storage: Arc<dyn ReadableWritableListableStorageTraits>,
 }
 
+crate::wasm_send_sync!(PyFilesystemStore);
+
 #[pymethods]
 impl PyFilesystemStore {
     /// Open a filesystem store rooted at `path`.
@@ -69,6 +71,8 @@ impl PyFilesystemStore {
 pub struct PyMemoryStore {
     pub(crate) storage: Arc<dyn ReadableWritableListableStorageTraits>,
 }
+
+crate::wasm_send_sync!(PyMemoryStore);
 
 #[pymethods]
 impl PyMemoryStore {
