@@ -11,11 +11,17 @@ name: Build wheels
 # scaffolded but commented out below: it needs a 3.15 interpreter, and 3.15 is
 # still in beta. Uncomment the `abi3t` steps (and the `3.15t` interpreter
 # installs) once 3.15 is released.
+#
+# On pull requests, only the `emscripten` job runs (every other job is gated
+# with `if: github.event_name != 'pull_request'`). This catches regressions in
+# the emscripten/Pyodide build — the most fragile target — without rebuilding
+# every native wheel on every PR.
 
 on:
   push:
     tags:
       - "v*"
+  pull_request:
   workflow_dispatch:
 
 permissions:
@@ -27,6 +33,7 @@ concurrency:
 
 jobs:
   linux:
+    if: github.event_name != 'pull_request'
     runs-on: ${{ matrix.platform.runner }}
     strategy:
       matrix:
@@ -78,6 +85,7 @@ jobs:
           path: dist
 
   musllinux:
+    if: github.event_name != 'pull_request'
     runs-on: ${{ matrix.platform.runner }}
     strategy:
       matrix:
@@ -129,6 +137,7 @@ jobs:
           path: dist
 
   windows:
+    if: github.event_name != 'pull_request'
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v6
@@ -169,6 +178,7 @@ jobs:
           path: dist
 
   macos:
+    if: github.event_name != 'pull_request'
     runs-on: ${{ matrix.platform.runner }}
     strategy:
       matrix:
