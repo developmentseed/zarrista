@@ -97,7 +97,7 @@ impl PyArrayBuilder {
 
         let array = self
             .0
-            .build_arc(store.into_inner(), path)
+            .build_arc(store.inner(), path)
             .map_err(ZarristaError::from)?;
 
         pyo3_async_runtimes::tokio::future_into_py(py, async move {
@@ -105,7 +105,7 @@ impl PyArrayBuilder {
                 .async_store_metadata()
                 .await
                 .map_err(ZarristaError::from)?;
-            Ok(crate::array::PyAsyncArray::from(array))
+            Ok(crate::array::PyAsyncArray::new(array, store))
         })
     }
 

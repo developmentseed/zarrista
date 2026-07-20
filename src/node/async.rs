@@ -5,24 +5,21 @@ use std::sync::Arc;
 use crate::array::PyAsyncArray;
 use crate::error::{ZarristaError, ZarristaResult};
 use crate::group::PyAsyncGroup;
+use crate::storage::PyAsyncStorage;
 use pyo3::IntoPyObjectExt;
 use pyo3::prelude::*;
 use zarrs::array::Array;
 use zarrs::group::Group;
 use zarrs::node::{Node, NodeMetadata};
-use zarrs::storage::AsyncReadableWritableListableStorageTraits;
 
 /// An opened node from an async store: either an array or a group.
 pub(crate) struct PyAsyncNode {
     node: Node,
-    storage: Arc<dyn AsyncReadableWritableListableStorageTraits>,
+    storage: PyAsyncStorage,
 }
 
 impl PyAsyncNode {
-    pub fn new(
-        node: Node,
-        storage: Arc<dyn AsyncReadableWritableListableStorageTraits>,
-    ) -> ZarristaResult<Self> {
+    pub fn new(node: Node, storage: PyAsyncStorage) -> ZarristaResult<Self> {
         Ok(Self { node, storage })
     }
 }
@@ -39,12 +36,14 @@ impl<'py> IntoPyObject<'py> for PyAsyncNode {
         let node_metadata = NodeMetadata::from(self.node);
         match node_metadata {
             NodeMetadata::Array(array_metadata) => {
-                let array = Array::new_with_metadata(storage, path.as_str(), array_metadata)?;
-                Ok(PyAsyncArray::new(Arc::new(array)).into_bound_py_any(py)?)
+                let array =
+                    Array::new_with_metadata(storage.inner(), path.as_str(), array_metadata)?;
+                Ok(PyAsyncArray::new(Arc::new(array), storage).into_bound_py_any(py)?)
             }
             NodeMetadata::Group(group_metadata) => {
-                let group = Group::new_with_metadata(storage, path.as_str(), group_metadata)?;
-                Ok(PyAsyncGroup::new(Arc::new(group)).into_bound_py_any(py)?)
+                let group =
+                    Group::new_with_metadata(storage.inner(), path.as_str(), group_metadata)?;
+                Ok(PyAsyncGroup::new(Arc::new(group), storage).into_bound_py_any(py)?)
             }
         }
     }

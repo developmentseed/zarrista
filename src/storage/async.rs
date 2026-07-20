@@ -1,3 +1,4 @@
+use std::convert::Infallible;
 use std::sync::Arc;
 
 use async_trait::async_trait;
@@ -17,11 +18,18 @@ use zarrs::storage::{
 use zarrs_icechunk::AsyncIcechunkStore;
 use zarrs_object_store::AsyncObjectStore;
 
-pub struct PyAsyncStorage(Arc<dyn AsyncReadableWritableListableStorageTraits>);
+#[derive(Clone, IntoPyObject)]
+pub enum PyAsyncStorage {
+    ObjectStore(PyAsyncObjectStore),
+    Icechunk(PyAsyncIcechunkStore),
+}
 
 impl PyAsyncStorage {
-    pub fn into_inner(self) -> Arc<dyn AsyncReadableWritableListableStorageTraits> {
-        self.0
+    pub fn inner(&self) -> Arc<dyn AsyncReadableWritableListableStorageTraits> {
+        match self {
+            Self::ObjectStore(store) => store.inner.clone(),
+            Self::Icechunk(store) => store.inner.clone(),
+        }
     }
 }
 
@@ -33,11 +41,11 @@ impl FromPyObject<'_, '_> for PyAsyncStorage {
         // falling through to the generic error below: the caller meant icechunk.
         if is_icechunk_session(obj)? {
             let store = obj.extract::<PyAsyncIcechunkStore>()?;
-            return Ok(Self(Arc::new(store.into_inner())));
+            return Ok(Self::Icechunk(store));
         }
 
         if let Ok(store) = obj.extract::<PyAsyncObjectStore>() {
-            return Ok(Self(Arc::new(store.into_inner())));
+            return Ok(Self::ObjectStore(store));
         }
 
         Err(PyTypeError::new_err(
@@ -46,18 +54,29 @@ impl FromPyObject<'_, '_> for PyAsyncStorage {
     }
 }
 
-impl From<PyAsyncStorage> for Arc<dyn AsyncReadableWritableListableStorageTraits> {
-    fn from(s: PyAsyncStorage) -> Self {
-        s.0
+impl<'py> IntoPyObject<'py> for &PyAsyncStorage {
+    type Target = PyAny;
+    type Error = Infallible;
+    type Output = Bound<'py, Self::Target>;
+
+    fn into_pyobject(self, py: Python<'py>) -> Result<Self::Output, Self::Error> {
+        match self {
+            PyAsyncStorage::ObjectStore(store) => store.into_pyobject(py),
+            PyAsyncStorage::Icechunk(store) => store.into_pyobject(py),
+        }
     }
 }
 
-pub struct PyAsyncObjectStore(AsyncObjectStore<Arc<dyn ObjectStore>>);
-
-impl PyAsyncObjectStore {
-    fn into_inner(self) -> AsyncObjectStore<Arc<dyn ObjectStore>> {
-        self.0
+impl From<PyAsyncStorage> for Arc<dyn AsyncReadableWritableListableStorageTraits> {
+    fn from(s: PyAsyncStorage) -> Self {
+        s.inner()
     }
+}
+
+#[derive(Clone)]
+pub struct PyAsyncObjectStore {
+    inner: Arc<AsyncObjectStore<Arc<dyn ObjectStore>>>,
+    pyobj: Arc<Py<PyAny>>,
 }
 
 impl FromPyObject<'_, '_> for PyAsyncObjectStore {
@@ -65,16 +84,37 @@ impl FromPyObject<'_, '_> for PyAsyncObjectStore {
 
     fn extract(obj: Borrowed<'_, '_, PyAny>) -> Result<Self, Self::Error> {
         let store = obj.extract::<AnyObjectStore>()?;
-        Ok(Self(AsyncObjectStore::new(store.into_dyn())))
+        Ok(Self {
+            inner: Arc::new(AsyncObjectStore::new(store.into_dyn())),
+            pyobj: Arc::new(obj.into()),
+        })
     }
 }
 
-pub struct PyAsyncIcechunkStore(AsyncIcechunkStore);
+impl<'py> IntoPyObject<'py> for PyAsyncObjectStore {
+    type Target = PyAny;
+    type Error = Infallible;
+    type Output = Bound<'py, Self::Target>;
 
-impl PyAsyncIcechunkStore {
-    fn into_inner(self) -> AsyncIcechunkStore {
-        self.0
+    fn into_pyobject(self, py: Python<'py>) -> Result<Self::Output, Self::Error> {
+        Ok(self.pyobj.bind(py).clone())
     }
+}
+
+impl<'py> IntoPyObject<'py> for &PyAsyncObjectStore {
+    type Target = PyAny;
+    type Error = Infallible;
+    type Output = Bound<'py, Self::Target>;
+
+    fn into_pyobject(self, py: Python<'py>) -> Result<Self::Output, Self::Error> {
+        Ok(self.pyobj.bind(py).clone())
+    }
+}
+
+#[derive(Clone)]
+pub struct PyAsyncIcechunkStore {
+    inner: Arc<AsyncIcechunkStore>,
+    pyobj: Arc<Py<PyAny>>,
 }
 
 /// Whether `obj` is an `icechunk.session.Session` instance.
@@ -127,10 +167,32 @@ impl FromPyObject<'_, '_> for PyAsyncIcechunkStore {
                      against (2.x)."
                 ))
             })?;
-        Ok(Self(AsyncIcechunkStore::new(session)))
+        Ok(Self {
+            inner: Arc::new(AsyncIcechunkStore::new(session)),
+            pyobj: Arc::new(obj.into()),
+        })
     }
 }
 
+impl<'py> IntoPyObject<'py> for PyAsyncIcechunkStore {
+    type Target = PyAny;
+    type Error = Infallible;
+    type Output = Bound<'py, Self::Target>;
+
+    fn into_pyobject(self, py: Python<'py>) -> Result<Self::Output, Self::Error> {
+        Ok(self.pyobj.bind(py).clone())
+    }
+}
+
+impl<'py> IntoPyObject<'py> for &PyAsyncIcechunkStore {
+    type Target = PyAny;
+    type Error = Infallible;
+    type Output = Bound<'py, Self::Target>;
+
+    fn into_pyobject(self, py: Python<'py>) -> Result<Self::Output, Self::Error> {
+        Ok(self.pyobj.bind(py).clone())
+    }
+}
 /// An async storage adapter that reads and lists transparently but rejects all writes at runtime.
 pub struct AsyncReadOnlyStorageAdapter(Arc<dyn AsyncReadableListableStorageTraits>);
 

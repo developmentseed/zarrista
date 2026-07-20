@@ -23,11 +23,15 @@ use zarrs::storage::AsyncReadableWritableListableStorageTraits;
 #[pyclass(module = "zarrista", frozen, name = "AsyncArray", from_py_object)]
 pub struct PyAsyncArray {
     pub(crate) inner: Arc<Array<dyn AsyncReadableWritableListableStorageTraits>>,
+    store: PyAsyncStorage,
 }
 
 impl PyAsyncArray {
-    pub(crate) fn new(inner: Arc<Array<dyn AsyncReadableWritableListableStorageTraits>>) -> Self {
-        Self { inner }
+    pub(crate) fn new(
+        inner: Arc<Array<dyn AsyncReadableWritableListableStorageTraits>>,
+        store: PyAsyncStorage,
+    ) -> Self {
+        Self { inner, store }
     }
 
     pub fn inner(&self) -> &Arc<Array<dyn AsyncReadableWritableListableStorageTraits>> {
@@ -70,9 +74,8 @@ impl PyAsyncArray {
         store: PyAsyncStorage,
         path: PyNodePath,
     ) -> ZarristaResult<Self> {
-        let inner =
-            Array::new_with_metadata(store.into_inner(), path.as_str(), metadata.into_inner())?;
-        Ok(Self::new(Arc::new(inner)))
+        let inner = Array::new_with_metadata(store.inner(), path.as_str(), metadata.into_inner())?;
+        Ok(Self::new(Arc::new(inner), store))
     }
 
     /// Open the array stored at `path` in `store`.
@@ -86,12 +89,11 @@ impl PyAsyncArray {
         store: PyAsyncStorage,
         path: PyNodePath,
     ) -> PyResult<Bound<'py, PyAny>> {
-        let storage = store.into();
         future_into_py(py, async move {
-            let inner = Array::async_open(storage, path.as_str())
+            let inner = Array::async_open(store.inner(), path.as_str())
                 .await
                 .map_err(ZarristaError::from)?;
-            Ok(Self::new(Arc::new(inner)))
+            Ok(Self::new(Arc::new(inner), store))
         })
     }
 
@@ -135,7 +137,10 @@ impl PyAsyncArray {
     fn read_only(&self) -> Self {
         let read_list_storage = self.inner.storage().readable_listable();
         let storage = Arc::new(AsyncReadOnlyStorageAdapter::new(read_list_storage));
-        Self::new(Arc::new(self.inner.with_storage(storage)))
+        Self::new(
+            Arc::new(self.inner.with_storage(storage)),
+            self.store.clone(),
+        )
     }
 
     fn erase_metadata<'py>(&self, py: Python<'py>) -> PyResult<Bound<'py, PyAny>> {
@@ -249,6 +254,11 @@ impl PyAsyncArray {
         })
     }
 
+    #[getter]
+    fn store(&self) -> &PyAsyncStorage {
+        &self.store
+    }
+
     #[pyo3(signature = (chunk_indices, decoded_chunk, **codec_options))]
     fn store_chunk<'py>(
         &self,
@@ -293,17 +303,5 @@ impl PyAsyncArray {
             }
             Ok(())
         })
-    }
-}
-
-impl From<Array<dyn AsyncReadableWritableListableStorageTraits>> for PyAsyncArray {
-    fn from(inner: Array<dyn AsyncReadableWritableListableStorageTraits>) -> Self {
-        Self::new(Arc::new(inner))
-    }
-}
-
-impl From<Arc<Array<dyn AsyncReadableWritableListableStorageTraits>>> for PyAsyncArray {
-    fn from(inner: Arc<Array<dyn AsyncReadableWritableListableStorageTraits>>) -> Self {
-        Self::new(inner)
     }
 }
