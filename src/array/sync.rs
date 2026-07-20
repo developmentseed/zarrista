@@ -21,13 +21,17 @@ use zarrs::storage::ReadableWritableListableStorageTraits;
 #[pyclass(module = "zarrista", frozen, name = "Array")]
 pub struct PyArray {
     pub(crate) inner: Arc<Array<dyn ReadableWritableListableStorageTraits>>,
+    pub(crate) store: PySyncStorage,
 }
 
 crate::wasm_send_sync!(PyArray);
 
 impl PyArray {
-    pub(crate) fn new(inner: Arc<Array<dyn ReadableWritableListableStorageTraits>>) -> Self {
-        Self { inner }
+    pub(crate) fn new(
+        inner: Arc<Array<dyn ReadableWritableListableStorageTraits>>,
+        store: PySyncStorage,
+    ) -> Self {
+        Self { inner, store }
     }
 
     pub fn inner(&self) -> &Arc<Array<dyn ReadableWritableListableStorageTraits>> {
@@ -66,9 +70,8 @@ impl PyArray {
         store: PySyncStorage,
         path: PyNodePath,
     ) -> ZarristaResult<Self> {
-        let inner =
-            Array::new_with_metadata(store.into_inner(), path.as_str(), metadata.into_inner())?;
-        Ok(Self::new(Arc::new(inner)))
+        let inner = Array::new_with_metadata(store.inner(), path.as_str(), metadata.into_inner())?;
+        Ok(Self::new(Arc::new(inner), store))
     }
 
     /// Open the array stored at `path` in `store`.
@@ -78,8 +81,8 @@ impl PyArray {
         text_signature = "(store, path='/')"
     )]
     fn open(store: PySyncStorage, path: PyNodePath) -> ZarristaResult<Self> {
-        let inner = Array::open(store.into(), path.as_str())?;
-        Ok(Self::new(Arc::new(inner)))
+        let inner = Array::open(store.inner(), path.as_str())?;
+        Ok(Self::new(Arc::new(inner), store))
     }
 
     #[pyo3(signature = (chunk_indices, **codec_options))]
@@ -107,7 +110,10 @@ impl PyArray {
     fn read_only(&self) -> Self {
         let read_list_storage = self.inner.storage().readable_listable();
         let storage = Arc::new(ReadOnlyStorageAdapter::new(read_list_storage));
-        Self::new(Arc::new(self.inner.with_storage(storage)))
+        Self::new(
+            Arc::new(self.inner.with_storage(storage)),
+            self.store.clone(),
+        )
     }
 
     /// Read a region of the array, using numpy-style basic indexing.
@@ -172,6 +178,11 @@ impl PyArray {
             .retrieve_subchunk_opt(&subchunk_cache, &subchunk_indices, &codec_options)?)
     }
 
+    #[getter]
+    fn store(&self) -> PySyncStorage {
+        self.store.clone()
+    }
+
     #[pyo3(signature = (chunk_indices, decoded_chunk, **codec_options))]
     fn store_chunk(
         &self,
@@ -202,17 +213,5 @@ impl PyArray {
                 .store_encoded_chunk(&chunk_indices, encoded_chunk.into_inner())?;
         }
         Ok(())
-    }
-}
-
-impl From<Array<dyn ReadableWritableListableStorageTraits>> for PyArray {
-    fn from(inner: Array<dyn ReadableWritableListableStorageTraits>) -> Self {
-        Self::new(Arc::new(inner))
-    }
-}
-
-impl From<Arc<Array<dyn ReadableWritableListableStorageTraits>>> for PyArray {
-    fn from(inner: Arc<Array<dyn ReadableWritableListableStorageTraits>>) -> Self {
-        Self::new(inner)
     }
 }
