@@ -11,12 +11,20 @@ use zarrs::storage::{
     ReadableListableStorageTraits, ReadableStorageTraits, ReadableWritableListableStorageTraits,
     StorageError, StoreKey, StoreKeys, StoreKeysPrefixes, StorePrefix, WritableStorageTraits,
 };
+
 /// A zarrista sync store object adapted to the maximal `zarrs` storage trait.
-pub struct PySyncStorage(Arc<dyn ReadableWritableListableStorageTraits>);
+#[derive(Clone, IntoPyObject)]
+pub enum PySyncStorage {
+    Filesystem(PyFilesystemStore),
+    MemoryStore(PyMemoryStore),
+}
 
 impl PySyncStorage {
-    pub fn into_inner(self) -> Arc<dyn ReadableWritableListableStorageTraits> {
-        self.0
+    pub fn inner(&self) -> Arc<dyn ReadableWritableListableStorageTraits> {
+        match self {
+            Self::Filesystem(store) => store.storage.clone(),
+            Self::MemoryStore(store) => store.0.clone(),
+        }
     }
 }
 
@@ -25,10 +33,10 @@ impl FromPyObject<'_, '_> for PySyncStorage {
 
     fn extract(obj: Borrowed<'_, '_, PyAny>) -> Result<Self, Self::Error> {
         if let Ok(s) = obj.cast::<PyFilesystemStore>() {
-            return Ok(Self(s.get().storage.clone()));
+            return Ok(Self::Filesystem(s.get().clone()));
         }
         if let Ok(s) = obj.cast::<PyMemoryStore>() {
-            return Ok(Self(s.get().storage.clone()));
+            return Ok(Self::MemoryStore(s.get().clone()));
         }
         Err(PyTypeError::new_err(
             "expected a FilesystemStore or MemoryStore",
@@ -38,14 +46,24 @@ impl FromPyObject<'_, '_> for PySyncStorage {
 
 impl From<PySyncStorage> for Arc<dyn ReadableWritableListableStorageTraits> {
     fn from(s: PySyncStorage) -> Self {
-        s.0
+        match s {
+            PySyncStorage::Filesystem(store) => store.storage,
+            PySyncStorage::MemoryStore(store) => store.0,
+        }
     }
 }
 
 /// A store backed by a local directory.
-#[pyclass(module = "zarrista", frozen, name = "FilesystemStore")]
+#[pyclass(
+    module = "zarrista",
+    frozen,
+    name = "FilesystemStore",
+    skip_from_py_object
+)]
+#[derive(Clone)]
 pub struct PyFilesystemStore {
-    pub(crate) storage: Arc<dyn ReadableWritableListableStorageTraits>,
+    pub(crate) storage: Arc<FilesystemStore>,
+    path: PathBuf,
 }
 
 crate::wasm_send_sync!(PyFilesystemStore);
@@ -55,22 +73,22 @@ impl PyFilesystemStore {
     /// Open a filesystem store rooted at `path`.
     #[new]
     fn new(path: PathBuf) -> ZarristaResult<Self> {
-        let store = FilesystemStore::new(path)?;
+        let store = FilesystemStore::new(&path)?;
         Ok(Self {
             storage: Arc::new(store),
+            path,
         })
     }
 
     fn __repr__(&self) -> String {
-        "FilesystemStore(...)".to_string()
+        format!("FilesystemStore({})", self.path.display())
     }
 }
 
 /// An in-memory store, primarily useful for testing.
-#[pyclass(module = "zarrista", frozen, name = "MemoryStore")]
-pub struct PyMemoryStore {
-    pub(crate) storage: Arc<dyn ReadableWritableListableStorageTraits>,
-}
+#[pyclass(module = "zarrista", frozen, name = "MemoryStore", skip_from_py_object)]
+#[derive(Clone)]
+pub struct PyMemoryStore(Arc<MemoryStore>);
 
 crate::wasm_send_sync!(PyMemoryStore);
 
@@ -78,9 +96,7 @@ crate::wasm_send_sync!(PyMemoryStore);
 impl PyMemoryStore {
     #[new]
     fn new() -> Self {
-        Self {
-            storage: Arc::new(MemoryStore::new()),
-        }
+        Self(Arc::new(MemoryStore::new()))
     }
 
     fn __repr__(&self) -> String {

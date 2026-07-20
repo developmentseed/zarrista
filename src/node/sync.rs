@@ -5,21 +5,21 @@ use std::sync::Arc;
 use crate::array::PyArray;
 use crate::error::ZarristaError;
 use crate::group::PyGroup;
+use crate::storage::PySyncStorage;
 use pyo3::IntoPyObjectExt;
 use pyo3::prelude::*;
 use zarrs::array::Array;
 use zarrs::group::Group;
 use zarrs::node::{Node, NodeMetadata};
-use zarrs::storage::ReadableWritableListableStorageTraits;
 
 /// An opened node: either an array or a group.
 pub(crate) struct PyNode {
     node: Node,
-    storage: Arc<dyn ReadableWritableListableStorageTraits>,
+    storage: PySyncStorage,
 }
 
 impl PyNode {
-    pub fn new(node: Node, storage: Arc<dyn ReadableWritableListableStorageTraits>) -> Self {
+    pub fn new(node: Node, storage: PySyncStorage) -> Self {
         Self { node, storage }
     }
 }
@@ -31,17 +31,17 @@ impl<'py> IntoPyObject<'py> for PyNode {
     type Output = Bound<'py, Self::Target>;
 
     fn into_pyobject(self, py: Python<'py>) -> Result<Self::Output, Self::Error> {
-        let storage = self.storage;
+        let store = self.storage;
         let path = self.node.path().clone();
         let node_metadata = NodeMetadata::from(self.node);
         match node_metadata {
             NodeMetadata::Array(array_metadata) => {
-                let array = Array::new_with_metadata(storage, path.as_str(), array_metadata)?;
-                Ok(PyArray::new(Arc::new(array)).into_bound_py_any(py)?)
+                let array = Array::new_with_metadata(store.inner(), path.as_str(), array_metadata)?;
+                Ok(PyArray::new(Arc::new(array), store).into_bound_py_any(py)?)
             }
             NodeMetadata::Group(group_metadata) => {
-                let group = Group::new_with_metadata(storage, path.as_str(), group_metadata)?;
-                Ok(PyGroup::new(Arc::new(group)).into_bound_py_any(py)?)
+                let group = Group::new_with_metadata(store.inner(), path.as_str(), group_metadata)?;
+                Ok(PyGroup::new(Arc::new(group), store).into_bound_py_any(py)?)
             }
         }
     }
