@@ -63,6 +63,7 @@ impl From<PyAsyncStorage> for Arc<dyn AsyncReadableWritableListableStorageTraits
 #[derive(Clone)]
 pub struct PyAsyncObjectStore {
     inner: Arc<AsyncObjectStore<Arc<dyn ObjectStore>>>,
+    /// Handle to the original Python object, used for returning the original store to Python
     pyobj: Arc<Py<PyAny>>,
 }
 
@@ -101,6 +102,7 @@ impl<'py> IntoPyObject<'py> for &PyAsyncObjectStore {
 #[derive(Clone)]
 pub struct PyAsyncIcechunkStore {
     inner: Arc<AsyncIcechunkStore>,
+    /// Handle to the original Python object, used for returning the original store to Python
     pyobj: Arc<Py<PyAny>>,
 }
 
