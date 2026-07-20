@@ -153,15 +153,20 @@ impl PyGroup {
             .collect())
     }
 
-    /// Write the group metadata to the store.
-    fn store_metadata(&self) -> ZarristaResult<()> {
-        self.inner.store_metadata()?;
-        Ok(())
-    }
-
     /// Erase the group metadata from the store. Succeeds if it does not exist.
     fn erase_metadata(&self) -> ZarristaResult<()> {
         self.inner.erase_metadata()?;
+        Ok(())
+    }
+
+    #[getter]
+    fn store(&self) -> PySyncStorage {
+        self.store.clone()
+    }
+
+    /// Write the group metadata to the store.
+    fn store_metadata(&self) -> ZarristaResult<()> {
+        self.inner.store_metadata()?;
         Ok(())
     }
 
