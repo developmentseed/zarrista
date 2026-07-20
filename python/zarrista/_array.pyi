@@ -149,6 +149,9 @@ class Array:
         The bytes are returned verbatim, without running the codec pipeline.
         Returns `None` if the subchunk is absent from the store.
         """
+    @property
+    def store(self) -> FilesystemStore | MemoryStore:
+        """Retrieve the store backing this array."""
     def store_chunk(
         self,
         chunk_indices: list[int],
@@ -369,6 +372,9 @@ class AsyncArray:
         The bytes are returned verbatim, without running the codec pipeline.
         Returns `None` if the subchunk is absent from the store.
         """
+    @property
+    def store(self) -> AsyncStore:
+        """Retrieve the store backing this array."""
     async def store_chunk(
         self,
         chunk_indices: list[int],
