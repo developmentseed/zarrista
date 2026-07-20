@@ -18,7 +18,7 @@ use zarrs::storage::{
 use zarrs_icechunk::AsyncIcechunkStore;
 use zarrs_object_store::AsyncObjectStore;
 
-#[derive(Clone, IntoPyObject)]
+#[derive(Clone, IntoPyObject, IntoPyObjectRef)]
 pub enum PyAsyncStorage {
     ObjectStore(PyAsyncObjectStore),
     Icechunk(PyAsyncIcechunkStore),
@@ -51,19 +51,6 @@ impl FromPyObject<'_, '_> for PyAsyncStorage {
         Err(PyTypeError::new_err(
             "expected an async compatible storage object",
         ))
-    }
-}
-
-impl<'py> IntoPyObject<'py> for &PyAsyncStorage {
-    type Target = PyAny;
-    type Error = Infallible;
-    type Output = Bound<'py, Self::Target>;
-
-    fn into_pyobject(self, py: Python<'py>) -> Result<Self::Output, Self::Error> {
-        match self {
-            PyAsyncStorage::ObjectStore(store) => store.into_pyobject(py),
-            PyAsyncStorage::Icechunk(store) => store.into_pyobject(py),
-        }
     }
 }
 
