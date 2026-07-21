@@ -45,14 +45,14 @@ dlpark = { git = "https://github.com/kylebarron/dlpark", rev = "31c6f49c064e6343
     "pyo3",
 ] }
 icechunk = { version = "2.0.0", default-features = false, optional = true }
-object_store = { version = "0.13", optional = true }
+object_store = { version = "0.14", optional = true }
 pyo3 = { version = "0.29", features = ["macros", "multiple-pymethods"] }
 pyo3-arrow = "0.19"
 pyo3-async-runtimes = { version = "0.29", features = [
     "tokio-runtime",
 ], optional = true }
 pyo3-bytes = "0.7.1"
-pyo3-object_store = { version = "0.11.0", default-features = false, optional = true }
+pyo3-object_store = { version = "0.12.0", default-features = false, optional = true }
 pythonize = "0.29"
 serde_json = "1"
 thiserror = "2.0.18"
