@@ -214,4 +214,10 @@ impl PyArray {
         }
         Ok(())
     }
+
+    /// Write the array metadata to the store.
+    fn store_metadata(&self) -> ZarristaResult<()> {
+        self.inner.store_metadata()?;
+        Ok(())
+    }
 }

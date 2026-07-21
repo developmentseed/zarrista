@@ -78,8 +78,27 @@ class ArrayBuilder:
     ) -> ArrayBuilder:
         """Return a new builder with the inner (subchunk) shape, enabling sharding."""
     def create(self, store: FilesystemStore | MemoryStore, path: str) -> Array:
-        """Build the array in `store` at `path` and return it."""
+        """Build the array in `store` at `path` and return it.
+
+        This **does** write to the store: the array's metadata is stored at
+        `path`, overwriting any metadata already there. Use
+        [`ArrayBuilder.create_metadata`][zarrista.ArrayBuilder.create_metadata]
+        to build metadata without touching a store.
+        """
     async def create_async(self, store: AsyncStore, path: str) -> AsyncArray:
-        """Build the array in an async `store` at `path` and return it."""
+        """Build the array in an async `store` at `path` and return it.
+
+        This **does** write to the store: the array's metadata is stored at
+        `path`, overwriting any metadata already there. Use
+        [`ArrayBuilder.create_metadata`][zarrista.ArrayBuilder.create_metadata]
+        to build metadata without touching a store.
+        """
     def create_metadata(self) -> ArrayMetadataV3:
-        """Build the array's Zarr v3 metadata without touching a store."""
+        """Build the array's Zarr v3 metadata without touching a store.
+
+        Nothing is written. Pass the result to
+        [`Array.from_metadata`][zarrista.Array.from_metadata] to open an
+        in-memory array, or use
+        [`ArrayBuilder.create`][zarrista.ArrayBuilder.create] to build and write
+        in one step.
+        """

@@ -3,6 +3,7 @@
 import pytest
 
 from zarrista import (
+    Array,
     ArrayBuilder,
     ChunkGrid,
     ChunkKeyEncoding,
@@ -63,6 +64,23 @@ def test_create_returns_configured_array():
     assert array.shape == [16, 16]
     assert array.dtype == DataType.from_string("int8")
     assert array.dimension_names == ["y", "x"]
+
+
+def test_create_writes_metadata():
+    """`create` writes metadata, so the array can be reopened from the store."""
+    store = MemoryStore()
+    _builder().create(store, "/a")
+
+    assert Array.open(store, "/a").shape == [8, 8]
+
+
+def test_create_overwrites_existing_metadata():
+    """`create` overwrites metadata already present at `path`."""
+    store = MemoryStore()
+    _builder().create(store, "/a")
+    _builder().shape([16, 16]).create(store, "/a")
+
+    assert Array.open(store, "/a").shape == [16, 16]
 
 
 def test_dimension_names_can_be_cleared():
