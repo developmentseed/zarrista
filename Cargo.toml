@@ -52,7 +52,7 @@ pyo3-async-runtimes = { version = "0.29", features = [
     "tokio-runtime",
 ], optional = true }
 pyo3-bytes = "0.7.1"
-pyo3-object_store = { version = "0.11.0", default-features = false, optional = true }
+pyo3-object_store = { version = "0.12.0", default-features = false, optional = true }
 pythonize = "0.29"
 serde_json = "1"
 thiserror = "2.0.18"
