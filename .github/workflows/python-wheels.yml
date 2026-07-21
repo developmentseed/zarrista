@@ -146,7 +146,7 @@ jobs:
       # the GitHub-actions-provided interpreter. `generate-import-lib` lets
       # maturin build the version-specific wheels (e.g. 3.14t) without each of
       # those interpreters installed.
-      - uses: actions/setup-python@v6
+      - uses: actions/setup-python@v7
         with:
           python-version: "3.12"
 
