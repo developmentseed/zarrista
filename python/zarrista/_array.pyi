@@ -43,7 +43,8 @@ class Array:
     ) -> Array:
         """Use the provided metadata to open a new array at `path` in `store`.
 
-        This does **not** write the metadata to the store.
+        This does **not** write the metadata to the store; use
+        [`Array.store_metadata`][zarrista.Array.store_metadata] for that.
         """
     @property
     def attrs(self) -> dict[str, JSONValue]:
@@ -177,6 +178,15 @@ class Array:
         responsible for ensuring they match the array's codec pipeline; invalid
         bytes produce a chunk that cannot be decoded.
         """
+    def store_metadata(self) -> None:
+        """Write the array's metadata to the store.
+
+        This is the write counterpart to
+        [`Array.from_metadata`][zarrista.Array.from_metadata], which only constructs an
+        in-memory array, without writing to the store.
+
+        Any existing metadata at the array's path is overwritten.
+        """
     def compact_chunk(
         self,
         chunk_indices: list[int],
@@ -263,7 +273,9 @@ class AsyncArray:
     ) -> AsyncArray:
         """Use the provided metadata to open a new array at `path` in `store`.
 
-        This does **not** write the metadata to the store.
+        This does **not** write the metadata to the store; use
+        [`AsyncArray.store_metadata`][zarrista.AsyncArray.store_metadata] for
+        that.
         """
     @property
     def attrs(self) -> dict[str, JSONValue]:
@@ -399,6 +411,15 @@ class AsyncArray:
         The bytes are stored verbatim with no encoding. The caller is
         responsible for ensuring they match the array's codec pipeline; invalid
         bytes produce a chunk that cannot be decoded.
+        """
+    async def store_metadata(self) -> None:
+        """Write the array's metadata to the store.
+
+        This is the write counterpart to
+        [`AsyncArray.from_metadata`][zarrista.AsyncArray.from_metadata], which only
+        constructs an in-memory array, without writing to the store.
+
+        Any existing metadata at the array's path is overwritten.
         """
     async def compact_chunk(
         self,

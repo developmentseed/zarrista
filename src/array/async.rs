@@ -304,4 +304,16 @@ impl PyAsyncArray {
             Ok(())
         })
     }
+
+    /// Write the array metadata to the store.
+    fn store_metadata<'py>(&self, py: Python<'py>) -> PyResult<Bound<'py, PyAny>> {
+        let inner = self.inner.clone();
+        future_into_py(py, async move {
+            inner
+                .async_store_metadata()
+                .await
+                .map_err(ZarristaError::from)?;
+            Ok(())
+        })
+    }
 }
