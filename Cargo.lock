@@ -1382,8 +1382,9 @@ dependencies = [
 
 [[package]]
 name = "dlpark"
-version = "0.7.0"
-source = "git+https://github.com/kylebarron/dlpark?rev=31c6f49c064e634326c97172d39a00acecd854b6#31c6f49c064e634326c97172d39a00acecd854b6"
+version = "0.8.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7bd97fa454fe3ac1084b82998586e43f118eaa24988e9e6f1a23d60c7a3e171e"
 dependencies = [
  "bitflags 2.13.0",
  "pyo3",
