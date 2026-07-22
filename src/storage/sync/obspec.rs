@@ -10,6 +10,7 @@ use zarrs::storage::{
     StorageError, StoreKey, StoreKeys, StoreKeysPrefixes, StorePrefix, WritableStorageTraits,
 };
 
+/// A `zarrs` store backed by a Python obspec object.
 #[derive(Debug)]
 pub(super) struct ObspecStore(Py<PyAny>);
 
