@@ -285,6 +285,51 @@ impl ReadableStorageTraits for PyObspecStore {
         true
     }
 }
+
+impl ListableStorageTraits for PyObspecStore {
+    fn list(&self) -> Result<StoreKeys, StorageError> {
+        todo!()
+    }
+
+    fn list_prefix(&self, prefix: &StorePrefix) -> Result<StoreKeys, StorageError> {
+        todo!()
+    }
+
+    fn list_dir(&self, prefix: &StorePrefix) -> Result<StoreKeysPrefixes, StorageError> {
+        todo!()
+    }
+
+    fn size_prefix(&self, prefix: &StorePrefix) -> Result<u64, StorageError> {
+        todo!()
+    }
+}
+
+impl WritableStorageTraits for PyObspecStore {
+    fn erase(&self, key: &StoreKey) -> Result<(), StorageError> {
+        todo!()
+    }
+
+    fn erase_prefix(&self, prefix: &StorePrefix) -> Result<(), StorageError> {
+        todo!()
+    }
+
+    fn set(&self, key: &StoreKey, bytes: Bytes) -> Result<(), StorageError> {
+        todo!()
+    }
+
+    fn set_partial_many(
+        &self,
+        key: &StoreKey,
+        offset_values: OffsetBytesIterator,
+    ) -> Result<(), StorageError> {
+        todo!()
+    }
+
+    fn supports_set_partial(&self) -> bool {
+        false
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
