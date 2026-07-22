@@ -10,11 +10,21 @@ use zarrs::storage::{
     StorageError, StoreKey, StoreKeys, StoreKeysPrefixes, StorePrefix, WritableStorageTraits,
 };
 
+#[derive(Debug)]
+pub(super) struct ObspecStore(Py<PyAny>);
+
+crate::wasm_send_sync!(ObspecStore);
+
+impl ObspecStore {
+    /// The wrapped Python object.
+    fn as_py(&self) -> &Py<PyAny> {
+        &self.0
+    }
+}
+
 /// An object store based on an arbitrary Python object that implements the obspec protocol.
 #[derive(Debug, Clone)]
-pub struct PyObspecStore(pub(super) Arc<Py<PyAny>>);
-
-crate::wasm_send_sync!(PyObspecStore);
+pub struct PyObspecStore(pub(super) Arc<ObspecStore>);
 
 impl FromPyObject<'_, '_> for PyObspecStore {
     type Error = PyErr;
@@ -26,7 +36,7 @@ impl FromPyObject<'_, '_> for PyObspecStore {
             ));
         }
 
-        Ok(Self(Arc::new(obj.into())))
+        Ok(Self(Arc::new(ObspecStore(obj.into()))))
     }
 }
 
@@ -36,7 +46,7 @@ impl<'py> IntoPyObject<'py> for PyObspecStore {
     type Output = Bound<'py, Self::Target>;
 
     fn into_pyobject(self, py: Python<'py>) -> Result<Self::Output, Self::Error> {
-        Ok(self.0.bind(py).clone())
+        Ok(self.0.as_py().bind(py).clone())
     }
 }
 
@@ -255,7 +265,7 @@ impl ReadRanges {
     }
 }
 
-impl ReadableStorageTraits for PyObspecStore {
+impl ReadableStorageTraits for ObspecStore {
     fn get_partial_many<'a>(
         &'a self,
         key: &StoreKey,
@@ -286,7 +296,7 @@ impl ReadableStorageTraits for PyObspecStore {
     }
 }
 
-impl ListableStorageTraits for PyObspecStore {
+impl ListableStorageTraits for ObspecStore {
     fn list(&self) -> Result<StoreKeys, StorageError> {
         todo!()
     }
@@ -304,7 +314,7 @@ impl ListableStorageTraits for PyObspecStore {
     }
 }
 
-impl WritableStorageTraits for PyObspecStore {
+impl WritableStorageTraits for ObspecStore {
     fn erase(&self, key: &StoreKey) -> Result<(), StorageError> {
         todo!()
     }
