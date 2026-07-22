@@ -338,6 +338,22 @@ mod tests {
         ReadRanges::new(Box::new(byte_ranges.into_iter()))
     }
 
+    fn bounded(ranges: &BoundedRanges) -> Vec<(usize, u64, u64)> {
+        ranges
+            .0
+            .iter()
+            .map(|range| (range.index, range.start, range.end))
+            .collect()
+    }
+
+    fn open_ended(ranges: &OpenEndedRanges) -> Vec<(usize, u64)> {
+        ranges
+            .0
+            .iter()
+            .map(|range| (range.index, range.value))
+            .collect()
+    }
+
     #[test]
     fn partitions_each_byte_range_shape() {
         let plan = plan(vec![
@@ -347,9 +363,9 @@ mod tests {
             ByteRange::FromStart(0, Some(4)),
         ]);
 
-        assert_eq!(plan.bounded, vec![(0, 10, 15), (3, 0, 4)]);
-        assert_eq!(plan.offset, vec![(2, 20)]);
-        assert_eq!(plan.suffix, vec![(1, 8)]);
+        assert_eq!(bounded(&plan.bounded), vec![(0, 10, 15), (3, 0, 4)]);
+        assert_eq!(open_ended(&plan.offset), vec![(2, 20)]);
+        assert_eq!(open_ended(&plan.suffix), vec![(1, 8)]);
     }
 
     #[test]
@@ -360,12 +376,11 @@ mod tests {
             ByteRange::FromStart(10, Some(5)),
         ]);
 
-        let mut indices = plan
-            .bounded
-            .iter()
-            .map(|(index, ..)| *index)
-            .chain(plan.offset.iter().map(|(index, _)| *index))
-            .chain(plan.suffix.iter().map(|(index, _)| *index))
+        let mut indices = bounded(&plan.bounded)
+            .into_iter()
+            .map(|(index, ..)| index)
+            .chain(open_ended(&plan.offset).into_iter().map(|(index, _)| index))
+            .chain(open_ended(&plan.suffix).into_iter().map(|(index, _)| index))
             .collect::<Vec<_>>();
         indices.sort_unstable();
 
