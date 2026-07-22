@@ -23,7 +23,9 @@ impl ObspecStore {
     }
 }
 
-/// An object store based on an arbitrary Python object that implements the obspec protocol.
+/// An arc-ed wrapper of an [ObspecStore]
+///
+/// It's useful to have two separate types because zarrs requires an `Arc<dyn Storage>`.
 #[derive(Debug, Clone)]
 pub struct PyObspecStore(pub(super) Arc<ObspecStore>);
 
