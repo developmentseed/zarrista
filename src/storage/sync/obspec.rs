@@ -1,12 +1,18 @@
+use std::sync::Arc;
+
 use pyo3::exceptions::{PyFileNotFoundError, PyTypeError};
 use pyo3::prelude::*;
 use pyo3::types::IntoPyDict;
 use pyo3_bytes::PyBytes;
 use zarrs::storage::byte_range::{ByteRange, ByteRangeIterator};
-use zarrs::storage::{Bytes, MaybeBytesIterator, ReadableStorageTraits, StorageError, StoreKey};
+use zarrs::storage::{
+    Bytes, ListableStorageTraits, MaybeBytesIterator, OffsetBytesIterator, ReadableStorageTraits,
+    StorageError, StoreKey, StoreKeys, StoreKeysPrefixes, StorePrefix, WritableStorageTraits,
+};
 
 /// An object store based on an arbitrary Python object that implements the obspec protocol.
-pub struct PyObspecStore(Py<PyAny>);
+#[derive(Debug, Clone)]
+pub struct PyObspecStore(pub(super) Arc<Py<PyAny>>);
 
 crate::wasm_send_sync!(PyObspecStore);
 
@@ -20,7 +26,17 @@ impl FromPyObject<'_, '_> for PyObspecStore {
             ));
         }
 
-        Ok(Self(obj.into()))
+        Ok(Self(Arc::new(obj.into())))
+    }
+}
+
+impl<'py> IntoPyObject<'py> for PyObspecStore {
+    type Error = PyErr;
+    type Target = PyAny;
+    type Output = Bound<'py, Self::Target>;
+
+    fn into_pyobject(self, py: Python<'py>) -> Result<Self::Output, Self::Error> {
+        Ok(self.0.into_bound(py))
     }
 }
 
@@ -41,9 +57,17 @@ fn missing_as_none<T>(py: Python<'_>, result: PyResult<T>) -> Result<Option<T>, 
     }
 }
 
-/// Ranges with a known start and exclusive end, as `(index, start, end)`.
+/// A byte range with a known start and exclusive end.
+struct BoundedRange {
+    /// Position of this range in the original request.
+    index: usize,
+    start: u64,
+    end: u64,
+}
+
+/// Byte ranges that `get_ranges` can serve, because both ends are known.
 #[derive(Default)]
-struct BoundedRanges(Vec<(usize, u64, u64)>);
+struct BoundedRanges(Vec<BoundedRange>);
 
 impl BoundedRanges {
     /// Fetch every bounded range in a single `get_ranges` call.
@@ -51,16 +75,14 @@ impl BoundedRanges {
         &self,
         store: &Bound<'_, PyAny>,
         key: &StoreKey,
-    ) -> Result<Option<Vec<Bytes>>, StorageError> {
+    ) -> Result<Option<Vec<(usize, Bytes)>>, StorageError> {
+        if self.0.is_empty() {
+            return Ok(Some(Vec::new()));
+        }
+
         let py = store.py();
-
-        let starts = self
-            .0
-            .iter()
-            .map(|(_, start, _)| *start)
-            .collect::<Vec<_>>();
-        let ends = self.0.iter().map(|(_, _, end)| *end).collect::<Vec<_>>();
-
+        let starts = self.0.iter().map(|range| range.start).collect::<Vec<_>>();
+        let ends = self.0.iter().map(|range| range.end).collect::<Vec<_>>();
         let kwargs = [("starts", starts), ("ends", ends)]
             .into_py_dict(py)
             .map_err(map_py_err)?;
@@ -79,22 +101,54 @@ impl BoundedRanges {
             )));
         }
 
-        Ok(Some(buffers.into_iter().map(PyBytes::into_inner).collect()))
+        Ok(Some(
+            self.0
+                .iter()
+                .zip(buffers)
+                .map(|(range, buffer)| (range.index, buffer.into_inner()))
+                .collect(),
+        ))
     }
+}
 
-    fn is_empty(&self) -> bool {
-        self.0.is_empty()
-    }
+/// A byte range that runs to the end of the object.
+struct OpenEndedRange {
+    /// Position of this range in the original request.
+    index: usize,
+    /// The offset for an `OffsetRange`, or the length for a `SuffixRange`.
+    value: u64,
+}
 
-    fn len(&self) -> usize {
-        self.0.len()
+/// Byte ranges that only the range option of `get` can express, one request each.
+///
+/// [`ByteRange::FromStart`] with no length and [`ByteRange::Suffix`] differ only in the
+/// obspec range option they map to, so they share this representation and the caller
+/// supplies the option name at execution time.
+#[derive(Default)]
+struct OpenEndedRanges(Vec<OpenEndedRange>);
+
+impl OpenEndedRanges {
+    /// Fetch each range with its own `get` call.
+    ///
+    /// `option` is `"offset"` or `"suffix"`, matching obspec's `OffsetRange` and `SuffixRange`.
+    fn execute(
+        &self,
+        store: &Bound<'_, PyAny>,
+        key: &StoreKey,
+        option: &str,
+    ) -> Result<Option<Vec<(usize, Bytes)>>, StorageError> {
+        let mut buffers = Vec::with_capacity(self.0.len());
+        for range in &self.0 {
+            let Some(buffer) = execute_get(store, key, option, range.value)? else {
+                return Ok(None);
+            };
+            buffers.push((range.index, buffer));
+        }
+        Ok(Some(buffers))
     }
 }
 
 /// Fetch one open-ended range via the range option of `get`.
-///
-/// `option` is either `"offset"` or `"suffix"`, matching obspec's `OffsetRange` and
-/// `SuffixRange`.
 fn execute_get(
     store: &Bound<'_, PyAny>,
     key: &StoreKey,
@@ -122,54 +176,6 @@ fn execute_get(
     Ok(Some(buffer.into_inner()))
 }
 
-/// Ranges running from an offset to the end of the object, as `(index, offset)`.
-#[derive(Default)]
-struct OffsetRanges(Vec<(usize, u64)>);
-
-impl OffsetRanges {
-    /// Fetch one open-ended range via the range option of `get`.
-    fn execute(
-        &self,
-        store: &Bound<'_, PyAny>,
-        key: &StoreKey,
-    ) -> Result<Option<Vec<Bytes>>, StorageError> {
-        if self.0.is_empty() {
-            return Ok(Some(Vec::new()));
-        }
-
-        for (_, offset) in &self.0 {
-            let Some(buffer) = execute_get(store, key, "offset", *offset)? else {
-                return Ok(None);
-            };
-            buffers[*index] = buffer;
-        }
-
-        execute_get(store, key, "offset", value).map(|opt| opt.map(|b| vec![b]))
-    }
-
-    fn is_empty(&self) -> bool {
-        self.0.is_empty()
-    }
-
-    fn len(&self) -> usize {
-        self.0.len()
-    }
-}
-
-/// Trailing byte ranges, as `(index, length)`.
-#[derive(Default)]
-struct SuffixRanges(Vec<(usize, u64)>);
-
-impl SuffixRanges {
-    fn is_empty(&self) -> bool {
-        self.0.is_empty()
-    }
-
-    fn len(&self) -> usize {
-        self.0.len()
-    }
-}
-
 /// The obspec requests needed to serve a set of requested byte ranges.
 ///
 /// `get_ranges` is the only bulk obspec read, and it requires a known start and
@@ -186,12 +192,9 @@ impl SuffixRanges {
 /// responses can be restored to the caller's order.
 #[derive(Default)]
 struct ReadRanges {
-    /// Ranges with a known start and exclusive end, as `(index, start, end)`.
     bounded: BoundedRanges,
-    /// Ranges running from an offset to the end of the object, as `(index, offset)`.
-    offset: OffsetRanges,
-    /// Trailing byte ranges, as `(index, length)`.
-    suffix: SuffixRanges,
+    offset: OpenEndedRanges,
+    suffix: OpenEndedRanges,
 }
 
 impl ReadRanges {
@@ -200,11 +203,19 @@ impl ReadRanges {
         let mut plan = Self::default();
         for (index, byte_range) in byte_ranges.enumerate() {
             match byte_range {
-                ByteRange::FromStart(start, Some(length)) => {
-                    plan.bounded.push((index, start, start + length));
-                }
-                ByteRange::FromStart(start, None) => plan.offset.push((index, start)),
-                ByteRange::Suffix(length) => plan.suffix.push((index, length)),
+                ByteRange::FromStart(start, Some(length)) => plan.bounded.0.push(BoundedRange {
+                    index,
+                    start,
+                    end: start + length,
+                }),
+                ByteRange::FromStart(start, None) => plan.offset.0.push(OpenEndedRange {
+                    index,
+                    value: start,
+                }),
+                ByteRange::Suffix(length) => plan.suffix.0.push(OpenEndedRange {
+                    index,
+                    value: length,
+                }),
             }
         }
         plan
@@ -212,7 +223,7 @@ impl ReadRanges {
 
     /// The number of byte ranges the plan covers.
     fn len(&self) -> usize {
-        self.bounded.len() + self.offset.len() + self.suffix.len()
+        self.bounded.0.len() + self.offset.0.len() + self.suffix.0.len()
     }
 
     /// Issue the planned requests and collect the responses in the caller's order.
@@ -223,61 +234,24 @@ impl ReadRanges {
         store: &Bound<'_, PyAny>,
         key: &StoreKey,
     ) -> Result<Option<Vec<Bytes>>, StorageError> {
-        // The three vectors partition `0..len`, so every slot is assigned exactly once
+        let Some(bounded) = self.bounded.execute(store, key)? else {
+            return Ok(None);
+        };
+        let Some(offset) = self.offset.execute(store, key, "offset")? else {
+            return Ok(None);
+        };
+        let Some(suffix) = self.suffix.execute(store, key, "suffix")? else {
+            return Ok(None);
+        };
+
+        // The three collections partition `0..len`, so every slot is assigned exactly once
         // below and no placeholder survives.
         let mut bytes = vec![Bytes::new(); self.len()];
-
-        if !self.bounded.is_empty() {
-            let Some(bounded) = self.bounded.execute(store, key)? else {
-                return Ok(None);
-            };
-            for ((index, ..), buffer) in self.bounded.iter().zip(bounded) {
-                bytes[*index] = buffer;
-            }
-        }
-
-        if !self.offset.is_empty() {
-            let Some(buffer) = Self::get_open_ended(store, key, "offset", *offset)? else {
-                return Ok(None);
-            };
-            bytes[*index] = buffer;
-        }
-
-        for (index, length) in &self.suffix {
-            let Some(buffer) = Self::get_open_ended(store, key, "suffix", *length)? else {
-                return Ok(None);
-            };
-            bytes[*index] = buffer;
+        for (index, buffer) in bounded.into_iter().chain(offset).chain(suffix) {
+            bytes[index] = buffer;
         }
 
         Ok(Some(bytes))
-    }
-
-    /// Fetch one open-ended range via the range option of `get`.
-    ///
-    /// `option` is either `"offset"` or `"suffix"`, matching obspec's `OffsetRange` and
-    /// `SuffixRange`.
-    fn get_open_ended(
-        store: &Bound<'_, PyAny>,
-        key: &StoreKey,
-        option: &str,
-        value: u64,
-    ) -> Result<Option<Bytes>, StorageError> {
-        let py = store.py();
-        let range = [(option, value)].into_py_dict(py).map_err(py_err)?;
-        let options = [("range", range)].into_py_dict(py).map_err(py_err)?;
-        let kwargs = [("options", options)].into_py_dict(py).map_err(py_err)?;
-
-        let result = store.call_method("get", (key.as_str(),), Some(&kwargs));
-        let Some(get_result) = missing_as_none(py, result)? else {
-            return Ok(None);
-        };
-        // `buffer` is the obspec spelling; obstore also exposes it as `bytes`.
-        let buffer = get_result
-            .call_method0("buffer")
-            .and_then(|buffer| buffer.extract::<PyBytes>())
-            .map_err(py_err)?;
-        Ok(Some(buffer.into_inner()))
     }
 }
 
@@ -289,10 +263,7 @@ impl ReadableStorageTraits for PyObspecStore {
     ) -> Result<MaybeBytesIterator<'a>, StorageError> {
         let plan = ReadRanges::new(byte_ranges);
         let bytes = Python::attach(|py| plan.execute(self.0.bind(py), key))?;
-        Ok(bytes.map(|bytes| {
-            Box::new(bytes.into_iter().map(Ok))
-                as Box<dyn Iterator<Item = Result<Bytes, StorageError>>>
-        }))
+        Ok(bytes.map(|bytes| Box::new(bytes.into_iter().map(Ok)) as _))
     }
 
     fn size_key(&self, key: &StoreKey) -> Result<Option<u64>, StorageError> {
@@ -305,7 +276,7 @@ impl ReadableStorageTraits for PyObspecStore {
             let size = object_meta
                 .getattr("size")
                 .and_then(|size| size.extract())
-                .map_err(py_err)?;
+                .map_err(map_py_err)?;
             Ok(Some(size))
         })
     }
