@@ -36,7 +36,7 @@ impl<'py> IntoPyObject<'py> for PyObspecStore {
     type Output = Bound<'py, Self::Target>;
 
     fn into_pyobject(self, py: Python<'py>) -> Result<Self::Output, Self::Error> {
-        Ok(self.0.into_bound(py))
+        Ok(self.0.bind(py).clone())
     }
 }
 
