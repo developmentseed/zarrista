@@ -1,6 +1,6 @@
 [package]
 name = "zarrista"
-version = "0.1.0-beta.6"
+version = "0.1.0-beta.7"
 authors = ["Kyle Barron <kyle@developmentseed.org>"]
 edition = "2024"
 description = "A small, prototypical zarrita-like Python Zarr implementation on top of zarrs."
@@ -41,9 +41,7 @@ arrow-buffer = "59"
 arrow-schema = "59"
 async-trait = { version = "0.1", optional = true }
 bytes = "1.12.0"
-dlpark = { git = "https://github.com/kylebarron/dlpark", rev = "31c6f49c064e634326c97172d39a00acecd854b6", features = [
-    "pyo3",
-] }
+dlpark = { version = "0.8", features = ["pyo3"] }
 icechunk = { version = "2.0.0", default-features = false, optional = true }
 object_store = { version = "0.13", optional = true }
 pyo3 = { version = "0.29", features = ["macros", "multiple-pymethods"] }
