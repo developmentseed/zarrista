@@ -24,6 +24,9 @@ dependencies = [
     "zarr-metadata>=0.3",
 ]
 
+[project.optional-dependencies]
+xarray = ["xarray"]
+
 [tool.maturin]
 features = ["pyo3/extension-module"]
 module-name = "zarrista._zarrista"
@@ -40,6 +43,7 @@ dev = [
     "pytest>=8.0",
     "pytest-asyncio>=1.4",
     "ruff>=0.6",
+    "xarray>=2025.1.1",
     "zarr>=3",
 ]
 docs = [
