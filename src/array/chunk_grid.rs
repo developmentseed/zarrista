@@ -2,11 +2,11 @@ use std::sync::Arc;
 
 use pyo3::prelude::*;
 use pyo3::types::PyInt;
+use zarrs::array::ChunkGrid;
 use zarrs::array::chunk_grid::{
     ChunkEdgeLengths, RectilinearChunkGrid, RegularBoundedChunkGrid, RegularChunkGrid,
     RunLengthElement,
 };
-use zarrs::array::ChunkGrid;
 
 use crate::array::{PyArrayShape, PyChunkShape};
 use crate::error::ZarristaResult;
@@ -15,6 +15,8 @@ use crate::metadata::PyMetadataV3;
 #[derive(Debug, Clone)]
 #[pyclass(module = "zarrista", frozen, name = "ChunkGrid", from_py_object)]
 pub struct PyChunkGrid(ChunkGrid);
+
+crate::wasm_send_sync!(PyChunkGrid);
 
 impl PyChunkGrid {
     pub fn new(chunk_grid: ChunkGrid) -> Self {
@@ -34,13 +36,13 @@ impl PyChunkGrid {
         chunk_shapes: Vec<PyChunkEdgeLengths>,
     ) -> ZarristaResult<Self> {
         let chunk_shapes = chunk_shapes.into_iter().map(|c| c.0).collect::<Vec<_>>();
-        let chunk_grid = RectilinearChunkGrid::new(array_shape.into_inner(), &chunk_shapes)?;
+        let chunk_grid = RectilinearChunkGrid::new(array_shape, &chunk_shapes)?;
         Ok(Self(Arc::new(chunk_grid).into()))
     }
 
     #[staticmethod]
     fn regular(array_shape: PyArrayShape, chunk_shape: PyChunkShape) -> ZarristaResult<Self> {
-        let chunk_grid = RegularChunkGrid::new(array_shape.into_inner(), chunk_shape.into_inner())?;
+        let chunk_grid = RegularChunkGrid::new(array_shape, chunk_shape)?;
         Ok(Self(Arc::new(chunk_grid).into()))
     }
 
@@ -50,8 +52,7 @@ impl PyChunkGrid {
         array_shape: PyArrayShape,
         chunk_shape: PyChunkShape,
     ) -> ZarristaResult<Self> {
-        let chunk_grid =
-            RegularBoundedChunkGrid::new(array_shape.into_inner(), chunk_shape.into_inner())?;
+        let chunk_grid = RegularBoundedChunkGrid::new(array_shape, chunk_shape)?;
         Ok(Self(Arc::new(chunk_grid).into()))
     }
 

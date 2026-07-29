@@ -8,10 +8,10 @@ use zarrs::array::codec::api::CodecMetadata;
 use zarrs::array::codec::{BitroundCodec, TransposeCodec, TransposeOrder};
 use zarrs::array::{ArrayToArrayCodecTraits, Codec, CodecOptions};
 
+use crate::array::PyFillValue;
 use crate::array_bytes::PyArrayBytes;
 use crate::dtype::PyDataType;
 use crate::error::ZarristaResult;
-use crate::fill_value::PyFillValue;
 use crate::metadata::{PyConfiguration, PyMetadataV3};
 
 #[pyfunction]
@@ -34,6 +34,8 @@ pub fn bitround(keepbits: u32) -> PyArrayToArrayCodec {
     from_py_object
 )]
 pub struct PyArrayToArrayCodec(Arc<dyn ArrayToArrayCodecTraits>);
+
+crate::wasm_send_sync!(PyArrayToArrayCodec);
 
 impl PyArrayToArrayCodec {
     pub fn into_inner(self) -> Arc<dyn ArrayToArrayCodecTraits> {

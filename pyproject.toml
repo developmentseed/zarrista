@@ -54,6 +54,14 @@ docs = [
     # installed to format signatures in the docs
     "black>=26",
 ]
+# Toolchain for building PEP 783 (pyemscripten) wheels for Pyodide; see the
+# `emscripten` job in `.github/workflows/python-wheels.yml` and `DEVELOP.md`.
+# `pyodide-cli` provides the `pyodide` entrypoint; `pyodide-build` provides the
+# `config` and `xbuildenv` subcommands. Both require Python 3.12+.
+pyodide = [
+    "pyodide-build>=0.35.0 ; python_version >= '3.12'",
+    "pyodide-cli>=0.2.2 ; python_version >= '3.12'",
+]
 
 [tool.ruff]
 # A REPL/notebook-style scratch file using top-level `await`; not a real test.

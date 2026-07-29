@@ -2,30 +2,36 @@
 
 use std::sync::Arc;
 
-use crate::array::selection::PySelection;
-use crate::array::shared::array_metadata_accessors;
 use crate::array::PyChunkIndices;
+use crate::array::selection::PySelection;
+use crate::array::shared::shared_array_methods;
 use crate::array_bytes::PyArrayBytes;
 use crate::codec::PyCodecOptions;
-use crate::decoded_array::DecodedArray;
+use crate::data::DecodedArray;
 use crate::error::ZarristaResult;
 use crate::metadata::PyArrayMetadata;
 use crate::node::PyNodePath;
 use crate::storage::{PySyncStorage, ReadOnlyStorageAdapter};
 use pyo3::prelude::*;
 use pyo3_bytes::PyBytes;
-use zarrs::array::Array;
+use zarrs::array::{Array, ArrayShardedReadableExt, ArrayShardedReadableExtCache};
 use zarrs::storage::ReadableWritableListableStorageTraits;
 
 /// A Zarr array.
 #[pyclass(module = "zarrista", frozen, name = "Array")]
 pub struct PyArray {
     pub(crate) inner: Arc<Array<dyn ReadableWritableListableStorageTraits>>,
+    pub(crate) store: PySyncStorage,
 }
 
+crate::wasm_send_sync!(PyArray);
+
 impl PyArray {
-    pub(crate) fn new(inner: Arc<Array<dyn ReadableWritableListableStorageTraits>>) -> Self {
-        Self { inner }
+    pub(crate) fn new(
+        inner: Arc<Array<dyn ReadableWritableListableStorageTraits>>,
+        store: PySyncStorage,
+    ) -> Self {
+        Self { inner, store }
     }
 
     pub fn inner(&self) -> &Arc<Array<dyn ReadableWritableListableStorageTraits>> {
@@ -34,7 +40,7 @@ impl PyArray {
 }
 
 // Metadata accessors shared with `PyAsyncArray`; see `array/shared.rs`.
-array_metadata_accessors!(PyArray);
+shared_array_methods!(PyArray);
 
 #[pymethods]
 impl PyArray {
@@ -64,9 +70,8 @@ impl PyArray {
         store: PySyncStorage,
         path: PyNodePath,
     ) -> ZarristaResult<Self> {
-        let inner =
-            Array::new_with_metadata(store.into_inner(), path.as_str(), metadata.into_inner())?;
-        Ok(Self::new(Arc::new(inner)))
+        let inner = Array::new_with_metadata(store.inner(), path.as_str(), metadata.into_inner())?;
+        Ok(Self::new(Arc::new(inner), store))
     }
 
     /// Open the array stored at `path` in `store`.
@@ -76,8 +81,8 @@ impl PyArray {
         text_signature = "(store, path='/')"
     )]
     fn open(store: PySyncStorage, path: PyNodePath) -> ZarristaResult<Self> {
-        let inner = Array::open(store.into(), path.as_str())?;
-        Ok(Self::new(Arc::new(inner)))
+        let inner = Array::open(store.inner(), path.as_str())?;
+        Ok(Self::new(Arc::new(inner), store))
     }
 
     #[pyo3(signature = (chunk_indices, **codec_options))]
@@ -89,13 +94,11 @@ impl PyArray {
         let codec_options = codec_options
             .map(|opts| opts.into_inner())
             .unwrap_or_default();
-        Ok(self
-            .inner
-            .compact_chunk(chunk_indices.as_ref(), &codec_options)?)
+        Ok(self.inner.compact_chunk(&chunk_indices, &codec_options)?)
     }
 
     fn erase_chunk(&self, chunk_indices: PyChunkIndices) -> ZarristaResult<()> {
-        self.inner.erase_chunk(chunk_indices.as_ref())?;
+        self.inner.erase_chunk(&chunk_indices)?;
         Ok(())
     }
 
@@ -107,7 +110,10 @@ impl PyArray {
     fn read_only(&self) -> Self {
         let read_list_storage = self.inner.storage().readable_listable();
         let storage = Arc::new(ReadOnlyStorageAdapter::new(read_list_storage));
-        Self::new(Arc::new(self.inner.with_storage(storage)))
+        Self::new(
+            Arc::new(self.inner.with_storage(storage)),
+            self.store.clone(),
+        )
     }
 
     /// Read a region of the array, using numpy-style basic indexing.
@@ -130,15 +136,51 @@ impl PyArray {
             .unwrap_or_default();
         Ok(self
             .inner
-            .retrieve_chunk_opt(chunk_indices.as_ref(), &codec_options)?)
+            .retrieve_chunk_opt(&chunk_indices, &codec_options)?)
     }
 
     fn retrieve_encoded_chunk(
         &self,
         chunk_indices: PyChunkIndices,
     ) -> ZarristaResult<Option<PyBytes>> {
-        let encoded = self.inner.retrieve_encoded_chunk(chunk_indices.as_ref())?;
+        let encoded = self.inner.retrieve_encoded_chunk(&chunk_indices)?;
         Ok(encoded.map(|buf| PyBytes::new(buf.into())))
+    }
+
+    fn retrieve_encoded_subchunk(
+        &self,
+        subchunk_indices: PyChunkIndices,
+    ) -> ZarristaResult<Option<PyBytes>> {
+        // TODO: allow user to manage shard cache
+        let subchunk_cache = ArrayShardedReadableExtCache::new(&self.inner);
+
+        let encoded = self
+            .inner
+            .retrieve_encoded_subchunk(&subchunk_cache, &subchunk_indices)?;
+        Ok(encoded.map(|buf| PyBytes::new(buf.into())))
+    }
+
+    #[pyo3(signature = (subchunk_indices, **codec_options))]
+    fn retrieve_subchunk(
+        &self,
+        subchunk_indices: PyChunkIndices,
+        codec_options: Option<PyCodecOptions>,
+    ) -> ZarristaResult<DecodedArray> {
+        let codec_options = codec_options
+            .map(|opts| opts.into_inner())
+            .unwrap_or_default();
+
+        // TODO: allow user to manage shard cache
+        let subchunk_cache = ArrayShardedReadableExtCache::new(&self.inner);
+
+        Ok(self
+            .inner
+            .retrieve_subchunk_opt(&subchunk_cache, &subchunk_indices, &codec_options)?)
+    }
+
+    #[getter]
+    fn store(&self) -> PySyncStorage {
+        self.store.clone()
     }
 
     #[pyo3(signature = (chunk_indices, decoded_chunk, **codec_options))]
@@ -152,7 +194,7 @@ impl PyArray {
             .map(|opts| opts.into_inner())
             .unwrap_or_default();
         self.inner.store_chunk_opt(
-            chunk_indices.as_ref(),
+            &chunk_indices,
             decoded_chunk.as_array_bytes()?,
             &codec_options,
         )?;
@@ -168,20 +210,14 @@ impl PyArray {
         // The responsibility is on the caller to ensure the chunk is encoded correctly
         unsafe {
             self.inner
-                .store_encoded_chunk(chunk_indices.as_ref(), encoded_chunk.into_inner())?;
+                .store_encoded_chunk(&chunk_indices, encoded_chunk.into_inner())?;
         }
         Ok(())
     }
-}
 
-impl From<Array<dyn ReadableWritableListableStorageTraits>> for PyArray {
-    fn from(inner: Array<dyn ReadableWritableListableStorageTraits>) -> Self {
-        Self::new(Arc::new(inner))
-    }
-}
-
-impl From<Arc<Array<dyn ReadableWritableListableStorageTraits>>> for PyArray {
-    fn from(inner: Arc<Array<dyn ReadableWritableListableStorageTraits>>) -> Self {
-        Self::new(inner)
+    /// Write the array metadata to the store.
+    fn store_metadata(&self) -> ZarristaResult<()> {
+        self.inner.store_metadata()?;
+        Ok(())
     }
 }

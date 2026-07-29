@@ -12,9 +12,11 @@ from zarrista.codec import (
 )
 
 from ._array_bytes import ArrayBytes
+from ._chunk_key_encoding import ChunkKeyEncoding
 from ._chunks import ChunkGrid
 from ._decoded_array import DecodedArray
 from ._dtype import DataType
+from ._fill_value import FillValue
 from ._store import AsyncStore, FilesystemStore, MemoryStore
 
 _AxisSelector: TypeAlias = int | slice | EllipsisType
@@ -41,7 +43,8 @@ class Array:
     ) -> Array:
         """Use the provided metadata to open a new array at `path` in `store`.
 
-        This does **not** write the metadata to the store.
+        This does **not** write the metadata to the store; use
+        [`Array.store_metadata`][zarrista.Array.store_metadata] for that.
         """
     @property
     def attrs(self) -> dict[str, JSONValue]:
@@ -49,6 +52,31 @@ class Array:
     @property
     def chunk_grid(self) -> ChunkGrid:
         """The chunk grid of the array."""
+    @property
+    def chunk_grid_shape(self) -> list[int]:
+        """The shape of the chunk grid (i.e. the number of chunks per dimension)."""
+    def chunk_key(self, chunk_indices: list[int]) -> str:
+        """Return the store key of the chunk at `chunk_indices`."""
+    @property
+    def chunk_key_encoding(self) -> ChunkKeyEncoding:
+        """The chunk key encoding, mapping chunk grid indices to store keys."""
+    def chunk_origin(self, chunk_indices: list[int]) -> list[int]:
+        """Return the origin of the chunk at `chunk_indices`.
+
+        Raises if `chunk_indices` are incompatible with the chunk grid.
+        """
+    def chunk_shape(self, chunk_indices: list[int]) -> list[int]:
+        """Return the shape of the chunk at `chunk_indices`.
+
+        Raises if `chunk_indices` are incompatible with the chunk grid.
+        """
+    def chunk_subset(self, chunk_indices: list[int]) -> tuple[slice, ...]:
+        """Return the array subset spanned by the chunk at `chunk_indices`.
+
+        Returned as a tuple of slices, one per dimension.
+
+        Raises if `chunk_indices` are incompatible with the chunk grid.
+        """
     @property
     def compressors(self) -> list[BytesToBytesCodec]:
         """The bytes-to-bytes codecs ("compressors")."""
@@ -64,6 +92,9 @@ class Array:
     @property
     def dtype(self) -> DataType:
         """The Zarr data type."""
+    @property
+    def fill_value(self) -> FillValue:
+        """The array's fill value."""
     @property
     def metadata(self) -> ZarrV3ArrayMetadataJSON:
         """The array's full Zarr v3 metadata."""
@@ -94,6 +125,34 @@ class Array:
 
         Keyword arguments are passed as [`CodecOptions`][zarrista.codec.CodecOptions].
         """
+    def retrieve_encoded_chunk(self, chunk_indices: list[int]) -> Buffer | None:
+        """Read the raw, still-encoded bytes of the chunk at `chunk_indices`.
+
+        The bytes are returned verbatim, without running the codec pipeline.
+        Returns `None` if the chunk is absent from the store.
+        """
+    def retrieve_subchunk(
+        self,
+        subchunk_indices: list[int],
+        **codec_options: Unpack[CodecOptions],
+    ) -> DecodedArray:
+        """Read and decode a single subchunk (inner chunk) of a sharded array.
+
+        `subchunk_indices` index the subchunk grid (see `subchunk_grid_shape`). For
+        an unsharded array a subchunk is a whole chunk. Only the addressed inner
+        chunk is read from its shard rather than the entire shard.
+
+        Keyword arguments are passed as [`CodecOptions`][zarrista.codec.CodecOptions].
+        """
+    def retrieve_encoded_subchunk(self, subchunk_indices: list[int]) -> Buffer | None:
+        """Read the raw, still-encoded bytes of a subchunk of a sharded array.
+
+        The bytes are returned verbatim, without running the codec pipeline.
+        Returns `None` if the subchunk is absent from the store.
+        """
+    @property
+    def store(self) -> FilesystemStore | MemoryStore:
+        """Retrieve the store backing this array."""
     def store_chunk(
         self,
         chunk_indices: list[int],
@@ -118,6 +177,15 @@ class Array:
         The bytes are stored verbatim with no encoding. The caller is
         responsible for ensuring they match the array's codec pipeline; invalid
         bytes produce a chunk that cannot be decoded.
+        """
+    def store_metadata(self) -> None:
+        """Write the array's metadata to the store.
+
+        This is the write counterpart to
+        [`Array.from_metadata`][zarrista.Array.from_metadata], which only constructs an
+        in-memory array, without writing to the store.
+
+        Any existing metadata at the array's path is overwritten.
         """
     def compact_chunk(
         self,
@@ -146,8 +214,42 @@ class Array:
         `erase_metadata`, ...) raises at runtime.
         """
     @property
+    def is_sharded(self) -> bool:
+        """Whether the array's array-to-bytes codec is `sharding_indexed`."""
+    @property
+    def subchunk_shape(self) -> list[int] | None:
+        """The inner-chunk shape from the `sharding_indexed` codec metadata.
+
+        `None` if the array is not sharded.
+        """
+    @property
+    def effective_subchunk_shape(self) -> list[int] | None:
+        """The subchunk shape's effective "read granularity".
+
+        Accounts for array-to-array codecs (e.g. `transpose`) that precede the
+        sharding codec and reshape the subset spanned by one subchunk. `None` if
+        the array is not sharded or the effective shape is indeterminate.
+        """
+    @property
+    def subchunk_grid(self) -> ChunkGrid:
+        """The subchunk grid.
+
+        Built from the effective subchunk shape so that reading one subchunk reads
+        a single contiguous byte range. For an unsharded array this is the normal
+        chunk grid.
+        """
+    @property
+    def subchunk_grid_shape(self) -> list[int]:
+        """The shape of the subchunk grid (the number of subchunks per dimension).
+
+        For an unsharded array this is the normal chunk grid shape.
+        """
+    @property
     def shape(self) -> list[int]:
         """The array shape."""
+    @property
+    def subset_all(self) -> tuple[slice, ...]:
+        """The array subset that spans the entire array, as a tuple of slices."""
     def __getitem__(self, selection: Selection) -> DecodedArray:
         """Read a region with numpy-style basic indexing, e.g. `arr[0:10, :, 5]`.
 
@@ -171,7 +273,9 @@ class AsyncArray:
     ) -> AsyncArray:
         """Use the provided metadata to open a new array at `path` in `store`.
 
-        This does **not** write the metadata to the store.
+        This does **not** write the metadata to the store; use
+        [`AsyncArray.store_metadata`][zarrista.AsyncArray.store_metadata] for
+        that.
         """
     @property
     def attrs(self) -> dict[str, JSONValue]:
@@ -179,6 +283,31 @@ class AsyncArray:
     @property
     def chunk_grid(self) -> ChunkGrid:
         """The chunk grid of the array."""
+    @property
+    def chunk_grid_shape(self) -> list[int]:
+        """The shape of the chunk grid (i.e. the number of chunks per dimension)."""
+    def chunk_key(self, chunk_indices: list[int]) -> str:
+        """Return the store key of the chunk at `chunk_indices`."""
+    @property
+    def chunk_key_encoding(self) -> ChunkKeyEncoding:
+        """The chunk key encoding, mapping chunk grid indices to store keys."""
+    def chunk_origin(self, chunk_indices: list[int]) -> list[int]:
+        """Return the origin of the chunk at `chunk_indices`.
+
+        Raises if `chunk_indices` are incompatible with the chunk grid.
+        """
+    def chunk_shape(self, chunk_indices: list[int]) -> list[int]:
+        """Return the shape of the chunk at `chunk_indices`.
+
+        Raises if `chunk_indices` are incompatible with the chunk grid.
+        """
+    def chunk_subset(self, chunk_indices: list[int]) -> tuple[slice, ...]:
+        """Return the array subset spanned by the chunk at `chunk_indices`.
+
+        Returned as a tuple of slices, one per dimension.
+
+        Raises if `chunk_indices` are incompatible with the chunk grid.
+        """
     @property
     def compressors(self) -> list[BytesToBytesCodec]:
         """The bytes-to-bytes codecs ("compressors")."""
@@ -194,6 +323,9 @@ class AsyncArray:
     @property
     def dtype(self) -> DataType:
         """The Zarr data type."""
+    @property
+    def fill_value(self) -> FillValue:
+        """The array's fill value."""
     @property
     def metadata(self) -> ZarrV3ArrayMetadataJSON:
         """The array's full Zarr v3 metadata."""
@@ -224,6 +356,37 @@ class AsyncArray:
 
         Keyword arguments are passed as [`CodecOptions`][zarrista.codec.CodecOptions].
         """
+    async def retrieve_encoded_chunk(self, chunk_indices: list[int]) -> Buffer | None:
+        """Read the raw, still-encoded bytes of the chunk at `chunk_indices`.
+
+        The bytes are returned verbatim, without running the codec pipeline.
+        Returns `None` if the chunk is absent from the store.
+        """
+    async def retrieve_subchunk(
+        self,
+        subchunk_indices: list[int],
+        **codec_options: Unpack[CodecOptions],
+    ) -> DecodedArray:
+        """Read and decode a single subchunk (inner chunk) of a sharded array.
+
+        `subchunk_indices` index the subchunk grid (see `subchunk_grid_shape`). For
+        an unsharded array a subchunk is a whole chunk. Only the addressed inner
+        chunk is read from its shard rather than the entire shard.
+
+        Keyword arguments are passed as [`CodecOptions`][zarrista.codec.CodecOptions].
+        """
+    async def retrieve_encoded_subchunk(
+        self,
+        subchunk_indices: list[int],
+    ) -> Buffer | None:
+        """Read the raw, still-encoded bytes of a subchunk of a sharded array.
+
+        The bytes are returned verbatim, without running the codec pipeline.
+        Returns `None` if the subchunk is absent from the store.
+        """
+    @property
+    def store(self) -> AsyncStore:
+        """Retrieve the store backing this array."""
     async def store_chunk(
         self,
         chunk_indices: list[int],
@@ -248,6 +411,15 @@ class AsyncArray:
         The bytes are stored verbatim with no encoding. The caller is
         responsible for ensuring they match the array's codec pipeline; invalid
         bytes produce a chunk that cannot be decoded.
+        """
+    async def store_metadata(self) -> None:
+        """Write the array's metadata to the store.
+
+        This is the write counterpart to
+        [`AsyncArray.from_metadata`][zarrista.AsyncArray.from_metadata], which only
+        constructs an in-memory array, without writing to the store.
+
+        Any existing metadata at the array's path is overwritten.
         """
     async def compact_chunk(
         self,
@@ -276,8 +448,42 @@ class AsyncArray:
         `erase_metadata`, ...) raises at runtime.
         """
     @property
+    def is_sharded(self) -> bool:
+        """Whether the array's array-to-bytes codec is `sharding_indexed`."""
+    @property
+    def subchunk_shape(self) -> list[int] | None:
+        """The inner-chunk shape from the `sharding_indexed` codec metadata.
+
+        `None` if the array is not sharded.
+        """
+    @property
+    def effective_subchunk_shape(self) -> list[int] | None:
+        """The subchunk shape's effective "read granularity".
+
+        Accounts for array-to-array codecs (e.g. `transpose`) that precede the
+        sharding codec and reshape the subset spanned by one subchunk. `None` if
+        the array is not sharded or the effective shape is indeterminate.
+        """
+    @property
+    def subchunk_grid(self) -> ChunkGrid:
+        """The subchunk grid.
+
+        Built from the effective subchunk shape so that reading one subchunk reads
+        a single contiguous byte range. For an unsharded array this is the normal
+        chunk grid.
+        """
+    @property
+    def subchunk_grid_shape(self) -> list[int]:
+        """The shape of the subchunk grid (the number of subchunks per dimension).
+
+        For an unsharded array this is the normal chunk grid shape.
+        """
+    @property
     def shape(self) -> list[int]:
         """The array shape."""
+    @property
+    def subset_all(self) -> tuple[slice, ...]:
+        """The array subset that spans the entire array, as a tuple of slices."""
     async def __getitem__(self, selection: Selection) -> DecodedArray:
         """Read a region with numpy-style basic indexing: `await arr[0:10, :, 5]`.
 

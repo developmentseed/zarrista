@@ -19,15 +19,15 @@ use zarrs::storage::AsyncReadableWritableListableStorageTraits;
 #[pyclass(module = "zarrista", frozen, name = "AsyncGroup", from_py_object)]
 pub struct PyAsyncGroup {
     pub(crate) inner: Arc<Group<dyn AsyncReadableWritableListableStorageTraits>>,
+    store: PyAsyncStorage,
 }
 
 impl PyAsyncGroup {
-    pub(crate) fn new(inner: Arc<Group<dyn AsyncReadableWritableListableStorageTraits>>) -> Self {
-        Self { inner }
-    }
-
-    fn storage(&self) -> Arc<dyn AsyncReadableWritableListableStorageTraits> {
-        self.inner.storage()
+    pub(crate) fn new(
+        inner: Arc<Group<dyn AsyncReadableWritableListableStorageTraits>>,
+        store: PyAsyncStorage,
+    ) -> Self {
+        Self { inner, store }
     }
 }
 
@@ -47,12 +47,11 @@ impl PyAsyncGroup {
         store: PyAsyncStorage,
         path: PyNodePath,
     ) -> PyResult<Bound<'py, PyAny>> {
-        let storage = store.into_inner();
         future_into_py(py, async move {
-            let inner = Group::async_open(storage.clone(), path.as_str())
+            let inner = Group::async_open(store.inner(), path.as_str())
                 .await
                 .map_err(ZarristaError::from)?;
-            Ok(Self::new(Arc::new(inner)))
+            Ok(Self::new(Arc::new(inner), store))
         })
     }
 
@@ -89,7 +88,7 @@ impl PyAsyncGroup {
     /// Open a direct child array or group by name.
     fn open_child_async<'py>(&self, py: Python<'py>, name: String) -> PyResult<Bound<'py, PyAny>> {
         let inner = self.inner.clone();
-        let storage = self.storage();
+        let storage = self.store.clone();
         future_into_py(py, async move {
             let children = inner
                 .async_children(false)
@@ -105,7 +104,7 @@ impl PyAsyncGroup {
 
     /// Every node under the group, recursively, as `AsyncArray`/`AsyncGroup` objects.
     fn traverse<'py>(&self, py: Python<'py>) -> PyResult<Bound<'py, PyAny>> {
-        let storage = self.storage();
+        let storage = self.store.clone();
         let inner = self.inner.clone();
         future_into_py(py, async move {
             let nodes = inner.async_traverse().await.map_err(ZarristaError::from)?;
@@ -115,14 +114,20 @@ impl PyAsyncGroup {
                     let storage = storage.clone();
                     match metadata {
                         NodeMetadata::Array(array_metadata) => {
-                            let array =
-                                Array::new_with_metadata(storage, path.as_str(), array_metadata)?;
-                            Ok(PyAsyncArray::new(Arc::new(array)).into())
+                            let array = Array::new_with_metadata(
+                                storage.inner(),
+                                path.as_str(),
+                                array_metadata,
+                            )?;
+                            Ok(PyAsyncArray::new(Arc::new(array), storage.clone()).into())
                         }
                         NodeMetadata::Group(group_metadata) => {
-                            let group =
-                                Group::new_with_metadata(storage, path.as_str(), group_metadata)?;
-                            Ok(PyAsyncGroup::new(Arc::new(group)).into())
+                            let group = Group::new_with_metadata(
+                                storage.inner(),
+                                path.as_str(),
+                                group_metadata,
+                            )?;
+                            Ok(PyAsyncGroup::new(Arc::new(group), storage.clone()).into())
                         }
                     }
                 })
@@ -134,6 +139,7 @@ impl PyAsyncGroup {
     /// The direct child arrays of the group.
     fn child_arrays<'py>(&self, py: Python<'py>) -> PyResult<Bound<'py, PyAny>> {
         let inner = self.inner.clone();
+        let store = self.store.clone();
         future_into_py(py, async move {
             let arrays = inner
                 .async_child_arrays()
@@ -141,7 +147,7 @@ impl PyAsyncGroup {
                 .map_err(ZarristaError::from)?;
             Ok(arrays
                 .into_iter()
-                .map(|array| PyAsyncArray::new(Arc::new(array)))
+                .map(|array| PyAsyncArray::new(Arc::new(array), store.clone()))
                 .collect::<Vec<_>>())
         })
     }
@@ -149,12 +155,16 @@ impl PyAsyncGroup {
     /// The direct child groups of the group.
     fn child_groups<'py>(&self, py: Python<'py>) -> PyResult<Bound<'py, PyAny>> {
         let inner = self.inner.clone();
+        let store = self.store.clone();
         future_into_py(py, async move {
             let groups = inner
                 .async_child_groups()
                 .await
                 .map_err(ZarristaError::from)?;
-            Ok(groups.into_iter().map(Self::from).collect::<Vec<_>>())
+            Ok(groups
+                .into_iter()
+                .map(|group| PyAsyncGroup::new(Arc::new(group), store.clone()))
+                .collect::<Vec<_>>())
         })
     }
 
@@ -194,18 +204,6 @@ impl PyAsyncGroup {
         })
     }
 
-    /// Write the group metadata to the store.
-    fn store_metadata<'py>(&self, py: Python<'py>) -> PyResult<Bound<'py, PyAny>> {
-        let inner = self.inner.clone();
-        future_into_py(py, async move {
-            inner
-                .async_store_metadata()
-                .await
-                .map_err(ZarristaError::from)?;
-            Ok(())
-        })
-    }
-
     /// Erase the group metadata from the store. Succeeds if it does not exist.
     fn erase_metadata<'py>(&self, py: Python<'py>) -> PyResult<Bound<'py, PyAny>> {
         let inner = self.inner.clone();
@@ -218,13 +216,24 @@ impl PyAsyncGroup {
         })
     }
 
+    #[getter]
+    fn store(&self) -> &PyAsyncStorage {
+        &self.store
+    }
+
+    /// Write the group metadata to the store.
+    fn store_metadata<'py>(&self, py: Python<'py>) -> PyResult<Bound<'py, PyAny>> {
+        let inner = self.inner.clone();
+        future_into_py(py, async move {
+            inner
+                .async_store_metadata()
+                .await
+                .map_err(ZarristaError::from)?;
+            Ok(())
+        })
+    }
+
     fn __repr__(&self) -> String {
         format!("AsyncGroup(path={:?})", self.inner.path().as_str())
-    }
-}
-
-impl From<Group<dyn AsyncReadableWritableListableStorageTraits>> for PyAsyncGroup {
-    fn from(inner: Group<dyn AsyncReadableWritableListableStorageTraits>) -> Self {
-        Self::new(Arc::new(inner))
     }
 }

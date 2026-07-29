@@ -14,6 +14,8 @@ use crate::metadata::PyMetadataV3;
 #[pyclass(module = "zarrista", frozen, name = "ChunkKeyEncoding", from_py_object)]
 pub struct PyChunkKeyEncoding(ChunkKeyEncoding);
 
+crate::wasm_send_sync!(PyChunkKeyEncoding);
+
 impl PyChunkKeyEncoding {
     pub fn into_inner(self) -> ChunkKeyEncoding {
         self.0
@@ -54,6 +56,18 @@ impl PyChunkKeyEncoding {
     #[getter]
     fn name(&self) -> Option<Cow<'static, str>> {
         self.0.name_v3()
+    }
+}
+
+impl From<PyChunkKeyEncoding> for ChunkKeyEncoding {
+    fn from(encoding: PyChunkKeyEncoding) -> Self {
+        encoding.0
+    }
+}
+
+impl From<ChunkKeyEncoding> for PyChunkKeyEncoding {
+    fn from(encoding: ChunkKeyEncoding) -> Self {
+        Self(encoding)
     }
 }
 

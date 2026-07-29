@@ -3,16 +3,9 @@
 import numpy as np
 import pytest
 
-from zarrista import (
-    Array,
-    ArrayBuilder,
-    ArrayBytes,
-    ChunkGrid,
-    DataType,
-    FillValue,
-    MemoryStore,
-)
+from zarrista import Array, ArrayBuilder, ArrayBytes, ChunkGrid, DataType, FillValue
 from zarrista.exceptions import ZarristaError
+from zarrista.store import MemoryStore
 
 
 def _writable_array() -> Array:

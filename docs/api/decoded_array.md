@@ -16,25 +16,17 @@ a concrete type before calling its layout-specific methods.
     options:
       show_bases: false
 
-## Tensor
-
 ::: zarrista.Tensor
     options:
       show_bases: false
-
-## VariableArray
 
 ::: zarrista.VariableArray
     options:
       show_bases: false
 
-## MaskedTensor
-
 ::: zarrista.MaskedTensor
     options:
       show_bases: false
-
-## MaskedVariableArray
 
 ::: zarrista.MaskedVariableArray
     options:

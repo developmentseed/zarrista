@@ -41,12 +41,15 @@ class Group:
         """Return the full paths of the group's direct child arrays."""
     def child_group_paths(self) -> list[str]:
         """Return the full paths of the group's direct child groups."""
-    def store_metadata(self) -> None:
-        """Write the group metadata to the store."""
     def erase_metadata(self) -> None:
         """Erase the group metadata from the store. Succeeds if it does not exist."""
     def child(self, name: str) -> Array | Group:
         """Open a direct child array or group by name."""
+    def store_metadata(self) -> None:
+        """Write the group metadata to the store."""
+    @property
+    def store(self) -> FilesystemStore | MemoryStore:
+        """Retrieve the store backing this group."""
     def __getitem__(self, name: str) -> Array | Group:
         """Open a direct child array or group by name."""
 
@@ -93,3 +96,6 @@ class AsyncGroup:
         """Erase the group metadata from the store. Succeeds if it does not exist."""
     async def open_child_async(self, name: str) -> AsyncArray | AsyncGroup:
         """Open a direct child array or group by name."""
+    @property
+    def store(self) -> AsyncStore:
+        """Retrieve the store backing this group."""

@@ -1,7 +1,8 @@
 import sys
 from typing import Any, TypeAlias
 
-from numpy.typing import NDArray
+import numpy as np
+from numpy.typing import DTypeLike, NDArray
 
 from ._dtype import DataType
 
@@ -18,8 +19,12 @@ else:
 class Tensor:
     """Fixed-width, dense decoded array data.
 
-    The decoded bytes are held zero-copy. Reinterpret them as a NumPy array with
-    `to_numpy()`, or get the raw bytes as a buffer-protocol object via `buffer()`.
+    `Tensor` implements the buffer protocol directly as an N-dimensional, typed,
+    read-only view, so for any type supported by the buffer protocol it works with
+    `memoryview(tensor)` and `np.asarray(tensor)`.
+
+    Or, use `to_numpy` to get a NumPy array view over the Rust memory. This is
+    zero-copy whenever possible.
     """
 
     @property
@@ -33,8 +38,21 @@ class Tensor:
     def to_numpy(self) -> NDArray[Any]:
         """Access a NumPy array view over Rust memory.
 
-        This is a zero-copy view via `np.frombuffer`.
+        This is a zero-copy view via `np.frombuffer`. Unlike the buffer protocol,
+        this path covers the full NumPy dtype set (e.g. complex).
         """
+    def __buffer__(self, flags: int, /) -> memoryview:
+        """Export an N-dimensional, typed, read-only PEP 3118 buffer view.
+
+        Raises `BufferError` if a writable buffer is requested, or if the dtype has no
+        standard format code.
+        """
+    def __array__(
+        self,
+        dtype: DTypeLike | None = None,
+        copy: bool | None = None,
+    ) -> NDArray[Any]:
+        """NumPy array-coercion protocol backing `np.asarray`/`np.array`."""
     def __dlpack__(
         self,
         *,
@@ -71,7 +89,8 @@ class VariableArray:
 class MaskedTensor:
     """Fixed-width decoded data with a validity mask.
 
-    Not yet exposed to NumPy.
+    Use `to_numpy` (or `np.asarray`/`np.array`) to get a `numpy.ma.MaskedArray`
+    view over the underlying Rust memory.
     """
 
     @property
@@ -80,6 +99,24 @@ class MaskedTensor:
     @property
     def dtype(self) -> DataType:
         """The Zarr data type."""
+    @property
+    def data(self) -> Tensor:
+        """The values, without the mask applied."""
+    @property
+    def mask(self) -> Tensor:
+        """The validity mask (`bool`, `True` = valid/present)."""
+    def to_numpy(self) -> np.ma.MaskedArray:
+        """Convert to a `numpy.ma.MaskedArray` view over Rust memory.
+
+        NumPy's masked-array convention is the inverse of ours: `True` marks
+        *masked* (missing) elements, so the validity mask is negated.
+        """
+    def __array__(
+        self,
+        dtype: DTypeLike | None = None,
+        copy: bool | None = None,
+    ) -> np.ma.MaskedArray:
+        """NumPy array-coercion protocol backing `np.asarray`/`np.array`."""
 
 class MaskedVariableArray:
     """Variable-length decoded data with a validity mask.

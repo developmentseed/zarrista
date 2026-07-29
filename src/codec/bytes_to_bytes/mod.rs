@@ -26,6 +26,8 @@ use crate::metadata::{PyConfiguration, PyMetadataV3};
 )]
 pub struct PyBytesToBytesCodec(Arc<dyn BytesToBytesCodecTraits>);
 
+crate::wasm_send_sync!(PyBytesToBytesCodec);
+
 impl PyBytesToBytesCodec {
     pub fn new(codec: Arc<dyn BytesToBytesCodecTraits>) -> Self {
         Self(codec)

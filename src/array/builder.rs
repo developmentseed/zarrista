@@ -1,20 +1,19 @@
 use pyo3::exceptions::PyTypeError;
 use pyo3::prelude::*;
-use pyo3_async_runtimes::tokio::future_into_py;
 use zarrs::array::ArrayBuilder;
 
-use crate::array::util::PyArrayShape;
-use crate::array::{PyArray, PyAsyncArray, PyChunkGrid, PyChunkKeyEncoding};
+use crate::array::type_wrappers::PyDimensionName;
+use crate::array::{PyArray, PyArrayShape, PyChunkGrid, PyChunkKeyEncoding, PyFillValue};
 use crate::codec::{PyArrayToArrayCodec, PyArrayToBytesCodec, PyBytesToBytesCodec};
 use crate::dtype::PyDataType;
-use crate::error::ZarristaError;
 use crate::error::ZarristaResult;
-use crate::fill_value::PyFillValue;
 use crate::metadata::{PyArrayMetadataV3, PyAttributes};
-use crate::storage::{PyAsyncStorage, PySyncStorage};
+use crate::storage::PySyncStorage;
 
 #[pyclass(module = "zarrista.array", frozen, name = "ArrayBuilder")]
 pub struct PyArrayBuilder(ArrayBuilder);
+
+crate::wasm_send_sync!(PyArrayBuilder);
 
 impl PyArrayBuilder {
     fn with(&self, f: impl FnOnce(&mut ArrayBuilder)) -> Self {
@@ -39,9 +38,12 @@ impl PyArrayBuilder {
     fn like<'py>(array: Bound<'py, PyAny>) -> ZarristaResult<Self> {
         if let Ok(array) = array.cast::<PyArray>() {
             Ok(Self(ArrayBuilder::from_array(array.get().inner())))
-        } else if let Ok(array) = array.cast::<PyAsyncArray>() {
-            Ok(Self(ArrayBuilder::from_array(array.get().inner())))
         } else {
+            #[cfg(feature = "async")]
+            if let Ok(array) = array.cast::<crate::array::PyAsyncArray>() {
+                return Ok(Self(ArrayBuilder::from_array(array.get().inner())));
+            }
+
             Err(PyTypeError::new_err(format!(
                 "expected an Array or AsyncArray, got {}",
                 array.get_type().name()?
@@ -79,28 +81,31 @@ impl PyArrayBuilder {
     }
 
     fn create(&self, store: PySyncStorage, path: &str) -> ZarristaResult<PyArray> {
-        let array = self.0.build_arc(store.into_inner(), path)?;
+        let array = self.0.build_arc(store.inner(), path)?;
         array.store_metadata()?;
-        Ok(array.into())
+        Ok(PyArray::new(array, store))
     }
 
+    #[cfg(feature = "async")]
     fn create_async<'py>(
         &self,
         py: Python<'py>,
-        store: PyAsyncStorage,
+        store: crate::storage::PyAsyncStorage,
         path: &str,
     ) -> PyResult<Bound<'py, PyAny>> {
+        use crate::error::ZarristaError;
+
         let array = self
             .0
-            .build_arc(store.into_inner(), path)
+            .build_arc(store.inner(), path)
             .map_err(ZarristaError::from)?;
 
-        future_into_py(py, async move {
+        pyo3_async_runtimes::tokio::future_into_py(py, async move {
             array
                 .async_store_metadata()
                 .await
                 .map_err(ZarristaError::from)?;
-            Ok(PyAsyncArray::from(array))
+            Ok(crate::array::PyAsyncArray::new(array, store))
         })
     }
 
@@ -115,7 +120,7 @@ impl PyArrayBuilder {
         })
     }
 
-    fn dimension_names(&self, dimension_names: Option<Vec<Option<String>>>) -> Self {
+    fn dimension_names(&self, dimension_names: Option<Vec<PyDimensionName>>) -> Self {
         self.with(|builder| {
             builder.dimension_names(dimension_names);
         })
@@ -142,7 +147,7 @@ impl PyArrayBuilder {
 
     fn subchunk_shape(&self, subchunk_shape: Option<PyArrayShape>) -> Self {
         self.with(|builder| {
-            builder.subchunk_shape(subchunk_shape.map(|s| s.into()));
+            builder.subchunk_shape(subchunk_shape);
         })
     }
 

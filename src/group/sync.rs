@@ -20,11 +20,17 @@ use zarrs::storage::ReadableWritableListableStorageTraits;
 #[pyclass(module = "zarrista", frozen, name = "Group")]
 pub struct PyGroup {
     pub(crate) inner: Arc<Group<dyn ReadableWritableListableStorageTraits>>,
+    store: PySyncStorage,
 }
 
+crate::wasm_send_sync!(PyGroup);
+
 impl PyGroup {
-    pub(crate) fn new(inner: Arc<Group<dyn ReadableWritableListableStorageTraits>>) -> Self {
-        Self { inner }
+    pub(crate) fn new(
+        inner: Arc<Group<dyn ReadableWritableListableStorageTraits>>,
+        store: PySyncStorage,
+    ) -> Self {
+        Self { inner, store }
     }
 
     fn storage(&self) -> Arc<dyn ReadableWritableListableStorageTraits> {
@@ -44,9 +50,8 @@ impl PyGroup {
         text_signature = "(store, path='/')"
     )]
     fn open(store: PySyncStorage, path: PyNodePath) -> ZarristaResult<Self> {
-        let store = store.into_inner();
-        let inner = Group::open(store, path.as_str())?;
-        Ok(Self::new(Arc::new(inner)))
+        let inner = Group::open(store.inner(), path.as_str())?;
+        Ok(Self::new(Arc::new(inner), store))
     }
 
     /// Names of the direct child arrays.
@@ -72,7 +77,7 @@ impl PyGroup {
             .into_iter()
             .find(|child| child.name().as_str() == name.as_str())
             .ok_or(PyKeyError::new_err(format!("child {name} not found")))?;
-        Ok(PyNode::new(selected_child, self.storage()))
+        Ok(PyNode::new(selected_child, self.store.clone()))
     }
 
     /// Every node under the group, recursively, as `Array`/`Group` objects.
@@ -86,12 +91,12 @@ impl PyGroup {
                     NodeMetadata::Array(array_metadata) => {
                         let array =
                             Array::new_with_metadata(storage, path.as_str(), array_metadata)?;
-                        Ok(PyArray::new(Arc::new(array)).into())
+                        Ok(PyArray::new(Arc::new(array), self.store.clone()).into())
                     }
                     NodeMetadata::Group(group_metadata) => {
                         let group =
                             Group::new_with_metadata(storage, path.as_str(), group_metadata)?;
-                        Ok(PyGroup::new(Arc::new(group)).into())
+                        Ok(PyGroup::new(Arc::new(group), self.store.clone()).into())
                     }
                 }
             })
@@ -104,7 +109,7 @@ impl PyGroup {
             .inner
             .child_arrays()?
             .into_iter()
-            .map(|array| array.into())
+            .map(|array| PyArray::new(Arc::new(array), self.store.clone()))
             .collect())
     }
 
@@ -114,7 +119,7 @@ impl PyGroup {
             .inner
             .child_groups()?
             .into_iter()
-            .map(Self::from)
+            .map(|group| PyGroup::new(Arc::new(group), self.store.clone()))
             .collect())
     }
 
@@ -148,31 +153,24 @@ impl PyGroup {
             .collect())
     }
 
-    /// Write the group metadata to the store.
-    fn store_metadata(&self) -> ZarristaResult<()> {
-        self.inner.store_metadata()?;
-        Ok(())
-    }
-
     /// Erase the group metadata from the store. Succeeds if it does not exist.
     fn erase_metadata(&self) -> ZarristaResult<()> {
         self.inner.erase_metadata()?;
         Ok(())
     }
 
+    #[getter]
+    fn store(&self) -> PySyncStorage {
+        self.store.clone()
+    }
+
+    /// Write the group metadata to the store.
+    fn store_metadata(&self) -> ZarristaResult<()> {
+        self.inner.store_metadata()?;
+        Ok(())
+    }
+
     fn __repr__(&self) -> String {
         format!("Group(path={:?})", self.inner.path().as_str())
-    }
-}
-
-impl From<Group<dyn ReadableWritableListableStorageTraits>> for PyGroup {
-    fn from(inner: Group<dyn ReadableWritableListableStorageTraits>) -> Self {
-        Self::new(Arc::new(inner))
-    }
-}
-
-impl From<Arc<Group<dyn ReadableWritableListableStorageTraits>>> for PyGroup {
-    fn from(inner: Arc<Group<dyn ReadableWritableListableStorageTraits>>) -> Self {
-        Self::new(inner)
     }
 }
