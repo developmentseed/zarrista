@@ -125,9 +125,9 @@ from zarrista.exceptions import CodecError, ZarristaError, NotFoundError
 try:
     array[...]
 except CodecError as e:
-    ...                      # specific
+    ...  # specific
 except ZarristaError as e:
-    ...                      # catch-all base still works
+    ...  # catch-all base still works
 ```
 
 ## Future extensibility
