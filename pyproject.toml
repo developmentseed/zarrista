@@ -39,7 +39,7 @@ dev = [
     "obstore>=0.10.1",
     "pytest>=8.0",
     "pytest-asyncio>=1.4",
-    "ruff>=0.6",
+    "ruff>=0.16",
     "zarr>=3",
 ]
 docs = [
