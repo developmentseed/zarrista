@@ -2,7 +2,7 @@ from collections.abc import Buffer
 from types import EllipsisType
 from typing import TypeAlias, Unpack
 
-from zarr_metadata import ArrayMetadataV3, JSONValue
+from zarr_metadata import JSONValue, ZarrV3ArrayMetadataJSON
 
 from zarrista.codec import (
     ArrayToArrayCodec,
@@ -35,7 +35,7 @@ class Array:
         """Open the array stored at `path` in `store`."""
     @staticmethod
     def from_metadata(
-        metadata: ArrayMetadataV3,
+        metadata: ZarrV3ArrayMetadataJSON,
         store: FilesystemStore | MemoryStore,
         path: str = "/",
     ) -> Array:
@@ -65,7 +65,7 @@ class Array:
     def dtype(self) -> DataType:
         """The Zarr data type."""
     @property
-    def metadata(self) -> ArrayMetadataV3:
+    def metadata(self) -> ZarrV3ArrayMetadataJSON:
         """The array's full Zarr v3 metadata."""
     @property
     def ndim(self) -> int:
@@ -165,7 +165,7 @@ class AsyncArray:
         """
     @staticmethod
     def from_metadata(
-        metadata: ArrayMetadataV3,
+        metadata: ZarrV3ArrayMetadataJSON,
         store: AsyncStore,
         path: str = "/",
     ) -> AsyncArray:
@@ -195,7 +195,7 @@ class AsyncArray:
     def dtype(self) -> DataType:
         """The Zarr data type."""
     @property
-    def metadata(self) -> ArrayMetadataV3:
+    def metadata(self) -> ZarrV3ArrayMetadataJSON:
         """The array's full Zarr v3 metadata."""
     @property
     def ndim(self) -> int:

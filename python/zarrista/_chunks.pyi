@@ -1,7 +1,7 @@
 from collections.abc import Sequence
 from typing import TypeAlias
 
-from zarr_metadata import NamedConfigV3
+from zarr_metadata import ZarrV3NamedConfigJSON
 
 _RunLength: TypeAlias = int | tuple[int, int]
 """One run of a rectilinear chunk edge: a single chunk size, or a
@@ -33,10 +33,13 @@ class ChunkGrid:
         Experimental and may be incompatible with other Zarr V3 implementations.
         """
     @staticmethod
-    def from_metadata(metadata: NamedConfigV3, shape: Sequence[int]) -> ChunkGrid:
+    def from_metadata(
+        metadata: ZarrV3NamedConfigJSON,
+        shape: Sequence[int],
+    ) -> ChunkGrid:
         """Build a chunk grid from its Zarr v3 metadata and the array shape."""
     @property
-    def metadata(self) -> NamedConfigV3:
+    def metadata(self) -> ZarrV3NamedConfigJSON:
         """The chunk grid's Zarr v3 metadata."""
     @property
     def ndim(self) -> int:

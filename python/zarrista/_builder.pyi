@@ -1,6 +1,6 @@
 from collections.abc import Mapping, Sequence
 
-from zarr_metadata import ArrayMetadataV3, JSONValue
+from zarr_metadata import JSONValue, ZarrV3ArrayMetadataJSON
 
 from zarrista.codec import (
     ArrayToArrayCodec,
@@ -81,5 +81,5 @@ class ArrayBuilder:
         """Build the array in `store` at `path` and return it."""
     async def create_async(self, store: AsyncStore, path: str) -> AsyncArray:
         """Build the array in an async `store` at `path` and return it."""
-    def create_metadata(self) -> ArrayMetadataV3:
+    def create_metadata(self) -> ZarrV3ArrayMetadataJSON:
         """Build the array's Zarr v3 metadata without touching a store."""
