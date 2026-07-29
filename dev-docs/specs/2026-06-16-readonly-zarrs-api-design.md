@@ -56,9 +56,9 @@ store = zarrista.MemoryStore()
 ### Opening — free `open()`, auto-detecting array vs group
 
 ```python
-node = zarrista.open(store, "/temp")            # -> Array | Group
-arr  = zarrista.open(store, "/temp", kind="array")
-grp  = zarrista.open(store)                       # path defaults to "/"
+node = zarrista.open(store, "/temp")  # -> Array | Group
+arr = zarrista.open(store, "/temp", kind="array")
+grp = zarrista.open(store)  # path defaults to "/"
 ```
 
 Backed by `Array::open` / `Group::open`. `kind` ("array" | "group") narrows and
@@ -75,10 +75,10 @@ Numpy-style basic indexing via `__getitem__`, returning a C-order
 `numpy.ndarray`:
 
 ```python
-arr[:]              # whole array
-arr[0:10, :]        # sub-region
-arr[5, 0:4]         # integer index drops that axis
-arr[...]            # ellipsis / implicit trailing full-axis
+arr[:]  # whole array
+arr[0:10, :]  # sub-region
+arr[5, 0:4]  # integer index drops that axis
+arr[...]  # ellipsis / implicit trailing full-axis
 ```
 
 - Supported index elements: `int`, `slice` with **step 1 / None**, full `:`,
@@ -98,9 +98,9 @@ Variable-length (`string` / `bytes`) raise `NotImplementedError` in this draft.
 zarrs filesystem + memory stores are listable, so:
 
 ```python
-child = grp["temperature"]              # __getitem__ -> Array | Group
-grp.attrs                                # dict
-grp.array_keys() / grp.group_keys()      # children names
+child = grp["temperature"]  # __getitem__ -> Array | Group
+grp.attrs  # dict
+grp.array_keys() / grp.group_keys()  # children names
 ```
 
 ## Error handling
