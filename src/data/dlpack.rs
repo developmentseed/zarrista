@@ -19,7 +19,7 @@ impl PyTensor {
         &self,
         _kwargs: Option<Bound<'py, PyDict>>,
     ) -> ZarristaResult<legacy::Dlpack> {
-        let dtype = self.dlpack_data_type()?;
+        let dlpack_dtype = self.dlpack_data_type()?;
         let shape = self
             .shape
             .iter()
@@ -35,6 +35,7 @@ impl PyTensor {
             Box::new(self.bytes.clone()),
             CopiedSlice::new(shape, strides),
         );
+
         // SAFETY: `data` points at the start of the `Bytes` allocation moved into the context, so
         // it stays valid until the deleter runs. The shape is the tensor's own shape, the strides
         // are row-major compact, and `dtype` is the element type those bytes were decoded as, so
@@ -43,7 +44,7 @@ impl PyTensor {
 
         Ok(builder
             .device(DLDevice::CPU)
-            .dtype(dtype)
+            .dtype(dlpack_dtype)
             .try_build()
             .map_err(|err| PyValueError::new_err(err.to_string()))?)
     }
