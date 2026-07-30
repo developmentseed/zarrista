@@ -1,9 +1,10 @@
 # DecodedArray
 
-Reading from an [`Array`][zarrista.Array] (via `retrieve_array_subset`,
-`retrieve_chunk`, or `[...]`) returns a `DecodedArray`: one of four concrete result
-types, chosen by the decoded byte layout of the dtype. Use `isinstance` to narrow to
-a concrete type before calling its layout-specific methods.
+A read from an [`Array`][zarrista.Array] returns a `DecodedArray`. This applies to
+`retrieve_array_subset`, `retrieve_chunk`, and `[...]`. A `DecodedArray` is one of
+four concrete result types, and the decoded byte layout of the data type selects
+which one. Use `isinstance` to narrow to a concrete type before you call a method
+that belongs to one layout.
 
 - [`Tensor`](#zarrista.Tensor) — fixed-width, dense data.
 - [`VariableArray`](#zarrista.VariableArray) — variable-length data (e.g. strings or

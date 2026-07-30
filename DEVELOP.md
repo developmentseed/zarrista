@@ -17,11 +17,11 @@ uv run --no-project maturin develop --uv --release
 uv run --no-project pytest
 ```
 
-The `--no-project` is annoying but unavoidable in our current setup. Otherwise `uv` will try to build the rust library _in release mode, as a dependency of the project_ before reaching `uv sync` or `uv run`.
+The `--no-project` is annoying, but our current setup makes it necessary. Without it, `uv` tries to build the Rust library _in release mode, as a dependency of the project_, before it gets to `uv sync` or `uv run`.
 
 ## Formatting
 
-Rust code is formatted with `rustfmt`. We use unstable import sorting options, so you must use nightly to format code.
+We format Rust code with `rustfmt`. We use unstable import sorting options, so you must use nightly to format the code.
 
 ```bash
 rustup toolchain install nightly-2026-06-01
@@ -30,7 +30,7 @@ rustup toolchain install nightly-2026-06-01
 cargo +nightly-2026-06-01 fmt --all -- --unstable-features --config imports_granularity=Module,group_imports=StdExternalCrate
 ```
 
-Python code is formatted and linted with `ruff`:
+We format and lint Python code with `ruff`:
 
 ```bash
 uv run --no-project ruff check --fix
@@ -41,6 +41,16 @@ uv run --no-project ruff format
 
 Docstrings use Google style. We use pydoclint and `mkdocs build --strict` to
 enforce this in CI.
+
+pydoclint runs with `skip-checking-short-docstrings = false`. Therefore every
+method that is not a property needs full `Args:` and `Returns:` sections, and a
+bare summary line does not pass. Properties keep a one-line description.
+
+Confirm each `Raises:` entry by calling the built extension. The exception types
+are not always the obvious ones: `Array.open` raises `ArrayCreateError` for
+missing metadata but `ValueError` for a path that is not absolute, and a
+read-only array raises `ArrayError` from `store_chunk` but `StorageError` from
+`erase_chunk`.
 
 ```bash
 # Validate docstring sections with pydoclint.
