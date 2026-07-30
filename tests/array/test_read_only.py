@@ -46,6 +46,12 @@ def test_read_only_erase_metadata_raises():
         ro.erase_metadata()
 
 
+def test_read_only_erase_chunks_raises():
+    ro = _writable_array().read_only()
+    with pytest.raises(ZarristaError, match="read only"):
+        ro.erase_chunks(...)
+
+
 def test_writable_array_still_writes():
     """The original array (and any non-read-only array) writes without error."""
     array = _writable_array()

@@ -4,7 +4,7 @@ use std::sync::Arc;
 
 use pyo3::prelude::*;
 use pyo3_bytes::PyBytes;
-use zarrs::array::{Array, ArrayShardedReadableExt, ArrayShardedReadableExtCache};
+use zarrs::array::{Array, ArrayShardedReadableExt, ArrayShardedReadableExtCache, ArraySubset};
 use zarrs::storage::ReadableWritableListableStorageTraits;
 
 use crate::array::PyChunkIndices;
@@ -37,6 +37,16 @@ impl PyArray {
 
     pub fn inner(&self) -> &Arc<Array<dyn ReadableWritableListableStorageTraits>> {
         &self.inner
+    }
+
+    /// Resolve a selection against the array's shape
+    fn array_subset(&self, selection: &PySelection) -> ZarristaResult<ArraySubset> {
+        selection.to_array_subset(self.inner.shape())
+    }
+
+    /// Resolve a selection against the array's **chunk grid** shape
+    fn chunk_grid_subset(&self, selection: &PySelection) -> ZarristaResult<ArraySubset> {
+        selection.to_array_subset(self.inner.chunk_grid_shape())
     }
 }
 
@@ -103,6 +113,12 @@ impl PyArray {
         Ok(())
     }
 
+    fn erase_chunks(&self, chunks: PySelection) -> ZarristaResult<()> {
+        let chunks = self.chunk_grid_subset(&chunks)?;
+        self.inner.erase_chunks(&chunks)?;
+        Ok(())
+    }
+
     fn erase_metadata(&self) -> ZarristaResult<()> {
         self.inner.erase_metadata()?;
         Ok(())
@@ -122,7 +138,7 @@ impl PyArray {
     /// Returns one of the decoded result classes (`Tensor`, `VariableArray`,
     /// `MaskedTensor`, `MaskedVariableArray`) depending on the dtype layout.
     fn retrieve_array_subset(&self, selection: PySelection) -> ZarristaResult<DecodedArray> {
-        let array_subset = selection.to_array_subset(self.inner.shape())?;
+        let array_subset = self.array_subset(&selection)?;
         Ok(self.inner.retrieve_array_subset(&array_subset)?)
     }
 
