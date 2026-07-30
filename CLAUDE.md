@@ -39,16 +39,26 @@ exposed to Python via `pyo3`.
 
 ## Documentation conventions
 
-- **Write all documentation in ASD-STE100 Simplified Technical English.** This
-  applies to docstrings, `.pyi` stubs, Rust doc comments, Markdown pages, and the
-  README. Use one topic per sentence, keep sentences short (20 words or fewer for
-  descriptive text, 20 for instructions), use the active voice, use the approved
-  meaning of each word, and do not use synonyms for the same concept. Do not omit
-  articles or relative pronouns (`that`, `which`) to save space.
+- **Write all documentation in the spirit of ASD-STE100 Simplified Technical
+  English.** This applies to docstrings, `.pyi` stubs, Rust doc comments,
+  Markdown pages, and the README. Use one topic per sentence. Keep sentences
+  short: 20 words or fewer for instructions, 25 or fewer for descriptions. Use
+  the active voice. Use one term for one concept, and do not use synonyms. Do
+  not omit articles or relative pronouns (`that`, `which`) to save space. Keep
+  the Zarr domain terms (`codec`, `sharding`, `chunk grid`) as they are.
+- **Use the active voice for functions and methods, and a noun phrase for
+  everything else.** A function or method docstring starts with an imperative
+  verb: "Construct a regular grid...", "Return the store key...". A type alias,
+  class, attribute, or property docstring names what the thing *is*: "The chunk
+  sizes along one dimension." Do not write "Give a single chunk size" on a type.
 - **Write all Python docstrings in Google style.** Use `Args:`, `Returns:`,
   `Raises:`, and `Examples:` sections. Do not use NumPy underlines or Sphinx
   `:param:` fields. Every documented parameter must exist in the signature, and
   types belong in the signature, not in the docstring.
+- **Verify each `Raises:` entry before you write it.** Name the concrete
+  exception type, and confirm it by calling the built extension. Do not infer
+  the type from the Rust source, and do not guess. If you cannot confirm it,
+  omit the section.
 
 ## Python conventions
 
