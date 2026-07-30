@@ -1,6 +1,6 @@
 //! Shared `#[pymethods]` for `PyArray` / `PyAsyncArray`.
 //!
-//! These accessors only read from `self.inner` and perform no I/O, so they are
+//! These methods only read from `self.inner` and perform no I/O, so they are
 //! identical between the sync and async variants. The macro emits a separate
 //! `#[pymethods]` block (requires the `multiple-pymethods` pyo3 feature).
 macro_rules! shared_array_methods {
@@ -163,6 +163,23 @@ macro_rules! shared_array_methods {
             #[getter]
             fn subset_all(&self) -> $crate::array::PyArraySubset {
                 self.inner.subset_all().into()
+            }
+
+            /// Return a new array with `shape`, leaving this one unchanged.
+            fn with_shape(
+                &self,
+                shape: $crate::array::PyArrayShape,
+            ) -> $crate::error::ZarristaResult<Self> {
+                // `Array` is not `Clone`; `with_storage` copies every field, and
+                // handing it the array's own storage keeps the type parameter
+                // unchanged. `?` runs before `Self::new`, so a shape rejected by
+                // the chunk grid never yields an object.
+                let mut resized = self.inner.with_storage(self.inner.storage());
+                resized.set_shape(shape)?;
+                Ok(Self::new(
+                    ::std::sync::Arc::new(resized),
+                    self.store.clone(),
+                ))
             }
         }
     };
