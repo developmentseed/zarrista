@@ -25,6 +25,26 @@ jobs:
         with:
           args: "format --check"
 
+  docstrings:
+    name: Check docstrings
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+        with:
+          enable-cache: true
+
+      # pydoclint only needs to parse pyi source; we don't need to compile the
+      # Rust extension.
+      - name: Install lint dependencies
+        run: uv sync --no-install-package zarrista
+
+      # pydoclint only finds *.py normally; we explicitly pass .pyi paths.
+      - name: Check docstrings
+        run: uv run --no-project pydoclint python $(find python -name '*.pyi')
+
   docs:
     name: Build docs
     runs-on: ubuntu-latest
