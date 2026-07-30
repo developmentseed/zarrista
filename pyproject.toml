@@ -21,7 +21,7 @@ dynamic = ["version"]
 dependencies = [
     # Type-only package providing Zarr v3 metadata TypedDicts/Literals used in
     # the `.pyi` stubs (data-type names, codec configs, array metadata).
-    "zarr-metadata>=0.3",
+    "zarr-metadata>=0.4",
 ]
 
 [tool.maturin]
@@ -39,7 +39,7 @@ dev = [
     "obstore>=0.10.1",
     "pytest>=8.0",
     "pytest-asyncio>=1.4",
-    "ruff>=0.6",
+    "ruff>=0.16",
     "zarr>=3",
 ]
 docs = [
@@ -70,6 +70,7 @@ extend-exclude = ["tests/example.py"]
 [tool.ruff.lint]
 select = ["ALL"]
 ignore = [
+    "CPY001", # copyright header
     "D203",   # incompatible with D211
     "D213",   # incompatible with D212
     "EM101",  # raw string in exception
