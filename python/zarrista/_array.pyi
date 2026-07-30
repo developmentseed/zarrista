@@ -205,6 +205,22 @@ class Array:
 
         Erasing an absent chunk is a no-op.
         """
+    def erase_chunks(self, chunks: Selection) -> None:
+        """Delete the specified chunks from the store.
+
+        `chunks` is a numpy-style selection in **chunk-grid** coordinates, not
+        element coordinates.
+
+        On an array with chunk shape `(10, 10)`, `erase_chunks((0, slice(0, 2)))` erases
+        the two chunks covering elements `[0:10, 0:20]`.
+
+        An empty selection (`()` or `...`) erases every chunk.
+
+        For a sharded array the chunk grid is the shard grid, so whole shards are
+        erased.
+
+        Erasing absent chunks is a no-op.
+        """
     def erase_metadata(self) -> None:
         """Delete the array's metadata from the store."""
     def read_only(self) -> Array:
@@ -438,6 +454,22 @@ class AsyncArray:
         """Delete the chunk at `chunk_indices` from the store.
 
         Erasing an absent chunk is a no-op.
+        """
+    async def erase_chunks(self, chunks: Selection) -> None:
+        """Delete the specified chunks from the store.
+
+        `chunks` is a numpy-style selection in **chunk-grid** coordinates, not
+        element coordinates.
+
+        On an array with chunk shape `(10, 10)`, `erase_chunks((0, slice(0, 2)))` erases
+        the two chunks covering elements `[0:10, 0:20]`.
+
+        An empty selection (`()` or `...`) erases every chunk.
+
+        For a sharded array the chunk grid is the shard grid, so whole shards are
+        erased.
+
+        Erasing absent chunks is a no-op.
         """
     async def erase_metadata(self) -> None:
         """Delete the array's metadata from the store."""
