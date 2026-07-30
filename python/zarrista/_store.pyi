@@ -5,24 +5,32 @@ from icechunk import Session
 from obstore.store import ObjectStore
 
 AsyncStore: TypeAlias = ObjectStore | Session
-"""A store accepted by the async API.
+"""A store that the async API accepts.
 
-Either an obstore [`ObjectStore`][obstore.store.ObjectStore] (any object-store
-backend, e.g. S3, GCS, local) or an icechunk [`Session`][icechunk.Session]
-(a transactional, versioned store).
+This is either an obstore [`ObjectStore`][obstore.store.ObjectStore] or an
+icechunk [`Session`][icechunk.Session]. An `ObjectStore` supports any
+object-store backend, such as S3, GCS, or the local filesystem. A `Session`
+gives a transactional, versioned store.
 
-Note: an icechunk `Session` is serialized and reconstructed inside the Rust
-extension, which runs as a separate icechunk instance. The session's data must
-therefore live in storage that instance can also read (local filesystem, S3,
-etc.). Sessions backed by `icechunk.in_memory_storage()` will not work, since
-that data only exists in the Python process and reads will fail to find it.
+Note: the Rust extension serializes an icechunk `Session` and reconstructs it as
+a separate icechunk instance. That instance must also be able to read the
+session's data. Therefore, keep the data in storage such as a local filesystem
+or S3. A session from `icechunk.in_memory_storage()` does not work, because the
+data exists only in the Python process, and the reads cannot find it.
 """
 
 class FilesystemStore:
     """A store backed by a local directory."""
 
     def __init__(self, path: str | Path) -> None:
-        """Open a filesystem store rooted at `path`."""
+        """Open a filesystem store rooted at `path`.
+
+        This does not check that `path` exists. The store reports an error only
+        when you read from it or write to it.
+
+        Args:
+            path: The path to the root directory of the store.
+        """
 
 class MemoryStore:
     """An in-memory store, primarily useful for testing."""

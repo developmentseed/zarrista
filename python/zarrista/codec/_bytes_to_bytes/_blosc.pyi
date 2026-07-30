@@ -25,8 +25,22 @@ def blosc(
 ) -> BytesToBytesCodec:
     """Construct a `blosc` codec from its parameters.
 
-    `clevel` is the compression level, an integer from 0 (no compression) to 9
-    (most compression). `typesize` is required (a positive integer) whenever
-    `shuffle_mode` is not `"noshuffle"`. The block size is chosen automatically
-    when `blocksize` is `None` or `0`.
+    Args:
+        cname: The name of the internal compressor.
+        clevel: The compression level, from 0 (no compression) to 9 (most
+            compression).
+        shuffle_mode: The shuffle mode to apply before compression.
+        blocksize: The block size in bytes. Give `None` or `0` to let blosc
+            choose the block size.
+        typesize: The size of one element in bytes. This must be a positive
+            integer if `shuffle_mode` is not `"noshuffle"`.
+
+    Returns:
+        The new codec.
+
+    Raises:
+        ValueError: If `cname` is not a known compressor, or if `clevel` is
+            outside the range 0 to 9.
+        PluginCreateError: If `shuffle_mode` is not `"noshuffle"` and
+            `typesize` is `None` or `0`.
     """

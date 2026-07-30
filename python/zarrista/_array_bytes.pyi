@@ -1,10 +1,10 @@
 from collections.abc import Buffer
 
 class ArrayBytes:
-    """Chunk bytes as input or output from a codec.
+    """Chunk bytes as input to or output from a codec.
 
-    Wraps a data buffer, plus optional element byte offsets (for variable-length
-    data) and an optional validity mask.
+    The object holds a data buffer. It can also hold the element byte offsets
+    for variable-length data, and a validity mask.
     """
 
     def __init__(
@@ -14,7 +14,18 @@ class ArrayBytes:
         mask: Buffer | None = None,
         offsets: list[int] | None = None,
     ) -> None:
-        """Construct from a data buffer, with an optional mask and offsets."""
+        """Construct from a data buffer, with an optional mask and offsets.
+
+        This does not check `mask` or `offsets` against `bytes`. The codec
+        pipeline reports an error only when it uses the data.
+
+        Args:
+            bytes: The element bytes.
+            mask: The validity mask, with one byte per element. Give `None` for
+                data that is not optional.
+            offsets: The element byte offsets. Give `None` for fixed-length
+                data.
+        """
     @property
     def bytes(self) -> Buffer:
         """The underlying element bytes (the data buffer for optional bytes)."""
