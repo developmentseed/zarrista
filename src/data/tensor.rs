@@ -1,20 +1,15 @@
-use std::ffi::{c_int, c_void};
+use std::ffi::c_int;
 use std::sync::Arc;
 
 use bytes::Bytes;
-use dlpark::SafeManagedTensor;
-use dlpark::ffi::{Device, DeviceType};
-use dlpark::traits::{RowMajorCompactLayout, TensorLike};
 use pyo3::exceptions::{PyNotImplementedError, PyValueError};
 use pyo3::ffi;
 use pyo3::prelude::*;
-use pyo3::types::PyDict;
 use pyo3_bytes::PyBytes;
-use zarrs::array::DataType;
+use zarrs::array::{ArrayError, DataType, DataTypeSize};
 
 use crate::data::buffer_protocol::PyTensorBuffer;
 use crate::dtype::PyDataType;
-use crate::error::{ZarristaError, ZarristaResult};
 
 /// Fixed-width, dense decoded data.
 ///
@@ -23,21 +18,52 @@ use crate::error::{ZarristaError, ZarristaResult};
 #[derive(Clone)]
 #[pyclass(module = "zarrista", frozen, name = "Tensor", skip_from_py_object)]
 pub struct PyTensor {
-    bytes: Bytes,
-    data_type: DataType,
-    shape: Arc<[u64]>,
+    pub(super) bytes: Bytes,
+    pub(super) data_type: DataType,
+    pub(super) shape: Arc<[u64]>,
 }
 
 crate::wasm_send_sync!(PyTensor);
 
 impl PyTensor {
     /// Construct a new PyTensor from the given bytes, data type, and shape.
-    pub fn new(bytes: Bytes, data_type: DataType, shape: Arc<[u64]>) -> Self {
-        Self {
+    ///
+    /// # Errors
+    ///
+    /// - If `data_type` is not fixed-size
+    /// - If `bytes` does not hold exactly `product(shape) * item_size` bytes.
+    pub fn new(bytes: Bytes, data_type: DataType, shape: Arc<[u64]>) -> Result<Self, ArrayError> {
+        let DataTypeSize::Fixed(item_size) = data_type.size() else {
+            return Err(ArrayError::Other(format!(
+                "Tensor requires a fixed-size data type, but {data_type} is variable-size"
+            )));
+        };
+
+        let expected = shape
+            .iter()
+            .try_fold(item_size, |acc, &dim| {
+                usize::try_from(dim)
+                    .ok()
+                    .and_then(|dim| acc.checked_mul(dim))
+            })
+            .ok_or_else(|| {
+                ArrayError::Other(format!(
+                    "Tensor shape {shape:?} * item size {item_size} overflows usize"
+                ))
+            })?;
+
+        if bytes.len() != expected {
+            return Err(ArrayError::UnexpectedChunkDecodedSize(
+                bytes.len(),
+                expected,
+            ));
+        }
+
+        Ok(Self {
             bytes,
             data_type,
             shape,
-        }
+        })
     }
 
     pub fn into_inner(self) -> (Bytes, DataType, Arc<[u64]>) {
@@ -112,21 +138,6 @@ impl PyTensor {
         }
     }
 
-    /// Export via the DLPack protocol so consumers (e.g. `np.from_dlpack`) can
-    /// import this data zero-copy.
-    #[pyo3(signature = (**_kwargs))]
-    fn __dlpack__<'py>(
-        &self,
-        _kwargs: Option<Bound<'py, PyDict>>,
-    ) -> ZarristaResult<SafeManagedTensor> {
-        SafeManagedTensor::new(self.clone())
-    }
-
-    /// The DLPack device this data lives on: `(device_type, device_id)`. Always CPU.
-    fn __dlpack_device__(&self) -> (i32, i32) {
-        (DeviceType::Cpu as i32, 0)
-    }
-
     /// Export as a PEP 3118 buffer: an N-dimensional, typed, read-only,
     /// zero-copy view. Powers `memoryview(tensor)` and `np.asarray(tensor)`.
     ///
@@ -146,66 +157,6 @@ impl PyTensor {
     /// Free the `format` string and the `shape`/`strides` arrays allocated by
     /// `__getbuffer__`. The `obj` reference is released by `PyBuffer_Release`.
     unsafe fn __releasebuffer__(&self, _view: *mut ffi::Py_buffer) {}
-}
-
-impl TensorLike<RowMajorCompactLayout> for PyTensor {
-    type Error = ZarristaError;
-
-    fn data_ptr(&self) -> *mut c_void {
-        self.bytes.as_ptr().cast::<c_void>().cast_mut()
-    }
-
-    fn memory_layout(&self) -> RowMajorCompactLayout {
-        let shape = self
-            .shape()
-            .iter()
-            .map(|s| i64::try_from(*s).expect("overflow converting shape to i64"))
-            .collect();
-        RowMajorCompactLayout::new(shape)
-    }
-
-    fn byte_offset(&self) -> u64 {
-        0
-    }
-
-    fn device(&self) -> Result<Device, Self::Error> {
-        Ok(Device::CPU)
-    }
-
-    fn data_type(&self) -> Result<dlpark::ffi::DataType, Self::Error> {
-        use zarrs::array::data_type::*;
-
-        let dtype = &self.data_type;
-        if dtype.is::<BoolDataType>() {
-            Ok(dlpark::ffi::DataType::BOOL)
-        } else if dtype.is::<Int8DataType>() {
-            Ok(dlpark::ffi::DataType::I8)
-        } else if dtype.is::<Int16DataType>() {
-            Ok(dlpark::ffi::DataType::I16)
-        } else if dtype.is::<Int32DataType>() {
-            Ok(dlpark::ffi::DataType::I32)
-        } else if dtype.is::<Int64DataType>() {
-            Ok(dlpark::ffi::DataType::I64)
-        } else if dtype.is::<UInt8DataType>() {
-            Ok(dlpark::ffi::DataType::U8)
-        } else if dtype.is::<UInt16DataType>() {
-            Ok(dlpark::ffi::DataType::U16)
-        } else if dtype.is::<UInt32DataType>() {
-            Ok(dlpark::ffi::DataType::U32)
-        } else if dtype.is::<UInt64DataType>() {
-            Ok(dlpark::ffi::DataType::U64)
-        } else if dtype.is::<Float16DataType>() {
-            Ok(dlpark::ffi::DataType::F16)
-        } else if dtype.is::<Float32DataType>() {
-            Ok(dlpark::ffi::DataType::F32)
-        } else if dtype.is::<Float64DataType>() {
-            Ok(dlpark::ffi::DataType::F64)
-        } else if dtype.is::<BFloat16DataType>() {
-            Ok(dlpark::ffi::DataType::BF16)
-        } else {
-            Err(PyValueError::new_err("Unsupported data type in dlpack").into())
-        }
-    }
 }
 
 /// Fixed-width data with a validity mask. Skeleton.
@@ -293,5 +244,36 @@ impl PyMaskedTensor {
         } else {
             Ok(arr)
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use zarrs::array::data_type;
+
+    #[test]
+    fn new_accepts_matching_length() {
+        // uint8 (1 byte) × shape [4] = 4 bytes.
+        let tensor = PyTensor::new(
+            Bytes::from(vec![0u8; 4]),
+            data_type::uint8(),
+            Arc::from([4u64]),
+        );
+        assert!(tensor.is_ok());
+    }
+
+    #[test]
+    fn new_rejects_mismatched_length() {
+        // float32 (4 bytes) × shape [2] needs 8 bytes; supply 7.
+        let result = PyTensor::new(
+            Bytes::from(vec![0u8; 7]),
+            data_type::float32(),
+            Arc::from([2u64]),
+        );
+        assert!(matches!(
+            result,
+            Err(ArrayError::UnexpectedChunkDecodedSize(7, 8))
+        ));
     }
 }

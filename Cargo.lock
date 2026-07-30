@@ -1382,8 +1382,8 @@ dependencies = [
 
 [[package]]
 name = "dlpark"
-version = "0.7.0"
-source = "git+https://github.com/kylebarron/dlpark?rev=31c6f49c064e634326c97172d39a00acecd854b6#31c6f49c064e634326c97172d39a00acecd854b6"
+version = "0.8.0"
+source = "git+https://github.com/kylebarron/dlpark?rev=f6887bf8b367d98d079710be9659c4177ba899f8#f6887bf8b367d98d079710be9659c4177ba899f8"
 dependencies = [
  "bitflags 2.13.0",
  "pyo3",

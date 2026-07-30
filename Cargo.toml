@@ -41,7 +41,10 @@ arrow-buffer = "59"
 arrow-schema = "59"
 async-trait = { version = "0.1", optional = true }
 bytes = "1.12.0"
-dlpark = { git = "https://github.com/kylebarron/dlpark", rev = "31c6f49c064e634326c97172d39a00acecd854b6", features = [
+# Fork of dlpark 0.8.0 that gates bindgen's 64-bit layout tests so the crate
+# compiles for 32-bit targets (wasm32-unknown-emscripten). Upstreamed to
+# SunDoge/dlpark; revert to the crates.io release once a fixed version ships.
+dlpark = { git = "https://github.com/kylebarron/dlpark", rev = "f6887bf8b367d98d079710be9659c4177ba899f8", features = [
     "pyo3",
 ] }
 icechunk = { version = "2.0.0", default-features = false, optional = true }
