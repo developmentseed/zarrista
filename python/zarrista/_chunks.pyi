@@ -70,7 +70,9 @@ class ChunkGrid:
 
         Args:
             array_shape: The shape of the array, in elements along each dimension.
-            chunk_shape: The shape of each chunk, in elements along each dimension.
+            chunk_shape: The maximum shape of a chunk, in elements along each
+                dimension. The grid clips the chunks at the array bounds to a
+                smaller shape.
 
         Returns:
             The new chunk grid.
