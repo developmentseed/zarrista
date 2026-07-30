@@ -1,9 +1,20 @@
 """`Array.with_shape()` returns a new array at a new shape, without writing."""
 
+from pathlib import Path
+
 import numpy as np
 import pytest
+from obstore.store import LocalStore
 
-from zarrista import Array, ArrayBuilder, ArrayBytes, ChunkGrid, DataType, FillValue
+from zarrista import (
+    Array,
+    ArrayBuilder,
+    ArrayBytes,
+    AsyncArray,
+    ChunkGrid,
+    DataType,
+    FillValue,
+)
 from zarrista.exceptions import ZarristaError
 from zarrista.store import MemoryStore
 
@@ -82,3 +93,22 @@ def test_wrong_dimensionality_raises() -> None:
 
     with pytest.raises(ZarristaError):
         array.with_shape([8, 8, 8])
+
+
+# --- async --------------------------------------------------------------------
+
+
+async def test_async_with_shape_returns_new_array(tmp_path: Path) -> None:
+    array = await ArrayBuilder(
+        ChunkGrid.regular([4, 4], [2, 2]),
+        DataType.from_string("int8"),
+        FillValue(b"\x00"),
+    ).create_async(LocalStore(str(tmp_path)), "/a")
+
+    # `with_shape` is sync even on `AsyncArray`: it performs no I/O.
+    resized = array.with_shape([8, 8])
+    await resized.store_metadata()
+
+    assert array.shape == [4, 4]
+    reopened = await AsyncArray.open_async(LocalStore(str(tmp_path)), "/a")
+    assert reopened.shape == [8, 8]

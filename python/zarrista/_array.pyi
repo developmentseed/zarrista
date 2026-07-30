@@ -471,6 +471,31 @@ class AsyncArray:
         Reads behave identically, but any write (`store_chunk`, `erase_chunk`,
         `erase_metadata`, ...) raises at runtime.
         """
+    def with_shape(self, shape: list[int]) -> AsyncArray:
+        """Return a new array with `shape`, leaving this one unchanged.
+
+        This method is synchronous: it performs no I/O. Nothing is written to the
+        store. Call
+        [`AsyncArray.store_metadata`][zarrista.AsyncArray.store_metadata] to persist
+        the new shape, exactly as after
+        [`AsyncArray.from_metadata`][zarrista.AsyncArray.from_metadata]:
+
+        ```py
+        array = array.with_shape([8, 8])
+        await array.store_metadata()
+        ```
+
+        This array is unaffected and remains usable; it simply goes on describing
+        the old shape. Rebinding, as above, is the intended usage.
+
+        Growing an array leaves the new region reading as the fill value. Shrinking
+        leaves any chunks outside the new bounds in the store, where they are no
+        longer addressable through this array; reclaiming that space will be a
+        separate call.
+
+        Raises a `ZarristaError` if `shape` is incompatible with the array's chunk
+        grid, such as a shape of the wrong dimensionality.
+        """
     @property
     def is_sharded(self) -> bool:
         """Whether the array's array-to-bytes codec is `sharding_indexed`."""
