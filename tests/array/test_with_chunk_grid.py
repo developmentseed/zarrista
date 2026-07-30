@@ -1,8 +1,19 @@
 """`Array.with_chunk_grid()` returns a new array with a different chunk grid."""
 
-import numpy as np
+from pathlib import Path
 
-from zarrista import Array, ArrayBuilder, ArrayBytes, ChunkGrid, DataType, FillValue
+import numpy as np
+from obstore.store import LocalStore
+
+from zarrista import (
+    Array,
+    ArrayBuilder,
+    ArrayBytes,
+    AsyncArray,
+    ChunkGrid,
+    DataType,
+    FillValue,
+)
 from zarrista.store import MemoryStore
 
 
@@ -81,3 +92,22 @@ def test_existing_chunks_are_not_migrated() -> None:
     # `array` still describes the 2x2 grid, so it can still address the old chunk.
     # It is untouched: still 4 bytes, not re-encoded to 16.
     assert len(array.retrieve_encoded_chunk([0, 0])) == 4
+
+
+# --- async --------------------------------------------------------------------
+
+
+async def test_async_with_chunk_grid(tmp_path: Path) -> None:
+    array = await ArrayBuilder(
+        ChunkGrid.regular([4, 4], [2, 2]),
+        DataType.from_string("int8"),
+        FillValue(b"\x00"),
+    ).create_async(LocalStore(str(tmp_path)), "/a")
+
+    # `with_chunk_grid` is sync even on `AsyncArray`: it performs no I/O.
+    regridded = array.with_chunk_grid(ChunkGrid.regular([4, 4], [4, 4]))
+    await regridded.store_metadata()
+
+    assert array.chunk_grid.metadata == ChunkGrid.regular([4, 4], [2, 2]).metadata
+    reopened = await AsyncArray.open_async(LocalStore(str(tmp_path)), "/a")
+    assert reopened.chunk_grid.metadata == ChunkGrid.regular([4, 4], [4, 4]).metadata
