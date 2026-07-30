@@ -20,6 +20,7 @@
 //! pays the alignment copy as part of the copy it was already doing.
 
 mod buffer_protocol;
+mod dlpack;
 mod tensor;
 mod variable;
 
