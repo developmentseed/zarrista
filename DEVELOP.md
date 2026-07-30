@@ -37,6 +37,19 @@ uv run --no-project ruff check --fix
 uv run --no-project ruff format
 ```
 
+## Docstrings
+
+Docstrings use Google style. We use pydoclint and `mkdocs build --strict` to
+enforce this in CI.
+
+```bash
+# Validate docstring sections with pydoclint.
+uv run --no-project pydoclint python $(find python -name '*.pyi')
+
+# Documented parameters resolve against the API that mkdocstrings renders.
+uv run --group docs mkdocs build --strict
+```
+
 ## Docs Website
 
 ```bash
