@@ -4,40 +4,104 @@ from typing import TypeAlias
 from zarr_metadata import ZarrV3NamedConfigJSON
 
 _RunLength: TypeAlias = int | tuple[int, int]
-"""One run of a rectilinear chunk edge: a single chunk size, or a
-`(size, count)` pair meaning `count` consecutive chunks of `size`."""
+"""One run of chunks along a rectilinear chunk edge.
+
+Give a single chunk size, or a `(size, count)` pair. The pair means `count`
+adjacent chunks that each have the given size.
+"""
 
 _ChunkEdgeLengths: TypeAlias = int | Sequence[_RunLength]
-"""Chunk sizes along one dimension: a scalar (regular along that axis) or a
-sequence of runs (varying sizes)."""
+"""The chunk sizes along one dimension.
+
+Give an integer if the dimension has one chunk size. Give a sequence of runs if
+the chunk sizes change along the dimension.
+"""
 
 class ChunkGrid:
-    """The chunk grid of an array: how its shape is partitioned into chunks."""
+    """The chunk grid of an array.
+
+    The chunk grid shows how the array shape divides into chunks.
+    """
 
     @staticmethod
     def regular(array_shape: Sequence[int], chunk_shape: Sequence[int]) -> ChunkGrid:
-        """Construct a regular grid with a fixed `chunk_shape` over `array_shape`."""
+        """Construct a regular grid with a fixed chunk shape.
+
+        Args:
+            array_shape: The shape of the array, in elements along each dimension.
+            chunk_shape: The shape of each chunk, in elements along each dimension.
+
+        Returns:
+            The new chunk grid.
+
+        Raises:
+            ChunkGridCreateError: If `chunk_shape` is not compatible with
+                `array_shape`.
+            ValueError: If an element of `chunk_shape` is zero.
+
+        """
     @staticmethod
     def rectilinear(
         array_shape: Sequence[int],
         chunk_shapes: Sequence[_ChunkEdgeLengths],
     ) -> ChunkGrid:
-        """Construct a rectilinear grid with per-dimension chunk sizes."""
+        """Construct a rectilinear grid with different chunk sizes along each dimension.
+
+        Args:
+            array_shape: The shape of the array, in elements along each dimension.
+            chunk_shapes: The chunk sizes along each dimension.
+
+        Returns:
+            The new chunk grid.
+
+        Raises:
+            ChunkGridCreateError: If `chunk_shapes` is not compatible with
+                `array_shape`.
+            ValueError: If a chunk size is zero.
+
+        """
     @staticmethod
     def regular_bounded(
         array_shape: Sequence[int],
         chunk_shape: Sequence[int],
     ) -> ChunkGrid:
-        """Construct a regular grid whose final chunks are clipped to the array bounds.
+        """Construct a regular grid that clips the last chunks to the array bounds.
 
-        Experimental and may be incompatible with other Zarr V3 implementations.
+        This chunk grid is experimental. Other Zarr V3 implementations can be
+        incompatible with it.
+
+        Args:
+            array_shape: The shape of the array, in elements along each dimension.
+            chunk_shape: The shape of each chunk, in elements along each dimension.
+
+        Returns:
+            The new chunk grid.
+
+        Raises:
+            IncompatibleDimensionalityError: If `chunk_shape` and `array_shape`
+                have a different number of dimensions.
+            ValueError: If an element of `chunk_shape` is zero.
+
         """
     @staticmethod
     def from_metadata(
         metadata: ZarrV3NamedConfigJSON,
         shape: Sequence[int],
     ) -> ChunkGrid:
-        """Build a chunk grid from its Zarr v3 metadata and the array shape."""
+        """Construct a chunk grid from its Zarr v3 metadata and the array shape.
+
+        Args:
+            metadata: The Zarr v3 metadata of the chunk grid.
+            shape: The shape of the array, in elements along each dimension.
+
+        Returns:
+            The new chunk grid.
+
+        Raises:
+            PluginCreateError: If the metadata names an unsupported chunk grid,
+                or if the metadata is not compatible with `shape`.
+
+        """
     @property
     def metadata(self) -> ZarrV3NamedConfigJSON:
         """The chunk grid's Zarr v3 metadata."""
