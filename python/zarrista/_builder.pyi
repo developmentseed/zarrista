@@ -1,6 +1,6 @@
 from collections.abc import Mapping, Sequence
 
-from zarr_metadata import ArrayMetadataV3, JSONValue
+from zarr_metadata import JSONValue, ZarrV3ArrayMetadataJSON
 
 from zarrista.codec import (
     ArrayToArrayCodec,
@@ -93,7 +93,7 @@ class ArrayBuilder:
         [`ArrayBuilder.create_metadata`][zarrista.ArrayBuilder.create_metadata]
         to build metadata without touching a store.
         """
-    def create_metadata(self) -> ArrayMetadataV3:
+    def create_metadata(self) -> ZarrV3ArrayMetadataJSON:
         """Build the array's Zarr v3 metadata without touching a store.
 
         Nothing is written. Pass the result to

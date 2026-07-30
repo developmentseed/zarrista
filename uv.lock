@@ -2069,11 +2069,11 @@ wheels = [
 
 [[package]]
 name = "typing-extensions"
-version = "4.15.0"
+version = "4.16.0"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/72/94/1a15dd82efb362ac84269196e94cf00f187f7ed21c242792a923cdb1c61f/typing_extensions-4.15.0.tar.gz", hash = "sha256:0cea48d173cc12fa28ecabc3b837ea3cf6f38c6d1136f85cbaaf598984861466", size = 109391, upload-time = "2025-08-25T13:49:26.313Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/f6/cc/6253133b5bb138fc3306cebfbda2c520f545d36b5be2c7255cc528bb45d6/typing_extensions-4.16.0.tar.gz", hash = "sha256:dc983d19a509c94dba722ee6abd33940f7c05a89e243c47e907eb4db6f1a43e5", size = 113555, upload-time = "2026-07-02T08:40:05.92Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/18/67/36e9267722cc04a6b9f15c7f3441c2363321a3ea07da7ae0c0707beb2a9c/typing_extensions-4.15.0-py3-none-any.whl", hash = "sha256:f0fa19c6845758ab08074a0cfa8b7aecb71c999ca73d62883bc25cc018c4e548", size = 44614, upload-time = "2025-08-25T13:49:24.86Z" },
+    { url = "https://files.pythonhosted.org/packages/49/d3/b8441a820a491ddfc024b0b0cf0393375b75ea13866d9c66727e54c2fc80/typing_extensions-4.16.0-py3-none-any.whl", hash = "sha256:481caa481374e813c1b176ada14e97f1f67a4539ce9cfeb3f350d78d6370c2e8", size = 45571, upload-time = "2026-07-02T08:40:04.659Z" },
 ]
 
 [[package]]
@@ -2220,14 +2220,14 @@ wheels = [
 
 [[package]]
 name = "zarr-metadata"
-version = "0.3.0"
+version = "0.4.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "typing-extensions" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/f2/9c/cfd5aa02a27c63ecec702a77834b395411518da5c748414d7e6a323638ed/zarr_metadata-0.3.0.tar.gz", hash = "sha256:d8fe02feef43380056ea0429ceb50974b7b5afe6f0386853977506b034e89d53", size = 36398, upload-time = "2026-06-19T13:17:38.276Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/04/76/ca9334554b9a875c2c68203e2ce8b0a3febe1c3e9efba00a57e9a12c4e40/zarr_metadata-0.4.0.tar.gz", hash = "sha256:56788af0b86ec653176410fd57e0f4815331ac61d61e562dfd020198e98ce3eb", size = 149567, upload-time = "2026-07-29T20:20:38.513Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/91/96/64137930fb40b96b4d207eb1f1e4e42c5d6c9e682a5a7c3e6feff6eb0e29/zarr_metadata-0.3.0-py3-none-any.whl", hash = "sha256:e6651f418fcc89cc3c6fc11aa852fb6f8dd6f31d62913abc0d4d37ce7302d671", size = 45636, upload-time = "2026-06-19T13:17:37.097Z" },
+    { url = "https://files.pythonhosted.org/packages/cb/8b/f8594d9160f0eaae3f988eb2969bafc9db96bf3e224b8199b1bb80fa1f7a/zarr_metadata-0.4.0-py3-none-any.whl", hash = "sha256:642106291b881284d08222973d0970dd950d254b2286f36fcc269b0b1a1f4be2", size = 69750, upload-time = "2026-07-29T20:20:37.059Z" },
 ]
 
 [[package]]
@@ -2267,7 +2267,7 @@ pyodide = [
 ]
 
 [package.metadata]
-requires-dist = [{ name = "zarr-metadata", specifier = ">=0.3" }]
+requires-dist = [{ name = "zarr-metadata", specifier = ">=0.4" }]
 
 [package.metadata.requires-dev]
 dev = [

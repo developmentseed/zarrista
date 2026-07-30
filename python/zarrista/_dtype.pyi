@@ -1,6 +1,6 @@
 from typing import TypeAlias
 
-from zarr_metadata import NamedConfigV3
+from zarr_metadata import ZarrV3NamedConfigJSON
 from zarr_metadata.v3.data_type import (
     BoolDataTypeName,
     BytesDataTypeName,
@@ -50,7 +50,7 @@ class DataType:
     """A Zarr v3 data type."""
 
     @staticmethod
-    def from_metadata(metadata: NamedConfigV3) -> DataType:
+    def from_metadata(metadata: ZarrV3NamedConfigJSON) -> DataType:
         """Construct a data type from its Zarr v3 metadata."""
     @staticmethod
     def from_string(name: DataTypeName | str) -> DataType:

@@ -11,10 +11,10 @@ from zarrista.exceptions import ZarristaError
 from zarrista.store import FilesystemStore, MemoryStore
 
 if TYPE_CHECKING:
-    from zarr_metadata import ArrayMetadataV3
+    from zarr_metadata import ZarrV3ArrayMetadataJSON
 
 
-def _metadata(data_type: str = "int16") -> "ArrayMetadataV3":
+def _metadata(data_type: str = "int16") -> "ZarrV3ArrayMetadataJSON":
     return {
         "zarr_format": 3,
         "attributes": {},

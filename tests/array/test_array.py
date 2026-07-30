@@ -4,7 +4,7 @@ from zarrista import Array
 from zarrista.store import MemoryStore
 
 if TYPE_CHECKING:
-    from zarr_metadata import ArrayMetadataV3
+    from zarr_metadata import ZarrV3ArrayMetadataJSON
 
 
 def test_array_from_metadata() -> None:
@@ -13,7 +13,7 @@ def test_array_from_metadata() -> None:
     """
     store = MemoryStore()
 
-    meta: ArrayMetadataV3 = {
+    meta: ZarrV3ArrayMetadataJSON = {
         "zarr_format": 3,
         "attributes": {},
         "chunk_grid": {"name": "regular", "configuration": {"chunk_shape": (2, 2)}},
