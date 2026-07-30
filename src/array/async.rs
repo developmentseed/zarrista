@@ -2,6 +2,12 @@
 
 use std::sync::Arc;
 
+use pyo3::prelude::*;
+use pyo3_async_runtimes::tokio::future_into_py;
+use pyo3_bytes::PyBytes;
+use zarrs::array::{Array, AsyncArrayShardedReadableExt, AsyncArrayShardedReadableExtCache};
+use zarrs::storage::AsyncReadableWritableListableStorageTraits;
+
 use crate::array::PyChunkIndices;
 use crate::array::selection::PySelection;
 use crate::array::shared::shared_array_methods;
@@ -12,11 +18,6 @@ use crate::error::{ZarristaError, ZarristaResult};
 use crate::metadata::PyArrayMetadata;
 use crate::node::PyNodePath;
 use crate::storage::{AsyncReadOnlyStorageAdapter, PyAsyncStorage};
-use pyo3::prelude::*;
-use pyo3_async_runtimes::tokio::future_into_py;
-use pyo3_bytes::PyBytes;
-use zarrs::array::{Array, AsyncArrayShardedReadableExt, AsyncArrayShardedReadableExtCache};
-use zarrs::storage::AsyncReadableWritableListableStorageTraits;
 
 /// A Zarr array.
 #[derive(Clone)]

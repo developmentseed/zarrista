@@ -2,12 +2,6 @@
 
 use std::sync::Arc;
 
-use super::last_segment;
-use crate::array::PyArray;
-use crate::error::ZarristaResult;
-use crate::group::shared::group_metadata_accessors;
-use crate::node::{PyArrayOrGroup, PyNode, PyNodePath};
-use crate::storage::PySyncStorage;
 use pyo3::exceptions::PyKeyError;
 use pyo3::prelude::*;
 use pyo3::pybacked::PyBackedStr;
@@ -15,6 +9,13 @@ use zarrs::array::Array;
 use zarrs::group::Group;
 use zarrs::node::NodeMetadata;
 use zarrs::storage::ReadableWritableListableStorageTraits;
+
+use super::last_segment;
+use crate::array::PyArray;
+use crate::error::ZarristaResult;
+use crate::group::shared::group_metadata_accessors;
+use crate::node::{PyArrayOrGroup, PyNode, PyNodePath};
+use crate::storage::PySyncStorage;
 
 /// A Zarr group.
 #[pyclass(module = "zarrista", frozen, name = "Group")]

@@ -2,15 +2,16 @@
 
 use std::sync::Arc;
 
-use crate::array::PyAsyncArray;
-use crate::error::{ZarristaError, ZarristaResult};
-use crate::group::PyAsyncGroup;
-use crate::storage::PyAsyncStorage;
 use pyo3::IntoPyObjectExt;
 use pyo3::prelude::*;
 use zarrs::array::Array;
 use zarrs::group::Group;
 use zarrs::node::{Node, NodeMetadata};
+
+use crate::array::PyAsyncArray;
+use crate::error::{ZarristaError, ZarristaResult};
+use crate::group::PyAsyncGroup;
+use crate::storage::PyAsyncStorage;
 
 /// An opened node from an async store: either an array or a group.
 pub(crate) struct PyAsyncNode {

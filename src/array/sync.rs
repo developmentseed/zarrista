@@ -2,6 +2,11 @@
 
 use std::sync::Arc;
 
+use pyo3::prelude::*;
+use pyo3_bytes::PyBytes;
+use zarrs::array::{Array, ArrayShardedReadableExt, ArrayShardedReadableExtCache};
+use zarrs::storage::ReadableWritableListableStorageTraits;
+
 use crate::array::PyChunkIndices;
 use crate::array::selection::PySelection;
 use crate::array::shared::shared_array_methods;
@@ -12,10 +17,6 @@ use crate::error::ZarristaResult;
 use crate::metadata::PyArrayMetadata;
 use crate::node::PyNodePath;
 use crate::storage::{PySyncStorage, ReadOnlyStorageAdapter};
-use pyo3::prelude::*;
-use pyo3_bytes::PyBytes;
-use zarrs::array::{Array, ArrayShardedReadableExt, ArrayShardedReadableExtCache};
-use zarrs::storage::ReadableWritableListableStorageTraits;
 
 /// A Zarr array.
 #[pyclass(module = "zarrista", frozen, name = "Array")]

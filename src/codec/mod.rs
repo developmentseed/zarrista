@@ -3,8 +3,6 @@ mod array_to_bytes;
 mod bytes_to_bytes;
 mod options;
 
-use pyo3::prelude::*;
-
 pub use array_to_array::{PyArrayToArrayCodec, bitround, transpose};
 pub use array_to_bytes::PyArrayToBytesCodec;
 pub use bytes_to_bytes::PyBytesToBytesCodec;
@@ -13,6 +11,7 @@ pub use bytes_to_bytes::crc32c::crc32c;
 pub use bytes_to_bytes::gzip::gzip;
 pub use bytes_to_bytes::zstd::zstd;
 pub use options::PyCodecOptions;
+use pyo3::prelude::*;
 
 /// Build the `zarrista.codec` submodule and attach it to `parent`.
 ///

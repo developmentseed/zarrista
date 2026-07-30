@@ -19,6 +19,24 @@ uv run --no-project pytest
 
 The `--no-project` is annoying but unavoidable in our current setup. Otherwise `uv` will try to build the rust library _in release mode, as a dependency of the project_ before reaching `uv sync` or `uv run`.
 
+## Formatting
+
+Rust code is formatted with `rustfmt`. We use unstable import sorting options, so you must use nightly to format code.
+
+```bash
+rustup toolchain install nightly-2026-06-01
+
+# Format
+cargo +nightly-2026-06-01 fmt --all -- --unstable-features --config imports_granularity=Module,group_imports=StdExternalCrate
+```
+
+Python code is formatted and linted with `ruff`:
+
+```bash
+uv run --no-project ruff check --fix
+uv run --no-project ruff format
+```
+
 ## Docs Website
 
 ```bash
