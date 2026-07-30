@@ -28,18 +28,24 @@ impl PyTensor {
         let strides = row_major_compact_strides(&shape);
 
         // The boxed `Bytes` handed to the builder is what keeps the buffer alive: dlpark stores it
-        // as the managed tensor's `manager_ctx` and drops it from the deleter, which a consumer may
-        // run on any thread and long after this `PyTensor` is gone.
-        let data = self.bytes.as_ptr().cast::<c_void>().cast_mut();
+        // as the managed tensor's `manager_ctx` and drops it from the deleter, which a consumer
+        // may run on any thread and long after this `PyTensor` is gone.
         let builder = Builder::new(
             Box::new(self.bytes.clone()),
             CopiedSlice::new(shape, strides),
         );
+        let data = self.bytes.as_ptr().cast::<c_void>().cast_mut();
 
-        // SAFETY: `data` points at the start of the `Bytes` allocation moved into the context, so
-        // it stays valid until the deleter runs. The shape is the tensor's own shape, the strides
-        // are row-major compact, and `dtype` is the element type those bytes were decoded as, so
-        // together they describe exactly the initialized elements of the buffer.
+        // SAFETY:
+        // `data` is the start of the `Bytes` allocation whose refcount is held by the
+        // `ctx` clone above, so the pointer stays valid until the deleter drops that clone — which
+        // a consumer may do on another thread, long after this `PyTensor` is gone.
+        //
+        // `PyTensor::new` guarantees `bytes.len() == product(shape) * item_size`, so the shape,
+        // row-major strides, and dtype describe exactly the initialized, in-bounds elements.
+        //
+        // Alignment is not a concern: the DLTensor contract explicitly tells CPU consumers not to
+        // rely on the data pointer being aligned, so an unaligned `Bytes` buffer is within spec.
         let builder = unsafe { builder.data(data) };
 
         Ok(builder
