@@ -165,7 +165,7 @@ macro_rules! shared_array_methods {
                 self.inner.subset_all().into()
             }
 
-            /// Return a new array with `chunk_grid`, leaving this one unchanged.
+            /// Return a new array reference with `chunk_grid`, leaving this one unchanged.
             fn with_chunk_grid(
                 &self,
                 chunk_grid: $crate::array::PyChunkGrid,
@@ -188,7 +188,7 @@ macro_rules! shared_array_methods {
                 ))
             }
 
-            /// Return a new array with `shape`, leaving this one unchanged.
+            /// Return a new array reference with `shape`, leaving this one unchanged.
             fn with_shape(
                 &self,
                 shape: $crate::array::PyArrayShape,

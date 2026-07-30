@@ -214,7 +214,7 @@ class Array:
         `erase_metadata`, ...) raises at runtime.
         """
     def with_chunk_grid(self, chunk_grid: ChunkGrid) -> Array:
-        """Return a new array with `chunk_grid`, leaving this one unchanged.
+        """Return a new array reference with `chunk_grid`, leaving this one unchanged.
 
         The new array's shape comes from the grid, so this can change the shape
         and the chunking together:
@@ -224,10 +224,10 @@ class Array:
         array.store_metadata()
         ```
 
-        Nothing is written to the store. Call
+        Nothing is persisted to the store. Call
         [`Array.store_metadata`][zarrista.Array.store_metadata] to persist the new
-        grid. This array is unaffected and remains usable; rebinding, as above, is
-        the intended usage.
+        grid to the store. This array is unaffected and remains usable; rebinding,
+        as above, is the intended usage.
 
         **Existing chunks are neither migrated nor erased.** If the chunk shape
         changes, chunks already in the store sit at keys that no longer describe
@@ -242,12 +242,11 @@ class Array:
         chunking, so existing chunks stay valid.
         """
     def with_shape(self, shape: list[int]) -> Array:
-        """Return a new array with `shape`, leaving this one unchanged.
+        """Return a new array reference with `shape`, leaving this one unchanged.
 
-        Nothing is written to the store. Call
+        Nothing is persisted to the store. Call
         [`Array.store_metadata`][zarrista.Array.store_metadata] to persist the new
-        shape, exactly as after
-        [`Array.from_metadata`][zarrista.Array.from_metadata]:
+        shape to the store:
 
         ```py
         array = array.with_shape([8, 8])
@@ -500,7 +499,7 @@ class AsyncArray:
         `erase_metadata`, ...) raises at runtime.
         """
     def with_chunk_grid(self, chunk_grid: ChunkGrid) -> AsyncArray:
-        """Return a new array with `chunk_grid`, leaving this one unchanged.
+        """Return a new array reference with `chunk_grid`, leaving this one unchanged.
 
         This method is synchronous: it performs no I/O. The new array's shape comes
         from the grid, so this can change the shape and the chunking together:
@@ -510,10 +509,10 @@ class AsyncArray:
         await array.store_metadata()
         ```
 
-        Nothing is written to the store. Call
+        Nothing is persisted to the store. Call
         [`AsyncArray.store_metadata`][zarrista.AsyncArray.store_metadata] to persist
-        the new grid. This array is unaffected and remains usable; rebinding, as
-        above, is the intended usage.
+        the new grid to the store. This array is unaffected and remains usable;
+        rebinding, as above, is the intended usage.
 
         **Existing chunks are neither migrated nor erased.** If the chunk shape
         changes, chunks already in the store sit at keys that no longer describe
@@ -528,13 +527,12 @@ class AsyncArray:
         preserves the chunking, so existing chunks stay valid.
         """
     def with_shape(self, shape: list[int]) -> AsyncArray:
-        """Return a new array with `shape`, leaving this one unchanged.
+        """Return a new array reference with `shape`, leaving this one unchanged.
 
-        This method is synchronous: it performs no I/O. Nothing is written to the
+        This method is synchronous: it performs no I/O. Nothing is persisted to the
         store. Call
         [`AsyncArray.store_metadata`][zarrista.AsyncArray.store_metadata] to persist
-        the new shape, exactly as after
-        [`AsyncArray.from_metadata`][zarrista.AsyncArray.from_metadata]:
+        the new shape to the store:
 
         ```py
         array = array.with_shape([8, 8])
