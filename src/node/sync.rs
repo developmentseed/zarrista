@@ -2,15 +2,16 @@
 
 use std::sync::Arc;
 
-use crate::array::PyArray;
-use crate::error::ZarristaError;
-use crate::group::PyGroup;
-use crate::storage::PySyncStorage;
 use pyo3::IntoPyObjectExt;
 use pyo3::prelude::*;
 use zarrs::array::Array;
 use zarrs::group::Group;
 use zarrs::node::{Node, NodeMetadata};
+
+use crate::array::PyArray;
+use crate::error::ZarristaError;
+use crate::group::PyGroup;
+use crate::storage::PySyncStorage;
 
 /// An opened node: either an array or a group.
 pub(crate) struct PyNode {
