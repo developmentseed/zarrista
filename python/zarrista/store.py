@@ -1,13 +1,15 @@
 """Available stores."""
 
-from typing import TypeAlias
-
-from icechunk import Session
-from obstore.store import ObjectStore
+from typing import TYPE_CHECKING, TypeAlias
 
 from ._zarrista import FilesystemStore, MemoryStore
 
-AsyncStore: TypeAlias = ObjectStore | Session
+if TYPE_CHECKING:
+    from icechunk import Session
+    from obstore.store import ObjectStore
+
+# Note: this is a string so that icechunk and obstore can be optional dependencies
+AsyncStore: TypeAlias = "ObjectStore | Session"
 """A store accepted by the async API.
 
 Either an obstore [`ObjectStore`][obstore.store.ObjectStore] (any object-store
