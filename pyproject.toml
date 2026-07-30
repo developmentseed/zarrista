@@ -102,6 +102,16 @@ known-first-party = ["zarrista"]
     "D",       # docstring
 ]
 
+[tool.pydoclint]
+# Classes document `__init__` separately from the class docstring, so that
+# mkdocstrings renders the constructor arguments.
+allow-init-docstring = true
+# Types belong in the signature, not repeated in the docstring.
+arg-type-hints-in-docstring = false
+check-return-types = false
+check-yield-types = false
+style = "google"
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 asyncio_mode = "auto"
