@@ -6,15 +6,15 @@ from zarr_metadata import ZarrV3NamedConfigJSON
 _RunLength: TypeAlias = int | tuple[int, int]
 """One run of chunks along a rectilinear chunk edge.
 
-Give a single chunk size, or a `(size, count)` pair. The pair means `count`
+A single chunk size, or a `(size, count)` pair. The pair means `count`
 adjacent chunks that each have the given size.
 """
 
 _ChunkEdgeLengths: TypeAlias = int | Sequence[_RunLength]
 """The chunk sizes along one dimension.
 
-Give an integer if the dimension has one chunk size. Give a sequence of runs if
-the chunk sizes change along the dimension.
+An integer if the dimension has one chunk size, or a sequence of runs if the
+chunk sizes change along the dimension.
 """
 
 class ChunkGrid:
@@ -38,7 +38,6 @@ class ChunkGrid:
             ChunkGridCreateError: If `chunk_shape` is not compatible with
                 `array_shape`.
             ValueError: If an element of `chunk_shape` is zero.
-
         """
     @staticmethod
     def rectilinear(
@@ -58,7 +57,6 @@ class ChunkGrid:
             ChunkGridCreateError: If `chunk_shapes` is not compatible with
                 `array_shape`.
             ValueError: If a chunk size is zero.
-
         """
     @staticmethod
     def regular_bounded(
@@ -81,7 +79,6 @@ class ChunkGrid:
             IncompatibleDimensionalityError: If `chunk_shape` and `array_shape`
                 have a different number of dimensions.
             ValueError: If an element of `chunk_shape` is zero.
-
         """
     @staticmethod
     def from_metadata(
@@ -100,7 +97,6 @@ class ChunkGrid:
         Raises:
             PluginCreateError: If the metadata names an unsupported chunk grid,
                 or if the metadata is not compatible with `shape`.
-
         """
     @property
     def metadata(self) -> ZarrV3NamedConfigJSON:

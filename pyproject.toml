@@ -76,6 +76,7 @@ ignore = [
     "CPY001", # copyright header
     "D203",   # incompatible with D211
     "D213",   # incompatible with D212
+    "D413",   # blank line after last section; not Google style
     "EM101",  # raw string in exception
     "EM102",  # f-string in exception
     "FIX002", # todo statements
