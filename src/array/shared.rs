@@ -170,10 +170,7 @@ macro_rules! shared_array_methods {
                 &self,
                 shape: $crate::array::PyArrayShape,
             ) -> $crate::error::ZarristaResult<Self> {
-                // `Array` is not `Clone`; `with_storage` copies every field, and
-                // handing it the array's own storage keeps the type parameter
-                // unchanged. `?` runs before `Self::new`, so a shape rejected by
-                // the chunk grid never yields an object.
+                // Workaround for missing Clone
                 let mut resized = self.inner.with_storage(self.inner.storage());
                 resized.set_shape(shape)?;
                 Ok(Self::new(
