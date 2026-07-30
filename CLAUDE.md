@@ -37,6 +37,19 @@ exposed to Python via `pyo3`.
 - **Prefer turbofish on `extract`.** Write `let name = ob.extract::<PyBackedStr>()?;`
   rather than annotating the binding (`let name: PyBackedStr = ob.extract()?;`).
 
+## Documentation conventions
+
+- **Write all documentation in ASD-STE100 Simplified Technical English.** This
+  applies to docstrings, `.pyi` stubs, Rust doc comments, Markdown pages, and the
+  README. Use one topic per sentence, keep sentences short (20 words or fewer for
+  descriptive text, 20 for instructions), use the active voice, use the approved
+  meaning of each word, and do not use synonyms for the same concept. Do not omit
+  articles or relative pronouns (`that`, `which`) to save space.
+- **Write all Python docstrings in Google style.** Use `Args:`, `Returns:`,
+  `Raises:`, and `Examples:` sections. Do not use NumPy underlines or Sphinx
+  `:param:` fields. Every documented parameter must exist in the signature, and
+  types belong in the signature, not in the docstring.
+
 ## Python conventions
 
 - **Prefer absolute imports over relative imports.** Write
