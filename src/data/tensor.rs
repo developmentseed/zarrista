@@ -6,7 +6,7 @@ use pyo3::exceptions::{PyNotImplementedError, PyValueError};
 use pyo3::ffi;
 use pyo3::prelude::*;
 use pyo3_bytes::PyBytes;
-use zarrs::array::DataType;
+use zarrs::array::{ArrayError, DataType, DataTypeSize};
 
 use crate::data::buffer_protocol::PyTensorBuffer;
 use crate::dtype::PyDataType;
@@ -27,12 +27,43 @@ crate::wasm_send_sync!(PyTensor);
 
 impl PyTensor {
     /// Construct a new PyTensor from the given bytes, data type, and shape.
-    pub fn new(bytes: Bytes, data_type: DataType, shape: Arc<[u64]>) -> Self {
-        Self {
+    ///
+    /// # Errors
+    ///
+    /// - If `data_type` is not fixed-size
+    /// - If `bytes` does not hold exactly `product(shape) * item_size` bytes.
+    pub fn new(bytes: Bytes, data_type: DataType, shape: Arc<[u64]>) -> Result<Self, ArrayError> {
+        let DataTypeSize::Fixed(item_size) = data_type.size() else {
+            return Err(ArrayError::Other(format!(
+                "Tensor requires a fixed-size data type, but {data_type} is variable-size"
+            )));
+        };
+
+        let expected = shape
+            .iter()
+            .try_fold(item_size, |acc, &dim| {
+                usize::try_from(dim)
+                    .ok()
+                    .and_then(|dim| acc.checked_mul(dim))
+            })
+            .ok_or_else(|| {
+                ArrayError::Other(format!(
+                    "Tensor shape {shape:?} * item size {item_size} overflows usize"
+                ))
+            })?;
+
+        if bytes.len() != expected {
+            return Err(ArrayError::UnexpectedChunkDecodedSize(
+                bytes.len(),
+                expected,
+            ));
+        }
+
+        Ok(Self {
             bytes,
             data_type,
             shape,
-        }
+        })
     }
 
     pub fn into_inner(self) -> (Bytes, DataType, Arc<[u64]>) {
@@ -213,5 +244,36 @@ impl PyMaskedTensor {
         } else {
             Ok(arr)
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use zarrs::array::data_type;
+
+    #[test]
+    fn new_accepts_matching_length() {
+        // uint8 (1 byte) × shape [4] = 4 bytes.
+        let tensor = PyTensor::new(
+            Bytes::from(vec![0u8; 4]),
+            data_type::uint8(),
+            Arc::from([4u64]),
+        );
+        assert!(tensor.is_ok());
+    }
+
+    #[test]
+    fn new_rejects_mismatched_length() {
+        // float32 (4 bytes) × shape [2] needs 8 bytes; supply 7.
+        let result = PyTensor::new(
+            Bytes::from(vec![0u8; 7]),
+            data_type::float32(),
+            Arc::from([2u64]),
+        );
+        assert!(matches!(
+            result,
+            Err(ArrayError::UnexpectedChunkDecodedSize(7, 8))
+        ));
     }
 }

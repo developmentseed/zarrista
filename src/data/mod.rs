@@ -55,7 +55,7 @@ impl FromArrayBytes for DecodedArray {
         let data_type = data_type.clone();
         Ok(match bytes {
             ArrayBytes::Fixed(bytes) => {
-                DecodedArray::Tensor(PyTensor::new(cow_to_bytes(bytes), data_type, shape))
+                DecodedArray::Tensor(PyTensor::new(cow_to_bytes(bytes), data_type, shape)?)
             }
             ArrayBytes::Variable(v) => {
                 let (buf, offsets) = v.into_parts();
@@ -70,8 +70,8 @@ impl FromArrayBytes for DecodedArray {
                 let (data, mask) = optional.into_parts();
                 match *data {
                     ArrayBytes::Fixed(fixed) => DecodedArray::MaskedTensor(PyMaskedTensor::new(
-                        PyTensor::new(cow_to_bytes(fixed), data_type, shape.clone()),
-                        PyTensor::new(cow_to_bytes(mask), data_type::bool(), shape),
+                        PyTensor::new(cow_to_bytes(fixed), data_type, shape.clone())?,
+                        PyTensor::new(cow_to_bytes(mask), data_type::bool(), shape)?,
                     )),
                     ArrayBytes::Variable(variable) => {
                         let (buf, offsets) = variable.into_parts();
