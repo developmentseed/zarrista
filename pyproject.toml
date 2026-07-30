@@ -32,11 +32,12 @@ python-source = "python"
 [dependency-groups]
 dev = [
     "arro3-core>=0.6",
-    "icechunk>=1.1.21",
+    "icechunk>=2.1.2",
     "ipykernel>=7.3.0",
     "maturin>=1.12",
     "numpy>=2.4.6",
     "obstore>=0.10.1",
+    "pydoclint>=0.9",
     "pytest>=8.0",
     "pytest-asyncio>=1.4",
     "ruff>=0.16",
