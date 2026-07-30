@@ -32,7 +32,9 @@ python-source = "python"
 [dependency-groups]
 dev = [
     "arro3-core>=0.6",
-    "icechunk>=2.1.2",
+    # icechunk 2.x requires 3.12+
+    "icechunk>=2.1.2 ; python_version >= '3.12'",
+    "icechunk<2 ; python_version < '3.12'",
     "ipykernel>=7.3.0",
     "maturin>=1.12",
     "numpy>=2.4.6",
