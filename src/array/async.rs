@@ -5,7 +5,9 @@ use std::sync::Arc;
 use pyo3::prelude::*;
 use pyo3_async_runtimes::tokio::future_into_py;
 use pyo3_bytes::PyBytes;
-use zarrs::array::{Array, AsyncArrayShardedReadableExt, AsyncArrayShardedReadableExtCache};
+use zarrs::array::{
+    Array, ArraySubset, AsyncArrayShardedReadableExt, AsyncArrayShardedReadableExtCache,
+};
 use zarrs::storage::AsyncReadableWritableListableStorageTraits;
 
 use crate::array::PyChunkIndices;
@@ -37,6 +39,16 @@ impl PyAsyncArray {
 
     pub fn inner(&self) -> &Arc<Array<dyn AsyncReadableWritableListableStorageTraits>> {
         &self.inner
+    }
+
+    /// Resolve a selection against the array's shape
+    fn array_subset(&self, selection: &PySelection) -> ZarristaResult<ArraySubset> {
+        selection.to_array_subset(self.inner.shape())
+    }
+
+    /// Resolve a selection against the array's **chunk grid** shape
+    fn chunk_grid_subset(&self, selection: &PySelection) -> ZarristaResult<ArraySubset> {
+        selection.to_array_subset(self.inner.chunk_grid_shape())
     }
 }
 
@@ -134,6 +146,22 @@ impl PyAsyncArray {
         })
     }
 
+    fn erase_chunks<'py>(
+        &self,
+        py: Python<'py>,
+        chunks: PySelection,
+    ) -> PyResult<Bound<'py, PyAny>> {
+        let chunks = self.chunk_grid_subset(&chunks)?;
+        let inner = self.inner.clone();
+        future_into_py(py, async move {
+            inner
+                .async_erase_chunks(&chunks)
+                .await
+                .map_err(ZarristaError::from)?;
+            Ok(())
+        })
+    }
+
     /// Return a read-only view of this array; writes raise at runtime.
     fn read_only(&self) -> Self {
         let read_list_storage = self.inner.storage().readable_listable();
@@ -162,7 +190,7 @@ impl PyAsyncArray {
         selection: PySelection,
     ) -> PyResult<Bound<'py, PyAny>> {
         let inner = self.inner.clone();
-        let array_subset = selection.to_array_subset(inner.shape())?;
+        let array_subset = self.array_subset(&selection)?;
 
         future_into_py(py, async move {
             let decoded = inner
