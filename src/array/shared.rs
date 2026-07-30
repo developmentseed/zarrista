@@ -173,15 +173,18 @@ macro_rules! shared_array_methods {
                 let chunk_grid = chunk_grid.into_inner();
                 // Workaround for missing Clone
                 let mut regridded = self.inner.with_storage(self.inner.storage());
+
                 // SAFETY: existing chunks are not checked against the new grid.
+                //
                 // This call touches no storage, so it invalidates nothing on its
-                // own; the hazard is documented on the stub.
+                // own; the hazard is documented on the Python type stub.
                 unsafe {
                     regridded.set_shape_and_chunk_grid(
                         chunk_grid.array_shape().to_vec(),
                         chunk_grid.metadata(),
                     )?;
                 }
+
                 Ok(Self::new(
                     ::std::sync::Arc::new(regridded),
                     self.store.clone(),
