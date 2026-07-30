@@ -170,8 +170,9 @@ impl<'a, 'py> FromPyObject<'a, 'py> for PySelection {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
     use pyo3::exceptions::{PyIndexError, PyNotImplementedError};
+
+    use super::*;
 
     #[test]
     fn extracts_integer_index() {

@@ -24,15 +24,14 @@ mod dlpack;
 mod tensor;
 mod variable;
 
-pub use tensor::{PyMaskedTensor, PyTensor};
-pub use variable::{PyMaskedVariableArray, PyVariableArray};
-
 use std::borrow::Cow;
 use std::sync::Arc;
 
 use bytes::Bytes;
 use pyo3::IntoPyObjectExt;
 use pyo3::prelude::*;
+pub use tensor::{PyMaskedTensor, PyTensor};
+pub use variable::{PyMaskedVariableArray, PyVariableArray};
 use zarrs::array::{ArrayBytes, ArrayError, DataType, FromArrayBytes, data_type};
 
 /// Internal decoded result, produced by our [`FromArrayBytes`] impl. Carries the

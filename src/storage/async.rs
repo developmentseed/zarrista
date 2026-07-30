@@ -8,12 +8,12 @@ use pyo3::prelude::*;
 use pyo3::pybacked::PyBackedStr;
 use pyo3_bytes::PyBytes;
 use pyo3_object_store::AnyObjectStore;
-use zarrs::storage::AsyncReadableWritableListableStorageTraits;
 use zarrs::storage::byte_range::ByteRangeIterator;
 use zarrs::storage::{
     AsyncListableStorageTraits, AsyncMaybeBytesIterator, AsyncReadableListableStorageTraits,
-    AsyncReadableStorageTraits, AsyncWritableStorageTraits, Bytes, MaybeBytes, OffsetBytesIterator,
-    StorageError, StoreKey, StoreKeys, StoreKeysPrefixes, StorePrefix,
+    AsyncReadableStorageTraits, AsyncReadableWritableListableStorageTraits,
+    AsyncWritableStorageTraits, Bytes, MaybeBytes, OffsetBytesIterator, StorageError, StoreKey,
+    StoreKeys, StoreKeysPrefixes, StorePrefix,
 };
 use zarrs_icechunk::AsyncIcechunkStore;
 use zarrs_object_store::AsyncObjectStore;

@@ -3,11 +3,12 @@
 
 use std::borrow::Cow;
 
-use crate::error::ZarristaResult;
-use crate::metadata::PyMetadataV3;
 use pyo3::prelude::*;
 use zarrs::array::{DataType, DataTypeSize};
 use zarrs::metadata::v3::MetadataV3;
+
+use crate::error::ZarristaResult;
+use crate::metadata::PyMetadataV3;
 
 #[derive(Debug, Clone)]
 #[pyclass(module = "zarrista", frozen, name = "DataType", from_py_object)]

@@ -249,8 +249,9 @@ impl PyMaskedTensor {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
     use zarrs::array::data_type;
+
+    use super::*;
 
     #[test]
     fn new_accepts_matching_length() {

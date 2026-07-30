@@ -1,11 +1,5 @@
 use std::sync::Arc;
 
-use super::last_segment;
-use crate::array::PyAsyncArray;
-use crate::error::{ZarristaError, ZarristaResult};
-use crate::group::shared::group_metadata_accessors;
-use crate::node::{PyAsyncArrayOrGroup, PyAsyncNode, PyNodePath};
-use crate::storage::PyAsyncStorage;
 use pyo3::exceptions::PyKeyError;
 use pyo3::prelude::*;
 use pyo3_async_runtimes::tokio::future_into_py;
@@ -13,6 +7,13 @@ use zarrs::array::Array;
 use zarrs::group::Group;
 use zarrs::node::NodeMetadata;
 use zarrs::storage::AsyncReadableWritableListableStorageTraits;
+
+use super::last_segment;
+use crate::array::PyAsyncArray;
+use crate::error::{ZarristaError, ZarristaResult};
+use crate::group::shared::group_metadata_accessors;
+use crate::node::{PyAsyncArrayOrGroup, PyAsyncNode, PyNodePath};
+use crate::storage::PyAsyncStorage;
 
 /// A Zarr group.
 #[derive(Clone)]

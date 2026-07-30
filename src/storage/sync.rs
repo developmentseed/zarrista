@@ -1,8 +1,8 @@
-use crate::error::ZarristaResult;
-use pyo3::exceptions::PyTypeError;
-use pyo3::prelude::*;
 use std::path::PathBuf;
 use std::sync::Arc;
+
+use pyo3::exceptions::PyTypeError;
+use pyo3::prelude::*;
 use zarrs::filesystem::FilesystemStore;
 use zarrs::storage::byte_range::{ByteRange, ByteRangeIterator};
 use zarrs::storage::store::MemoryStore;
@@ -11,6 +11,8 @@ use zarrs::storage::{
     ReadableListableStorageTraits, ReadableStorageTraits, ReadableWritableListableStorageTraits,
     StorageError, StoreKey, StoreKeys, StoreKeysPrefixes, StorePrefix, WritableStorageTraits,
 };
+
+use crate::error::ZarristaResult;
 
 /// A zarrista sync store object adapted to the maximal `zarrs` storage trait.
 #[derive(Clone, IntoPyObject)]

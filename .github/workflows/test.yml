@@ -20,15 +20,29 @@ jobs:
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
         with:
-          components: rustfmt, clippy
+          components: clippy
 
       - uses: Swatinem/rust-cache@v2
-
-      - name: Cargo fmt
-        run: cargo fmt --all -- --check
 
       - name: Clippy
         run: cargo clippy --all-targets --all-features -- -D warnings
 
       - name: Cargo test
         run: cargo test --all-features
+
+  # Formatting, including import sorting, requires unstable rustfmt options, so
+  # this runs on a pinned nightly toolchain.
+  fmt:
+    name: Format
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: nightly-2026-06-01
+          components: rustfmt
+
+      - name: Cargo fmt
+        run: cargo +nightly-2026-06-01 fmt --all -- --check --unstable-features --config imports_granularity=Module,group_imports=StdExternalCrate
