@@ -113,6 +113,16 @@ allow-init-docstring = true
 arg-type-hints-in-docstring = false
 check-return-types = false
 check-yield-types = false
+# Attributes are documented inline (see `CodecOptions`), which is what
+# mkdocstrings renders best; the default would demand an `Attributes:` block.
+require-inline-class-var-docs = true
+# The stub bodies are `...`, so pydoclint can never see a `raise` statement and
+# would report every `Raises:` section as spurious.
+skip-checking-raises = true
+# Require full Args/Returns sections; a bare summary line is not enough. The
+# docstrings were brought to zero violations under this setting, so it only
+# has to hold the line.
+skip-checking-short-docstrings = false
 style = "google"
 
 [tool.pytest.ini_options]
