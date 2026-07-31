@@ -56,15 +56,9 @@ macro_rules! shared_array_methods {
                 Ok(self.inner.chunk_subset(chunk_indices.as_ref())?.into())
             }
 
-            /// The bytes-to-bytes codecs ("compressors").
             #[getter]
-            fn compressors(&self) -> Vec<$crate::codec::PyBytesToBytesCodec> {
-                let codecs = self.inner.codecs();
-                codecs
-                    .bytes_to_bytes_codecs()
-                    .iter()
-                    .map(|c| $crate::codec::PyBytesToBytesCodec::new(c.clone()))
-                    .collect()
+            fn codecs(&self) -> $crate::codec::PyCodecChain {
+                self.inner.codecs().into()
             }
 
             /// The dimension names, if any were specified.
@@ -91,17 +85,6 @@ macro_rules! shared_array_methods {
                 self.inner.fill_value().clone().into()
             }
 
-            /// The array-to-array codecs ("filters").
-            #[getter]
-            fn filters(&self) -> Vec<$crate::codec::PyArrayToArrayCodec> {
-                let codecs = self.inner.codecs();
-                codecs
-                    .array_to_array_codecs()
-                    .iter()
-                    .map(|f| $crate::codec::PyArrayToArrayCodec::new(f.clone()))
-                    .collect()
-            }
-
             #[getter]
             fn is_sharded(&self) -> bool {
                 use zarrs::array::ArrayShardedExt;
@@ -124,13 +107,6 @@ macro_rules! shared_array_methods {
             #[getter]
             fn path(&self) -> $crate::node::PyNodePath {
                 self.inner.path().clone().into()
-            }
-
-            /// The array-to-bytes codec ("serializer").
-            #[getter]
-            fn serializer(&self) -> $crate::codec::PyArrayToBytesCodec {
-                let codecs = self.inner.codecs();
-                $crate::codec::PyArrayToBytesCodec::new(codecs.array_to_bytes_codec().clone())
             }
 
             /// The array shape.
