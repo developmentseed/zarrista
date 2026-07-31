@@ -72,6 +72,9 @@ extend-exclude = ["tests/example.py"]
 
 [tool.ruff.lint]
 select = ["ALL"]
+# pydoclint's DOC codes are not ruff rules, so ruff would flag the
+# `# noqa: DOC101, DOC103` comments on keyword-only docstrings as RUF102.
+external = ["DOC"]
 ignore = [
     "CPY001", # copyright header
     "D203",   # incompatible with D211

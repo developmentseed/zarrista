@@ -21,11 +21,13 @@ class ArrayBytes:
 
         Args:
             bytes: The element bytes.
+
+        Keyword Args: Keyword Arguments:
             mask: The validity mask, with one byte per element. Give `None` for
                 data that is not optional.
             offsets: The element byte offsets. Give `None` for fixed-length
                 data.
-        """
+        """  # noqa: DOC101, DOC103
     @property
     def bytes(self) -> Buffer:
         """The underlying element bytes (the data buffer for optional bytes)."""

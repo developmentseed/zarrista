@@ -30,6 +30,8 @@ def blosc(
         clevel: The compression level, from 0 (no compression) to 9 (most
             compression).
         shuffle_mode: The shuffle mode to apply before compression.
+
+    Keyword Args: Keyword Arguments:
         blocksize: The block size in bytes. Give `None` or `0` to let blosc
             choose the block size.
         typesize: The size of one element in bytes. This must be a positive
@@ -43,4 +45,4 @@ def blosc(
             outside the range 0 to 9.
         PluginCreateError: If `shuffle_mode` is not `"noshuffle"` and
             `typesize` is `None` or `0`.
-    """
+    """  # noqa: DOC101, DOC103

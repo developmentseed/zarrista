@@ -87,7 +87,7 @@ class Tensor:
     ) -> CapsuleType:
         """Export the data as a DLPack capsule (e.g. for `np.from_dlpack`).
 
-        Args:
+        Keyword Args: Keyword Arguments:
             stream: The stream to synchronize with. The data is always on the
                 CPU, so this argument has no effect.
             max_version: The highest DLPack version that the caller supports.
@@ -96,7 +96,7 @@ class Tensor:
 
         Returns:
             A capsule that holds the DLPack tensor.
-        """
+        """  # noqa: DOC101, DOC103
     def __dlpack_device__(self) -> tuple[int, int]:
         """Return the DLPack device `(device_type, device_id)`. Always CPU.
 
