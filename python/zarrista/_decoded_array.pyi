@@ -87,7 +87,7 @@ class Tensor:
     ) -> CapsuleType:
         """Export the data as a DLPack capsule (e.g. for `np.from_dlpack`).
 
-        Keyword Args: Keyword Arguments:
+        Keyword Args:
             stream: The stream to synchronize with. The data is always on the
                 CPU, so this argument has no effect.
             max_version: The highest DLPack version that the caller supports.

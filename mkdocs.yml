@@ -93,6 +93,7 @@ plugins:
       alias_type: "copy"
       canonical_version: "latest"
   - mkdocstrings:
+      custom_templates: docs/templates
       enable_inventory: true
       handlers:
         python:

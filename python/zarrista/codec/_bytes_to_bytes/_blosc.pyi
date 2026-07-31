@@ -31,7 +31,7 @@ def blosc(
             compression).
         shuffle_mode: The shuffle mode to apply before compression.
 
-    Keyword Args: Keyword Arguments:
+    Keyword Args:
         blocksize: The block size in bytes. Give `None` or `0` to let blosc
             choose the block size.
         typesize: The size of one element in bytes. This must be a positive

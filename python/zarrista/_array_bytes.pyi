@@ -22,7 +22,7 @@ class ArrayBytes:
         Args:
             bytes: The element bytes.
 
-        Keyword Args: Keyword Arguments:
+        Keyword Args:
             mask: The validity mask, with one byte per element. Give `None` for
                 data that is not optional.
             offsets: The element byte offsets. Give `None` for fixed-length
