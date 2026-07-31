@@ -40,10 +40,11 @@ DataTypeName: TypeAlias = (
     | BytesDataTypeName
     | RawBytesDataTypeName
 )
-"""The Zarr v3 names of the data types `from_string` can build.
+"""The Zarr v3 names of the data types that `from_string` can construct.
 
-Composed from the per-dtype name literals in `zarr_metadata.v3.data_type`, so
-it stays in sync with the spec rather than being hand-maintained here.
+This alias comes from the per-dtype name literals in
+`zarr_metadata.v3.data_type`. Therefore it stays in agreement with the spec, and
+nobody must maintain the list here.
 """
 
 class DataType:
@@ -51,10 +52,31 @@ class DataType:
 
     @staticmethod
     def from_metadata(metadata: ZarrV3NamedConfigJSON) -> DataType:
-        """Construct a data type from its Zarr v3 metadata."""
+        """Construct a data type from its Zarr v3 metadata.
+
+        Args:
+            metadata: The Zarr v3 metadata of the data type.
+
+        Returns:
+            The new data type.
+
+        Raises:
+            PluginCreateError: If the metadata names an unsupported data type,
+                or if the configuration is not valid for it.
+        """
     @staticmethod
     def from_string(name: DataTypeName | str) -> DataType:
-        """Construct a data type from its Zarr v3 name (e.g. `"float32"`)."""
+        """Construct a data type from its Zarr v3 name (e.g. `"float32"`).
+
+        Args:
+            name: The Zarr v3 name of the data type.
+
+        Returns:
+            The new data type.
+
+        Raises:
+            PluginCreateError: If `name` is not a supported data type.
+        """
     @property
     def name(self) -> str | None:
         """The Zarr v3 data-type name (e.g. `"float64"`)."""

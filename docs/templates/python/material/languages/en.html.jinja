@@ -1,0 +1,11 @@
+{#- English translations, overriding mkdocstrings-python's defaults.
+
+  `Keyword Args:` docstring sections parse to griffe's `other_parameters` kind,
+  which renders as "Other Parameters:" by default. We call them what they are.
+-#}
+{% import "_base/languages/en.html.jinja" as base %}
+
+{% macro t(key) %}{{ {
+  "Other Parameters:": "Keyword Arguments:",
+  "OTHER PARAMETER": "KEYWORD ARGUMENT",
+}.get(key) or base.t(key) }}{% endmacro %}

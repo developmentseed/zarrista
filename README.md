@@ -11,9 +11,9 @@ A low-level [Zarr] API for Python, inspired by [zarrita.js], powered from Rust b
 [zarrita.js]: https://zarrita.dev/
 [Zarrs]: https://zarrs.dev/
 
-This has been _minimally_ vibe-coded: _mostly_ but not fully written by hand. Some areas were prototyped with Claude.
+This project is _minimally_ vibe-coded. A person wrote most of the code by hand, and Claude prototyped some areas.
 
-This project is for **evaluation**, to consider whether natively binding to [Zarrs] can provide better performance. It is not yet production ready.
+This project is for **evaluation**. It examines whether a native binding to [Zarrs] gives better performance. It is not ready for production.
 
 ## Documentation
 
@@ -21,12 +21,12 @@ This project is for **evaluation**, to consider whether natively binding to [Zar
 
 ## Features
 
-- **Low-level, explicit** Zarr access: open arrays and groups, read chunks, and inspect metadata without hidden machinery.
+- **Low-level, explicit** Zarr access. Open arrays and groups, read chunks, and examine metadata. The API hides no machinery.
 - **Both sync and async** APIs ([`Array`] / [`AsyncArray`], [`Group`] / [`AsyncGroup`]).
-- **Rust core** via [Zarrs] for compiled performance.
-- **NumPy integration**: read data into [NumPy] arrays through the buffer protocol for zero-copy sharing between Rust and Python.
+- **Rust core** through [Zarrs], for the performance of compiled code.
+- **NumPy integration**. Read data into [NumPy] arrays through the buffer protocol. Rust and Python share the memory without a copy.
 - **Variety of data access**
-    - AWS S3, Google Cloud Storage, Azure Storage via [Obstore]
+    - AWS S3, Google Cloud Storage, Azure Storage through [Obstore]
     - [Icechunk] integration
 - **Full type hinting** for all operations.
 
@@ -37,6 +37,7 @@ This project is for **evaluation**, to consider whether natively binding to [Zar
 [`Group`]: https://developmentseed.org/zarrista/latest/api/group/#zarrista.Group
 [`AsyncGroup`]: https://developmentseed.org/zarrista/latest/api/group/#zarrista.AsyncGroup
 [Obstore]: https://github.com/developmentseed/obstore
+[`DecodedArray`]: https://developmentseed.org/zarrista/latest/api/decoded_array/#zarrista.DecodedArray
 
 ## Example
 
@@ -57,13 +58,13 @@ array.shape
 # [720, 1440]
 
 array.dtype
-# DataType(float32)
+# DataType(float32 / <f4)
 
 array.dimension_names
 # ["lat", "lon"]
 ```
 
-Read a subset of the array. Indexing returns a `Data` buffer, which converts to a [NumPy] array:
+Read a subset of the array. Indexing returns a [`DecodedArray`], which converts to a [NumPy] array:
 
 ```py
 data = array[0:128, 0:128]

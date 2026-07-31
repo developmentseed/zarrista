@@ -24,9 +24,10 @@ from ._zarrista import (
 DecodedArray: TypeAlias = Tensor | VariableArray | MaskedTensor | MaskedVariableArray
 """The result of a read: one of the four decoded array layouts.
 
-Which one is returned depends on the dtype's byte layout (fixed vs. variable, and
-whether it carries a validity mask). Use `isinstance` to narrow to a concrete
-type before using layout-specific methods.
+The layout depends on the byte layout of the data type. A data type is either
+fixed-width or variable-length, and it either carries a validity mask or does
+not. Use `isinstance` to narrow to a concrete type before you use a method that
+belongs to one layout.
 """
 
 

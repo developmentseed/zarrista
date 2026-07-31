@@ -32,11 +32,14 @@ python-source = "python"
 [dependency-groups]
 dev = [
     "arro3-core>=0.6",
-    "icechunk>=1.1.21",
+    # icechunk 2.x requires 3.12+
+    "icechunk>=2.1.2 ; python_version >= '3.12'",
+    "icechunk<2 ; python_version < '3.12'",
     "ipykernel>=7.3.0",
     "maturin>=1.12",
     "numpy>=2.4.6",
     "obstore>=0.10.1",
+    "pydoclint>=0.9",
     "pytest>=8.0",
     "pytest-asyncio>=1.4",
     "ruff>=0.16",
@@ -69,10 +72,14 @@ extend-exclude = ["tests/example.py"]
 
 [tool.ruff.lint]
 select = ["ALL"]
+# pydoclint's DOC codes are not ruff rules, so ruff would flag the
+# `# noqa: DOC101, DOC103` comments on keyword-only docstrings as RUF102.
+external = ["DOC"]
 ignore = [
     "CPY001", # copyright header
     "D203",   # incompatible with D211
     "D213",   # incompatible with D212
+    "D413",   # blank line after last section; not Google style
     "EM101",  # raw string in exception
     "EM102",  # f-string in exception
     "FIX002", # todo statements
@@ -100,6 +107,26 @@ known-first-party = ["zarrista"]
     "SLF001",  # private member access
     "D",       # docstring
 ]
+
+[tool.pydoclint]
+# Classes document `__init__` separately from the class docstring, so that
+# mkdocstrings renders the constructor arguments.
+allow-init-docstring = true
+# Types belong in the signature, not repeated in the docstring.
+arg-type-hints-in-docstring = false
+check-return-types = false
+check-yield-types = false
+# Attributes are documented inline (see `CodecOptions`), which is what
+# mkdocstrings renders best; the default would demand an `Attributes:` block.
+require-inline-class-var-docs = true
+# The stub bodies are `...`, so pydoclint can never see a `raise` statement and
+# would report every `Raises:` section as spurious.
+skip-checking-raises = true
+# Require full Args/Returns sections; a bare summary line is not enough. The
+# docstrings were brought to zero violations under this setting, so it only
+# has to hold the line.
+skip-checking-short-docstrings = false
+style = "google"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
