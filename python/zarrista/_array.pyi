@@ -411,6 +411,14 @@ class Array:
         If only the array shape is changing, use
         [`Array.with_shape`][zarrista.Array.with_shape] instead — it preserves the
         chunking, so existing chunks stay valid.
+
+        Args:
+            chunk_grid: The chunk grid of the new array reference. The grid also
+                gives the new array shape, and it can change the number of
+                dimensions.
+
+        Returns:
+            A new array reference that uses `chunk_grid`.
         """
     def with_shape(self, shape: list[int]) -> Array:
         """Return a new array reference with `shape`, leaving this one unchanged.
@@ -432,8 +440,18 @@ class Array:
         longer addressable through this array; reclaiming that space will be a
         separate call.
 
-        Raises a `ZarristaError` if `shape` is incompatible with the array's chunk
-        grid, such as a shape of the wrong dimensionality.
+        Args:
+            shape: The shape of the new array reference, in elements along each
+                dimension. This must have the same number of dimensions as the
+                array's chunk grid.
+
+        Returns:
+            A new array reference that uses `shape`.
+
+        Raises:
+            ArrayCreateError: If `shape` is not compatible with the array's
+                chunk grid, such as a shape of the wrong dimensionality.
+            OverflowError: If an element of `shape` is negative.
         """
     @property
     def is_sharded(self) -> bool:
@@ -874,6 +892,14 @@ class AsyncArray:
         If only the array shape is changing, use
         [`AsyncArray.with_shape`][zarrista.AsyncArray.with_shape] instead — it
         preserves the chunking, so existing chunks stay valid.
+
+        Args:
+            chunk_grid: The chunk grid of the new array reference. The grid also
+                gives the new array shape, and it can change the number of
+                dimensions.
+
+        Returns:
+            A new array reference that uses `chunk_grid`.
         """
     def with_shape(self, shape: list[int]) -> AsyncArray:
         """Return a new array reference with `shape`, leaving this one unchanged.
@@ -896,8 +922,18 @@ class AsyncArray:
         longer addressable through this array; reclaiming that space will be a
         separate call.
 
-        Raises a `ZarristaError` if `shape` is incompatible with the array's chunk
-        grid, such as a shape of the wrong dimensionality.
+        Args:
+            shape: The shape of the new array reference, in elements along each
+                dimension. This must have the same number of dimensions as the
+                array's chunk grid.
+
+        Returns:
+            A new array reference that uses `shape`.
+
+        Raises:
+            ArrayCreateError: If `shape` is not compatible with the array's
+                chunk grid, such as a shape of the wrong dimensionality.
+            OverflowError: If an element of `shape` is negative.
         """
     @property
     def is_sharded(self) -> bool:
