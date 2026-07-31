@@ -1,5 +1,8 @@
 //! Array to bytes codecs, or "serializers".
 
+pub use codec_chain::PyCodecChain;
+mod codec_chain;
+
 use std::borrow::Cow;
 use std::sync::Arc;
 

@@ -1,17 +1,16 @@
 mod array_to_array;
 mod array_to_bytes;
 mod bytes_to_bytes;
-mod codec_chain;
 mod options;
 
 pub use array_to_array::{PyArrayToArrayCodec, bitround, transpose};
 pub use array_to_bytes::PyArrayToBytesCodec;
+pub use array_to_bytes::PyCodecChain;
 pub use bytes_to_bytes::PyBytesToBytesCodec;
 pub use bytes_to_bytes::blosc::blosc;
 pub use bytes_to_bytes::crc32c::crc32c;
 pub use bytes_to_bytes::gzip::gzip;
 pub use bytes_to_bytes::zstd::zstd;
-pub use codec_chain::PyCodecChain;
 pub use options::PyCodecOptions;
 use pyo3::prelude::*;
 
