@@ -65,21 +65,25 @@ impl PyEncodedChunk {
 
 #[pymethods]
 impl PyEncodedChunk {
+    /// The raw, still-encoded chunk bytes.
     #[getter]
     fn buffer(&self) -> PyBytes {
         PyBytes::new(self.bytes.clone())
     }
 
+    /// The codec chain that decodes the bytes.
     #[getter]
     fn codecs(&self) -> PyCodecChain {
         self.codecs.clone().into()
     }
 
+    /// The Zarr data type of the decoded chunk.
     #[getter]
     fn data_type(&self) -> PyDataType {
         self.data_type.clone().into()
     }
 
+    /// Decode the chunk bytes on the calling thread.
     #[pyo3(signature = (**codec_options))]
     fn decode(
         &self,
@@ -94,6 +98,7 @@ impl PyEncodedChunk {
         })
     }
 
+    /// Decode the chunk bytes on a Rust thread pool.
     #[cfg(feature = "async")]
     #[pyo3(signature = (*, pool=None, **codec_options))]
     fn decode_async<'py>(
@@ -126,11 +131,13 @@ impl PyEncodedChunk {
         })
     }
 
+    /// The fill value of the decoded chunk.
     #[getter]
     fn fill_value(&self) -> PyFillValue {
         self.fill_value.clone().into()
     }
 
+    /// The shape of the decoded chunk, in elements along each dimension.
     #[getter]
     fn shape(&self) -> Vec<NonZeroU64> {
         self.shape.clone()

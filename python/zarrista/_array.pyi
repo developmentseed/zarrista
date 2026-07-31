@@ -16,6 +16,7 @@ from ._chunk_key_encoding import ChunkKeyEncoding
 from ._chunks import ChunkGrid
 from ._decoded_array import DecodedArray
 from ._dtype import DataType
+from ._encoded_chunk import EncodedChunk
 from ._fill_value import FillValue
 from ._store import AsyncStore, FilesystemStore, MemoryStore
 
@@ -207,18 +208,19 @@ class Array:
         Raises:
             TypeError: If a keyword argument is not a known codec option.
         """
-    def retrieve_encoded_chunk(self, chunk_indices: list[int]) -> Buffer | None:
+    def retrieve_encoded_chunk(self, chunk_indices: list[int]) -> EncodedChunk | None:
         """Read the raw, still-encoded bytes of the chunk at `chunk_indices`.
 
-        The method returns the bytes without any change, and it does not run
-        the codec pipeline.
+        The method reads the bytes and does not run the codec pipeline. To
+        decode them, use [`EncodedChunk.decode`][zarrista.EncodedChunk.decode]
+        or
+        [`EncodedChunk.decode_async`][zarrista.EncodedChunk.decode_async].
 
         Args:
             chunk_indices: The position of the chunk in the chunk grid.
 
         Returns:
-            The encoded chunk bytes, or `None` if the chunk is absent from the
-            store.
+            The encoded chunk, or `None` if the chunk is absent from the store.
         """
     def retrieve_subchunk(
         self,

@@ -5,7 +5,7 @@ use zarrs::array::CodecChain;
 
 use crate::codec::{PyArrayToArrayCodec, PyArrayToBytesCodec, PyBytesToBytesCodec};
 
-#[pyclass(module = "zarrista", frozen, name = "CodecChain")]
+#[pyclass(module = "zarrista.codec", frozen, name = "CodecChain")]
 pub struct PyCodecChain(Arc<CodecChain>);
 
 #[pymethods]
