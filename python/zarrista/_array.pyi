@@ -214,7 +214,9 @@ class Array:
         `erase_metadata`, ...) raises at runtime.
         """
     def with_chunk_grid(self, chunk_grid: ChunkGrid) -> Array:
-        """Return a new array reference with `chunk_grid`, leaving this one unchanged.
+        """Return a new array reference with `chunk_grid`.
+        
+        This does not mutate the existing `array`.
 
         The new array's shape comes from the grid, so this can change the shape
         and the chunking together:
