@@ -95,7 +95,7 @@ impl PyEncodedChunk {
     }
 
     #[cfg(feature = "async")]
-    #[pyo3(signature = (*, pool, **codec_options))]
+    #[pyo3(signature = (*, pool=None, **codec_options))]
     fn decode_async<'py>(
         &self,
         py: Python<'py>,
