@@ -1,6 +1,6 @@
 //! Shared `#[pymethods]` for `PyArray` / `PyAsyncArray`.
 //!
-//! These accessors only read from `self.inner` and perform no I/O, so they are
+//! These methods only read from `self.inner` and perform no I/O, so they are
 //! identical between the sync and async variants. The macro emits a separate
 //! `#[pymethods]` block (requires the `multiple-pymethods` pyo3 feature).
 macro_rules! shared_array_methods {
@@ -163,6 +163,46 @@ macro_rules! shared_array_methods {
             #[getter]
             fn subset_all(&self) -> $crate::array::PyArraySubset {
                 self.inner.subset_all().into()
+            }
+
+            /// Return a new array reference with `chunk_grid`, leaving this one unchanged.
+            fn with_chunk_grid(
+                &self,
+                chunk_grid: $crate::array::PyChunkGrid,
+            ) -> $crate::error::ZarristaResult<Self> {
+                let chunk_grid = chunk_grid.into_inner();
+                // Workaround for missing Clone
+                let mut regridded = self.inner.with_storage(self.inner.storage());
+
+                // SAFETY: existing chunks are not checked against the new grid.
+                //
+                // This call touches no storage, so it invalidates nothing on its
+                // own; the hazard is documented on the Python type stub.
+                unsafe {
+                    regridded.set_shape_and_chunk_grid(
+                        chunk_grid.array_shape().to_vec(),
+                        chunk_grid.metadata(),
+                    )?;
+                }
+
+                Ok(Self::new(
+                    ::std::sync::Arc::new(regridded),
+                    self.store.clone(),
+                ))
+            }
+
+            /// Return a new array reference with `shape`, leaving this one unchanged.
+            fn with_shape(
+                &self,
+                shape: $crate::array::PyArrayShape,
+            ) -> $crate::error::ZarristaResult<Self> {
+                // Workaround for missing Clone
+                let mut resized = self.inner.with_storage(self.inner.storage());
+                resized.set_shape(shape)?;
+                Ok(Self::new(
+                    ::std::sync::Arc::new(resized),
+                    self.store.clone(),
+                ))
             }
         }
     };

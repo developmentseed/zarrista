@@ -229,6 +229,59 @@ class Array:
         Reads behave identically, but any write (`store_chunk`, `erase_chunk`,
         `erase_metadata`, ...) raises at runtime.
         """
+    def with_chunk_grid(self, chunk_grid: ChunkGrid) -> Array:
+        """Return a new array reference with `chunk_grid`.
+
+        This does not mutate the existing `array`.
+
+        The new array's shape comes from the grid, so this can change the shape
+        and the chunking together:
+
+        ```py
+        array = array.with_chunk_grid(ChunkGrid.regular([8, 8], [4, 4]))
+        array.store_metadata()
+        ```
+
+        Nothing is persisted to the store. Call
+        [`Array.store_metadata`][zarrista.Array.store_metadata] to persist the new
+        grid to the store. This array is unaffected and remains usable; rebinding,
+        as above, is the intended usage.
+
+        **Existing chunks are neither migrated nor erased.** If the chunk shape
+        changes, chunks already in the store sit at keys that no longer describe
+        the same region of the array, so later reads may fail to decode or return
+        wrong data. It is the caller's responsibility to ensure the new grid is
+        compatible with whatever is already stored. The safe uses are setting the
+        grid before any chunks are written, or erasing and rewriting the existing
+        chunks yourself.
+
+        If only the array shape is changing, use
+        [`Array.with_shape`][zarrista.Array.with_shape] instead — it preserves the
+        chunking, so existing chunks stay valid.
+        """
+    def with_shape(self, shape: list[int]) -> Array:
+        """Return a new array reference with `shape`, leaving this one unchanged.
+
+        Nothing is persisted to the store. Call
+        [`Array.store_metadata`][zarrista.Array.store_metadata] to persist the new
+        shape to the store:
+
+        ```py
+        array = array.with_shape([8, 8])
+        array.store_metadata()
+        ```
+
+        This array is unaffected and remains usable; it simply goes on describing
+        the old shape. Rebinding, as above, is the intended usage.
+
+        Growing an array leaves the new region reading as the fill value. Shrinking
+        leaves any chunks outside the new bounds in the store, where they are no
+        longer addressable through this array; reclaiming that space will be a
+        separate call.
+
+        Raises a `ZarristaError` if `shape` is incompatible with the array's chunk
+        grid, such as a shape of the wrong dimensionality.
+        """
     @property
     def is_sharded(self) -> bool:
         """Whether the array's array-to-bytes codec is `sharding_indexed`."""
@@ -478,6 +531,58 @@ class AsyncArray:
 
         Reads behave identically, but any write (`store_chunk`, `erase_chunk`,
         `erase_metadata`, ...) raises at runtime.
+        """
+    def with_chunk_grid(self, chunk_grid: ChunkGrid) -> AsyncArray:
+        """Return a new array reference with `chunk_grid`, leaving this one unchanged.
+
+        This method is synchronous: it performs no I/O. The new array's shape comes
+        from the grid, so this can change the shape and the chunking together:
+
+        ```py
+        array = array.with_chunk_grid(ChunkGrid.regular([8, 8], [4, 4]))
+        await array.store_metadata()
+        ```
+
+        Nothing is persisted to the store. Call
+        [`AsyncArray.store_metadata`][zarrista.AsyncArray.store_metadata] to persist
+        the new grid to the store. This array is unaffected and remains usable;
+        rebinding, as above, is the intended usage.
+
+        **Existing chunks are neither migrated nor erased.** If the chunk shape
+        changes, chunks already in the store sit at keys that no longer describe
+        the same region of the array, so later reads may fail to decode or return
+        wrong data. It is the caller's responsibility to ensure the new grid is
+        compatible with whatever is already stored. The safe uses are setting the
+        grid before any chunks are written, or erasing and rewriting the existing
+        chunks yourself.
+
+        If only the array shape is changing, use
+        [`AsyncArray.with_shape`][zarrista.AsyncArray.with_shape] instead — it
+        preserves the chunking, so existing chunks stay valid.
+        """
+    def with_shape(self, shape: list[int]) -> AsyncArray:
+        """Return a new array reference with `shape`, leaving this one unchanged.
+
+        This method is synchronous: it performs no I/O. Nothing is persisted to the
+        store. Call
+        [`AsyncArray.store_metadata`][zarrista.AsyncArray.store_metadata] to persist
+        the new shape to the store:
+
+        ```py
+        array = array.with_shape([8, 8])
+        await array.store_metadata()
+        ```
+
+        This array is unaffected and remains usable; it simply goes on describing
+        the old shape. Rebinding, as above, is the intended usage.
+
+        Growing an array leaves the new region reading as the fill value. Shrinking
+        leaves any chunks outside the new bounds in the store, where they are no
+        longer addressable through this array; reclaiming that space will be a
+        separate call.
+
+        Raises a `ZarristaError` if `shape` is incompatible with the array's chunk
+        grid, such as a shape of the wrong dimensionality.
         """
     @property
     def is_sharded(self) -> bool:
