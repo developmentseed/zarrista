@@ -5,15 +5,26 @@ use std::sync::Arc;
 use bytes::Bytes;
 pub use pyo3::prelude::*;
 use pyo3_bytes::PyBytes;
-use zarrs::array::{ArrayToBytesCodecTraits, CodecChain, DataType, FillValue, FromArrayBytes};
+use zarrs::array::{
+    ArrayError, ArrayToBytesCodecTraits, CodecChain, CodecOptions, DataType, FillValue,
+    FromArrayBytes,
+};
 
 use crate::array::PyFillValue;
 use crate::codec::{PyCodecChain, PyCodecOptions};
 use crate::data::DecodedArray;
 use crate::dtype::PyDataType;
 use crate::error::ZarristaResult;
+#[cfg(feature = "async")]
+use crate::thread_pool::PyThreadPool;
 
-#[pyclass(module = "zarrista", frozen, name = "EncodedChunk")]
+#[pyclass(
+    module = "zarrista",
+    frozen,
+    name = "EncodedChunk",
+    skip_from_py_object
+)]
+#[derive(Debug, Clone)]
 pub struct PyEncodedChunk {
     bytes: Bytes,
     codecs: Arc<CodecChain>,
@@ -37,6 +48,18 @@ impl PyEncodedChunk {
             fill_value,
             shape,
         }
+    }
+
+    fn _decode(&self, codec_options: &CodecOptions) -> Result<DecodedArray, ArrayError> {
+        let bytes = self.codecs.decode(
+            Cow::Borrowed(&self.bytes),
+            &self.shape,
+            &self.data_type,
+            &self.fill_value,
+            codec_options,
+        )?;
+        let shape = self.shape.iter().map(|v| v.get()).collect::<Vec<_>>();
+        DecodedArray::from_array_bytes(bytes.into_owned(), &shape, &self.data_type)
     }
 }
 
@@ -67,20 +90,40 @@ impl PyEncodedChunk {
             let codec_options = codec_options
                 .map(|opts| opts.into_inner())
                 .unwrap_or_default();
+            Ok(self._decode(&codec_options)?)
+        })
+    }
 
-            let bytes = self.codecs.decode(
-                Cow::Borrowed(&self.bytes),
-                &self.shape,
-                &self.data_type,
-                &self.fill_value,
-                &codec_options,
-            )?;
-            let shape = self.shape.iter().map(|v| v.get()).collect::<Vec<_>>();
-            Ok(DecodedArray::from_array_bytes(
-                bytes.into_owned(),
-                &shape,
-                &self.data_type,
-            )?)
+    #[cfg(feature = "async")]
+    #[pyo3(signature = (*, pool, **codec_options))]
+    fn decode_async<'py>(
+        &self,
+        py: Python<'py>,
+        pool: Option<&PyThreadPool>,
+        codec_options: Option<PyCodecOptions>,
+    ) -> PyResult<Bound<'py, PyAny>> {
+        use pyo3_async_runtimes::tokio::future_into_py;
+        use tokio_rayon::AsyncThreadPool;
+
+        use crate::thread_pool::get_default_pool;
+
+        let codec_options = codec_options
+            .map(|opts| opts.into_inner())
+            .unwrap_or_default();
+        let pool = pool
+            .map(|p| Ok(p.inner().clone()))
+            .unwrap_or_else(|| get_default_pool(py))?;
+
+        // Everything is under an Arc except for FillValue
+        let encoded_chunk = self.clone();
+
+        future_into_py(py, async move {
+            use crate::error::ZarristaError;
+
+            Ok(pool
+                .spawn_fifo_async(move || encoded_chunk._decode(&codec_options))
+                .await
+                .map_err(ZarristaError::from)?)
         })
     }
 

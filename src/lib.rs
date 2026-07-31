@@ -14,6 +14,7 @@ mod group;
 mod metadata;
 mod node;
 mod storage;
+mod thread_pool;
 mod wasm;
 
 use pyo3::prelude::*;
@@ -28,6 +29,7 @@ use crate::dtype::PyDataType;
 use crate::exceptions::register_exceptions_module;
 use crate::group::PyGroup;
 use crate::storage::{PyFilesystemStore, PyMemoryStore};
+use crate::thread_pool::PyThreadPool;
 
 /// The compiled core of zarrista, imported as `zarrista._zarrista`.
 #[pymodule]
@@ -52,6 +54,7 @@ fn _zarrista(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<PyMaskedVariableArray>()?;
     m.add_class::<PyMemoryStore>()?;
     m.add_class::<PyTensor>()?;
+    m.add_class::<PyThreadPool>()?;
     m.add_class::<PyVariableArray>()?;
 
     register_codec_module(m)?;
