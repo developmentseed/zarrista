@@ -32,48 +32,63 @@ pub enum ZarristaError {
     /// An error originating from the Python interpreter, passed through as-is.
     #[error(transparent)]
     Py(#[from] PyErr),
+
     /// Failed to open an array.
     #[error(transparent)]
     ArrayCreate(#[from] ArrayCreateError),
+
     /// An error reading from or operating on an array.
     #[error(transparent)]
     Array(#[from] ArrayError),
+
     /// Failed to open a group.
     #[error(transparent)]
     GroupCreate(#[from] GroupCreateError),
+
     /// Failed to enumerate or create a child node.
     #[error(transparent)]
     NodeCreate(#[from] NodeCreateError),
+
     /// An invalid node path.
     #[error(transparent)]
     NodePath(#[from] NodePathError),
+
     /// An error from the underlying storage backend.
     #[error(transparent)]
     Storage(#[from] StorageError),
+
     /// Failed to open a filesystem store.
     #[error(transparent)]
     FilesystemStoreCreate(#[from] FilesystemStoreCreateError),
+
     /// Failed to convert a value to or from Python.
     #[error(transparent)]
     Pythonize(#[from] PythonizeError),
+
     /// Failed to (de)serialize JSON.
     #[error(transparent)]
     SerdeJson(#[from] serde_json::Error),
+
     /// Codec error
     #[error(transparent)]
     Codec(#[from] CodecError),
+
     /// Transpose order error
     #[error(transparent)]
     TransposeOrder(#[from] TransposeOrderError),
+
     /// Failed to create a codec (or other plugin) from its configuration.
     #[error(transparent)]
     PluginCreate(#[from] PluginCreateError),
+
     /// Failed to create a regular chunk grid.
     #[error(transparent)]
     RegularChunkGridCreate(#[from] RegularChunkGridCreateError),
+
     /// Failed to create a rectilinear chunk grid.
     #[error(transparent)]
     RectilinearChunkGridCreate(#[from] RectilinearChunkGridCreateError),
+
     /// A shape's dimensionality is incompatible with another.
     #[error(transparent)]
     IncompatibleDimensionality(#[from] IncompatibleDimensionalityError),
