@@ -19,13 +19,44 @@ class ArrayBuilder:
     """A chained, immutable builder for creating Zarr arrays.
 
     Every setter returns a *new* `ArrayBuilder` and leaves the receiver
-    unchanged. Therefore you can share and specialize a builder safely. Start
+    unchanged. Start
     with the constructor or [`ArrayBuilder.like`][zarrista.ArrayBuilder.like],
     chain setters to configure it, then make the array with
     [`create`][zarrista.ArrayBuilder.create] or
     [`create_async`][zarrista.ArrayBuilder.create_async]. To make only the
     metadata, use
     [`create_metadata`][zarrista.ArrayBuilder.create_metadata].
+
+    Examples:
+        Create a 1024x1024 `int32` array with 256x256 chunks and zstd
+        compression:
+
+        ```py
+        from zarrista import ArrayBuilder, ChunkGrid, DataType, FillValue, codec
+        from zarrista.store import FilesystemStore
+
+        grid = ChunkGrid.regular([1024, 1024], [256, 256])
+        dtype = DataType.from_string("int32")
+        fill_value = FillValue((0).to_bytes(4, "little"))
+
+        array = (
+            ArrayBuilder(grid, dtype, fill_value)
+            .dimension_names(["y", "x"])
+            .compressors([codec.zstd(3, checksum=False)])
+            .create(FilesystemStore("data"), "/temperature")
+        )
+        ```
+
+        `create` writes the metadata to the store. Each setter returns a new
+        builder, so you can keep a partly configured builder and reuse it:
+
+        ```py
+        base = ArrayBuilder(grid, dtype, fill_value).dimension_names(["y", "x"])
+        uncompressed = base.create(store, "/raw")
+        compressed = base.compressors([codec.zstd(3, checksum=False)]).create(
+            store, "/compressed"
+        )
+        ```
     """
 
     def __init__(
