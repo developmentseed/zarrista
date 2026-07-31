@@ -4444,6 +4444,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "tokio-rayon"
+version = "2.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7cf33a76e0b1dd03b778f83244137bd59887abf25c0e87bc3e7071105f457693"
+dependencies = [
+ "rayon",
+ "tokio",
+]
+
+[[package]]
 name = "tokio-rustls"
 version = "0.24.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -5135,8 +5145,10 @@ dependencies = [
  "pyo3-bytes",
  "pyo3-object_store",
  "pythonize",
+ "rayon",
  "serde_json",
  "thiserror 2.0.19",
+ "tokio-rayon",
  "zarrs",
  "zarrs_icechunk",
  "zarrs_object_store",
