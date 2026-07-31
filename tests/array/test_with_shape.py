@@ -15,7 +15,7 @@ from zarrista import (
     DataType,
     FillValue,
 )
-from zarrista.exceptions import ZarristaError
+from zarrista.exceptions import ArrayCreateError
 from zarrista.store import MemoryStore
 
 
@@ -88,11 +88,12 @@ def test_shrink_leaves_out_of_bounds_chunks() -> None:
     assert array.retrieve_encoded_chunk([1, 1]) is not None
 
 
-def test_wrong_dimensionality_raises() -> None:
+@pytest.mark.parametrize("shape", [[8, 8, 8], [8]])
+def test_wrong_dimensionality_raises(shape: list[int]) -> None:
     array = _array(MemoryStore())
 
-    with pytest.raises(ZarristaError):
-        array.with_shape([8, 8, 8])
+    with pytest.raises(ArrayCreateError, match="inconsistent dimensionality"):
+        array.with_shape(shape)
 
 
 # --- async --------------------------------------------------------------------
