@@ -5,18 +5,6 @@ use pyo3::prelude::*;
 use pyo3::sync::PyOnceLock;
 use rayon::{ThreadPool, ThreadPoolBuilder};
 
-static DEFAULT_POOL: PyOnceLock<Arc<ThreadPool>> = PyOnceLock::new();
-
-pub fn get_default_pool(py: Python<'_>) -> PyResult<Arc<ThreadPool>> {
-    let runtime = DEFAULT_POOL.get_or_try_init(py, || {
-        let pool = ThreadPoolBuilder::new().build().map_err(|err| {
-            PyValueError::new_err(format!("Could not create rayon threadpool. {err}"))
-        })?;
-        Ok::<_, PyErr>(Arc::new(pool))
-    })?;
-    Ok(runtime.clone())
-}
-
 #[pyclass(name = "ThreadPool", frozen, module = "zarrista")]
 pub(crate) struct PyThreadPool(Arc<ThreadPool>);
 
