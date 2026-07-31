@@ -105,25 +105,24 @@ impl PyEncodedChunk {
         use pyo3_async_runtimes::tokio::future_into_py;
         use tokio_rayon::AsyncThreadPool;
 
-        use crate::thread_pool::get_default_pool;
+        use crate::error::ZarristaError;
 
         let codec_options = codec_options
             .map(|opts| opts.into_inner())
             .unwrap_or_default();
-        let pool = pool
-            .map(|p| Ok(p.inner().clone()))
-            .unwrap_or_else(|| get_default_pool(py))?;
+        let pool = pool.map(|p| p.inner().clone());
 
         // Everything is under an Arc except for FillValue
         let encoded_chunk = self.clone();
 
         future_into_py(py, async move {
-            use crate::error::ZarristaError;
-
-            Ok(pool
-                .spawn_fifo_async(move || encoded_chunk._decode(&codec_options))
-                .await
-                .map_err(ZarristaError::from)?)
+            // Use the free function spawn_fifo unless a pool was provided
+            let decoded = if let Some(pool) = pool {
+                pool.spawn_fifo_async(move || encoded_chunk._decode(&codec_options))
+            } else {
+                tokio_rayon::spawn_fifo(move || encoded_chunk._decode(&codec_options))
+            };
+            Ok(decoded.await.map_err(ZarristaError::from)?)
         })
     }
 
