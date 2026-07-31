@@ -58,24 +58,30 @@ impl PyEncodedChunk {
     }
 
     #[pyo3(signature = (**codec_options))]
-    fn decode(&self, codec_options: Option<PyCodecOptions>) -> ZarristaResult<DecodedArray> {
-        let codec_options = codec_options
-            .map(|opts| opts.into_inner())
-            .unwrap_or_default();
+    fn decode(
+        &self,
+        py: Python,
+        codec_options: Option<PyCodecOptions>,
+    ) -> ZarristaResult<DecodedArray> {
+        py.detach(|| {
+            let codec_options = codec_options
+                .map(|opts| opts.into_inner())
+                .unwrap_or_default();
 
-        let bytes = self.codecs.decode(
-            Cow::Borrowed(&self.bytes),
-            &self.shape,
-            &self.data_type,
-            &self.fill_value,
-            &codec_options,
-        )?;
-        let shape = self.shape.iter().map(|v| v.get()).collect::<Vec<_>>();
-        Ok(DecodedArray::from_array_bytes(
-            bytes.into_owned(),
-            &shape,
-            &self.data_type,
-        )?)
+            let bytes = self.codecs.decode(
+                Cow::Borrowed(&self.bytes),
+                &self.shape,
+                &self.data_type,
+                &self.fill_value,
+                &codec_options,
+            )?;
+            let shape = self.shape.iter().map(|v| v.get()).collect::<Vec<_>>();
+            Ok(DecodedArray::from_array_bytes(
+                bytes.into_owned(),
+                &shape,
+                &self.data_type,
+            )?)
+        })
     }
 
     #[getter]
