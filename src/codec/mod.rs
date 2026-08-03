@@ -4,7 +4,7 @@ mod bytes_to_bytes;
 mod options;
 
 pub use array_to_array::{PyArrayToArrayCodec, bitround, transpose};
-pub use array_to_bytes::PyArrayToBytesCodec;
+pub use array_to_bytes::{PyArrayToBytesCodec, PyCodecChain};
 pub use bytes_to_bytes::PyBytesToBytesCodec;
 pub use bytes_to_bytes::blosc::blosc;
 pub use bytes_to_bytes::crc32c::crc32c;
@@ -25,6 +25,7 @@ pub fn register_codec_module(parent: &Bound<'_, PyModule>) -> PyResult<()> {
     codec.add_class::<PyArrayToArrayCodec>()?;
     codec.add_class::<PyArrayToBytesCodec>()?;
     codec.add_class::<PyBytesToBytesCodec>()?;
+    codec.add_class::<PyCodecChain>()?;
     codec.add_function(wrap_pyfunction!(transpose, &codec)?)?;
     codec.add_function(wrap_pyfunction!(bitround, &codec)?)?;
     codec.add_function(wrap_pyfunction!(blosc, &codec)?)?;

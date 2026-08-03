@@ -7,4 +7,5 @@ from zarrista.codec._bytes_to_bytes._blosc import blosc as blosc
 from zarrista.codec._bytes_to_bytes._crc32c import crc32c as crc32c
 from zarrista.codec._bytes_to_bytes._gzip import gzip as gzip
 from zarrista.codec._bytes_to_bytes._zstd import zstd as zstd
+from zarrista.codec._codec_chain import CodecChain as CodecChain
 from zarrista.codec._options import CodecOptions as CodecOptions

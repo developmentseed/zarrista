@@ -43,6 +43,12 @@ read/write docstrings a target (required under `mkdocs build --strict`).
       toc_label: BytesToBytesCodec
       show_bases: false
 
+::: zarrista.codec._codec_chain.CodecChain
+    options:
+      heading: CodecChain
+      toc_label: CodecChain
+      show_bases: false
+
 ## Array-to-array codecs
 
 ::: zarrista.codec._array_to_array.transpose

@@ -98,8 +98,8 @@ def test_filters_and_compressors():
         .create(MemoryStore(), "/a")
     )
 
-    assert [f.name for f in array.filters] == ["transpose"]
-    assert [c.name for c in array.compressors] == ["zstd"]
+    assert [f.name for f in array.codecs.filters] == ["transpose"]
+    assert [c.name for c in array.codecs.compressors] == ["zstd"]
 
 
 def test_serializer():
@@ -113,8 +113,8 @@ def test_serializer():
         .create(MemoryStore(), "/a")
     )
 
-    assert array.serializer.name == "bytes"
-    assert array.serializer.config == {"endian": "big"}
+    assert array.codecs.serializer.name == "bytes"
+    assert array.codecs.serializer.config == {"endian": "big"}
 
 
 def test_subchunk_shape_enables_sharding():
@@ -157,8 +157,8 @@ def test_like_with_override():
         .create(MemoryStore(), "/b")
     )
 
-    assert [c.name for c in source.compressors] == ["zstd"]
-    assert [c.name for c in overridden.compressors] == ["gzip"]
+    assert [c.name for c in source.codecs.compressors] == ["zstd"]
+    assert [c.name for c in overridden.codecs.compressors] == ["gzip"]
 
 
 def test_chunk_grid_dimension_mismatch_raises():

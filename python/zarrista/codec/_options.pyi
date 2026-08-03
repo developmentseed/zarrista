@@ -29,7 +29,7 @@ class CodecOptions(TypedDict, total=False):
 
     concurrent_target: int
     """Preferred number of concurrent operations. Defaults to the number of
-    threads available to Rayon."""
+    threads in the Rust thread pool."""
 
     chunk_concurrent_minimum: int
     """Preferred minimum chunk concurrency for multi-chunk operations. The

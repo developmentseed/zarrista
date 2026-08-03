@@ -3,6 +3,7 @@ mod r#async;
 mod builder;
 mod chunk_grid;
 mod chunk_key_encoding;
+mod encoded_chunk;
 mod fill_value;
 mod selection;
 mod shared;
@@ -14,6 +15,7 @@ pub use r#async::PyAsyncArray;
 pub use builder::PyArrayBuilder;
 pub use chunk_grid::PyChunkGrid;
 pub use chunk_key_encoding::PyChunkKeyEncoding;
+pub use encoded_chunk::PyEncodedChunk;
 pub use fill_value::PyFillValue;
 pub use sync::PyArray;
 pub use type_wrappers::{

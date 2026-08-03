@@ -4,18 +4,14 @@ from typing import TypeAlias, Unpack
 
 from zarr_metadata import JSONValue, ZarrV3ArrayMetadataJSON
 
-from zarrista.codec import (
-    ArrayToArrayCodec,
-    ArrayToBytesCodec,
-    BytesToBytesCodec,
-    CodecOptions,
-)
+from zarrista.codec import CodecChain, CodecOptions
 
 from ._array_bytes import ArrayBytes
 from ._chunk_key_encoding import ChunkKeyEncoding
 from ._chunks import ChunkGrid
 from ._decoded_array import DecodedArray
 from ._dtype import DataType
+from ._encoded_chunk import EncodedChunk
 from ._fill_value import FillValue
 from ._store import AsyncStore, FilesystemStore, MemoryStore
 
@@ -137,14 +133,12 @@ class Array:
                 from the chunk grid.
         """
     @property
-    def compressors(self) -> list[BytesToBytesCodec]:
-        """The bytes-to-bytes codecs ("compressors")."""
-    @property
-    def filters(self) -> list[ArrayToArrayCodec]:
-        """The array-to-array codecs ("filters")."""
-    @property
-    def serializer(self) -> ArrayToBytesCodec:
-        """The array-to-bytes codec ("serializer")."""
+    def codecs(self) -> CodecChain:
+        """The codec chain that encodes and decodes the array's chunks.
+
+        Use its `filters`, `serializer`, and `compressors` properties to inspect
+        the individual codecs.
+        """
     @property
     def dimension_names(self) -> list[str | None] | None:
         """The dimension names, if any were specified."""
@@ -207,18 +201,19 @@ class Array:
         Raises:
             TypeError: If a keyword argument is not a known codec option.
         """
-    def retrieve_encoded_chunk(self, chunk_indices: list[int]) -> Buffer | None:
+    def retrieve_encoded_chunk(self, chunk_indices: list[int]) -> EncodedChunk | None:
         """Read the raw, still-encoded bytes of the chunk at `chunk_indices`.
 
-        The method returns the bytes without any change, and it does not run
-        the codec pipeline.
+        The method reads the bytes and does not run the codec pipeline. To
+        decode them, use [`EncodedChunk.decode`][zarrista.EncodedChunk.decode]
+        or
+        [`EncodedChunk.decode_async`][zarrista.EncodedChunk.decode_async].
 
         Args:
             chunk_indices: The position of the chunk in the chunk grid.
 
         Returns:
-            The encoded chunk bytes, or `None` if the chunk is absent from the
-            store.
+            The encoded chunk, or `None` if the chunk is absent from the store.
         """
     def retrieve_subchunk(
         self,
@@ -617,14 +612,12 @@ class AsyncArray:
                 from the chunk grid.
         """
     @property
-    def compressors(self) -> list[BytesToBytesCodec]:
-        """The bytes-to-bytes codecs ("compressors")."""
-    @property
-    def filters(self) -> list[ArrayToArrayCodec]:
-        """The array-to-array codecs ("filters")."""
-    @property
-    def serializer(self) -> ArrayToBytesCodec:
-        """The array-to-bytes codec ("serializer")."""
+    def codecs(self) -> CodecChain:
+        """The codec chain that encodes and decodes the array's chunks.
+
+        Use its `filters`, `serializer`, and `compressors` properties to inspect
+        the individual codecs.
+        """
     @property
     def dimension_names(self) -> list[str | None] | None:
         """The dimension names, if any were specified."""
@@ -687,18 +680,22 @@ class AsyncArray:
         Raises:
             TypeError: If a keyword argument is not a known codec option.
         """
-    async def retrieve_encoded_chunk(self, chunk_indices: list[int]) -> Buffer | None:
+    async def retrieve_encoded_chunk(
+        self,
+        chunk_indices: list[int],
+    ) -> EncodedChunk | None:
         """Read the raw, still-encoded bytes of the chunk at `chunk_indices`.
 
-        The method returns the bytes without any change, and it does not run
-        the codec pipeline.
+        The method reads the bytes and does not run the codec pipeline. To
+        decode them, use [`EncodedChunk.decode`][zarrista.EncodedChunk.decode]
+        or
+        [`EncodedChunk.decode_async`][zarrista.EncodedChunk.decode_async].
 
         Args:
             chunk_indices: The position of the chunk in the chunk grid.
 
         Returns:
-            The encoded chunk bytes, or `None` if the chunk is absent from the
-            store.
+            The encoded chunk, or `None` if the chunk is absent from the store.
         """
     async def retrieve_subchunk(
         self,

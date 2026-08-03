@@ -7,9 +7,9 @@ use pyo3_bytes::PyBytes;
 use zarrs::array::{Array, ArrayShardedReadableExt, ArrayShardedReadableExtCache, ArraySubset};
 use zarrs::storage::ReadableWritableListableStorageTraits;
 
-use crate::array::PyChunkIndices;
 use crate::array::selection::PySelection;
 use crate::array::shared::shared_array_methods;
+use crate::array::{PyChunkIndices, PyEncodedChunk};
 use crate::array_bytes::PyArrayBytes;
 use crate::codec::PyCodecOptions;
 use crate::data::DecodedArray;
@@ -19,7 +19,8 @@ use crate::node::PyNodePath;
 use crate::storage::{PySyncStorage, ReadOnlyStorageAdapter};
 
 /// A Zarr array.
-#[pyclass(module = "zarrista", frozen, name = "Array")]
+#[pyclass(module = "zarrista", frozen, name = "Array", skip_from_py_object)]
+#[derive(Clone)]
 pub struct PyArray {
     pub(crate) inner: Arc<Array<dyn ReadableWritableListableStorageTraits>>,
     pub(crate) store: PySyncStorage,
@@ -159,9 +160,18 @@ impl PyArray {
     fn retrieve_encoded_chunk(
         &self,
         chunk_indices: PyChunkIndices,
-    ) -> ZarristaResult<Option<PyBytes>> {
+    ) -> ZarristaResult<Option<PyEncodedChunk>> {
         let encoded = self.inner.retrieve_encoded_chunk(&chunk_indices)?;
-        Ok(encoded.map(|buf| PyBytes::new(buf.into())))
+        let chunk_shape = self.inner.chunk_shape(&chunk_indices)?;
+        Ok(encoded.map(|buf| {
+            PyEncodedChunk::new(
+                buf.into(),
+                self.inner.codecs(),
+                self.inner.data_type().clone(),
+                self.inner.fill_value().clone(),
+                chunk_shape,
+            )
+        }))
     }
 
     fn retrieve_encoded_subchunk(
