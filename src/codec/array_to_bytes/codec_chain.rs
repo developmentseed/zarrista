@@ -8,6 +8,8 @@ use crate::codec::{PyArrayToArrayCodec, PyArrayToBytesCodec, PyBytesToBytesCodec
 #[pyclass(module = "zarrista.codec", frozen, name = "CodecChain")]
 pub struct PyCodecChain(Arc<CodecChain>);
 
+crate::wasm_send_sync!(PyCodecChain);
+
 #[pymethods]
 impl PyCodecChain {
     /// The bytes-to-bytes codecs ("compressors").

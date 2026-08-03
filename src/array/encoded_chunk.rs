@@ -33,6 +33,8 @@ pub struct PyEncodedChunk {
     shape: Vec<NonZeroU64>,
 }
 
+crate::wasm_send_sync!(PyCodecChain);
+
 impl PyEncodedChunk {
     pub fn new(
         bytes: Bytes,
