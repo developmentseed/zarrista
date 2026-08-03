@@ -2057,9 +2057,9 @@ dependencies = [
 
 [[package]]
 name = "icechunk"
-version = "2.1.1"
+version = "2.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "bf95c1ad92f68a136194ff919a1b7f09ab6f7fcfefb9ee2a0e103adb27ca21e6"
+checksum = "1b789b0eaa5dbaf3a2ea9cbb11cbd391eaccb6cf916eec9326c620a4585c247b"
 dependencies = [
  "async-compression",
  "async-recursion",
@@ -2098,9 +2098,9 @@ dependencies = [
 
 [[package]]
 name = "icechunk-arrow-object-store"
-version = "2.1.1"
+version = "2.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e2312dfb646c04f1369dcdb230c11d5d438e0e7b512378cbd2aa02157a561e4f"
+checksum = "1a83bb554b0752a42480370fd6d5eefda9d65198b21279ead5ec457e0243561d"
 dependencies = [
  "async-trait",
  "bytes",
@@ -2117,13 +2117,14 @@ dependencies = [
  "tracing",
  "typetag",
  "url",
+ "uuid",
 ]
 
 [[package]]
 name = "icechunk-format"
-version = "2.1.1"
+version = "2.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5f819f1366db019a7120b564fb9d6be59f3e44340fe45d846af79a5b3e3089ff"
+checksum = "726b173f50968588eda09d61a1c6736cc77bd807f6bc0981557ff61363ffc933"
 dependencies = [
  "base32",
  "bytes",
@@ -2147,9 +2148,9 @@ dependencies = [
 
 [[package]]
 name = "icechunk-s3"
-version = "2.1.1"
+version = "2.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "498e238473c77ebe091100af3ac7f8da92c27872f6f573b7c81c14fa5c116e6b"
+checksum = "0809ee3e2f398bcbac278f0d282b14e7c0884f5ecc5a285bc961e906d2ffe42b"
 dependencies = [
  "async-trait",
  "aws-config",
@@ -2168,13 +2169,14 @@ dependencies = [
  "tracing",
  "typed-path",
  "typetag",
+ "uuid",
 ]
 
 [[package]]
 name = "icechunk-storage"
-version = "2.1.1"
+version = "2.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "958dd21f5bbe697080f670fd1b77819cdfb419ddd00c28432d24389c3a3264ef"
+checksum = "f6c868eb411e5749d72f6685780c53e55861c1993479be6d89151df13d2b0bda"
 dependencies = [
  "async-trait",
  "bytes",
@@ -2193,9 +2195,9 @@ dependencies = [
 
 [[package]]
 name = "icechunk-types"
-version = "2.1.1"
+version = "2.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a5c3fbb382a7c191f33df6d65bdf6555e6da55f5b086f9d0498aa90c8af5fd6f"
+checksum = "2a56cc3583165127c8e098b4650c38e0671d58a5d9a8dc24ca4d73111935f50d"
 dependencies = [
  "serde",
  "serde_with",
