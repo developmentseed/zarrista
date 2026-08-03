@@ -238,18 +238,33 @@ class Array:
         Raises:
             TypeError: If a keyword argument is not a known codec option.
         """
-    def retrieve_encoded_subchunk(self, subchunk_indices: list[int]) -> Buffer | None:
+    def retrieve_encoded_subchunk(
+        self,
+        subchunk_indices: list[int],
+    ) -> EncodedChunk | None:
         """Read the raw, still-encoded bytes of a subchunk of a sharded array.
 
-        The method returns the bytes without any change, and it does not run
-        the codec pipeline.
+        The method reads the bytes and does not run the codec pipeline. To
+        decode them, use [`EncodedChunk.decode`][zarrista.EncodedChunk.decode]
+        or
+        [`EncodedChunk.decode_async`][zarrista.EncodedChunk.decode_async]. The
+        returned chunk carries the codec chain for the subchunks, which is the
+        inner chain of the `sharding_indexed` codec.
+
+        The array must be **exclusively** sharded: the `sharding_indexed` codec
+        must be the only codec. An array-to-array codec before it, or a
+        bytes-to-bytes codec after it, re-encodes the shard, so no byte range of
+        the shard holds the bytes of one subchunk.
 
         Args:
             subchunk_indices: The position of the subchunk in the subchunk grid.
 
         Returns:
-            The encoded subchunk bytes, or `None` if the subchunk is absent from
-            the store.
+            The encoded subchunk, or `None` if the subchunk is absent from the
+            store.
+
+        Raises:
+            ArrayError: If the array is not exclusively sharded.
         """
     @property
     def store(self) -> FilesystemStore | MemoryStore:
@@ -723,18 +738,30 @@ class AsyncArray:
     async def retrieve_encoded_subchunk(
         self,
         subchunk_indices: list[int],
-    ) -> Buffer | None:
+    ) -> EncodedChunk | None:
         """Read the raw, still-encoded bytes of a subchunk of a sharded array.
 
-        The method returns the bytes without any change, and it does not run
-        the codec pipeline.
+        The method reads the bytes and does not run the codec pipeline. To
+        decode them, use [`EncodedChunk.decode`][zarrista.EncodedChunk.decode]
+        or
+        [`EncodedChunk.decode_async`][zarrista.EncodedChunk.decode_async]. The
+        returned chunk carries the codec chain for the subchunks, which is the
+        inner chain of the `sharding_indexed` codec.
+
+        The array must be **exclusively** sharded: the `sharding_indexed` codec
+        must be the only codec. An array-to-array codec before it, or a
+        bytes-to-bytes codec after it, re-encodes the shard, so no byte range of
+        the shard holds the bytes of one subchunk.
 
         Args:
             subchunk_indices: The position of the subchunk in the subchunk grid.
 
         Returns:
-            The encoded subchunk bytes, or `None` if the subchunk is absent from
-            the store.
+            The encoded subchunk, or `None` if the subchunk is absent from the
+            store.
+
+        Raises:
+            ArrayError: If the array is not exclusively sharded.
         """
     @property
     def store(self) -> AsyncStore:
