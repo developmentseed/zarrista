@@ -188,6 +188,55 @@ impl PyManagedTensor {
             .tensor()
     }
 
+    /// The tensor's bytes, borrowed for as long as this owns them.
+    ///
+    /// This returns an `Err` for a tensor that is not on the host, or whose strides are not
+    /// compact.
+    pub(crate) fn as_bytes(&self) -> ZarristaResult<&[u8]> {
+        let tensor = self.tensor();
+
+        // Every call below needs the same thing: that the producer's `shape`,
+        // `strides`, and `data` pointers describe what the DLPack ABI says they
+        // do. `Self` owns the tensor, so the deleter has not run and none of
+        // them dangle. dlpark reports a null or negative `ndim` as an error
+        // rather than reading through it, so only a producer that lies about
+        // its own metadata could break these.
+
+        // SAFETY: the shape and strides pointers are the producer's own.
+        let is_compact = unsafe { tensor.is_compact() }.map_err(dlpack_import_error)?;
+        if !is_compact {
+            // Load-bearing, not just a convenience: `num_bytes` below describes
+            // the logical tensor, which only matches the bytes at the data
+            // pointer when the strides are compact.
+            return Err(PyValueError::new_err(
+                "the data is not C-contiguous. Make it contiguous first, \
+                 for example with `numpy.ascontiguousarray`.",
+            )
+            .into());
+        }
+
+        // SAFETY: the shape pointer is the producer's own.
+        let len = unsafe { tensor.num_bytes() }.map_err(dlpack_import_error)?;
+        if len == 0 {
+            return Ok(&[]);
+        }
+
+        // SAFETY: the shape and data pointers are the producer's own.
+        //
+        // This rejects a tensor on another device, so a device pointer can never reach the slice
+        // below, and it rejects a null pointer for a tensor that is not empty.
+        let ptr = unsafe { tensor.cpu_data_ptr_bytes() }.map_err(dlpack_import_error)?;
+
+        // SAFETY: `ptr` is non-null, and `u8` needs no alignment.
+        //
+        // The tensor is compact, so `len` bytes from `ptr` are exactly its initialized elements,
+        // inside the producer's allocation.
+        //
+        // The DLPack contract gives a consumer read access until it runs the deleter, which `Self`
+        // owns and has not run. The lifetime is the same as `&self`, so the slice cannot outlive
+        // the tensor that backs it.
+        Ok(unsafe { std::slice::from_raw_parts(ptr, len) })
+    }
 
     /// Access the zarr data type
     pub fn data_type(&self) -> ZarristaResult<DataType> {
