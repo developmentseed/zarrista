@@ -13,6 +13,7 @@ mod exceptions;
 mod group;
 mod metadata;
 mod node;
+mod py;
 mod storage;
 mod thread_pool;
 mod wasm;
