@@ -1,13 +1,12 @@
 use std::ffi::c_void;
 
-use dlpark::ManagedBox;
 use dlpark::ffi::{
     DLDataType, DLDataTypeCode, DLDevice, DLDeviceType, DLManagedTensorVersioned,
     DLPACK_MAJOR_VERSION, DLPACK_MINOR_VERSION, DLTensor,
 };
 use dlpark::metadata::CopiedSlice;
 use dlpark::python::device::dlpack_device;
-use dlpark::{Builder, legacy};
+use dlpark::{Builder, ManagedBox, legacy};
 use pyo3::exceptions::PyValueError;
 use pyo3::intern;
 use pyo3::prelude::*;
