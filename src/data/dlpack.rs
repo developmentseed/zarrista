@@ -166,3 +166,34 @@ impl DLPackDataTypeExt for DLDataType {
         Ok(DLDataType::scalar(code, bits))
     }
 }
+
+/// A DLPack tensor from a Python producer
+///
+/// We customize this to run `Drop` with the GIL held, since the producer may need to change Python
+/// state.
+pub struct PyManagedTensor(Option<ManagedBox<DLManagedTensorVersioned>>);
+
+// SAFETY: the tensor's buffer is plain memory that stays valid until the
+// deleter runs, so reading it needs no GIL and is sound from any thread. The
+// deleter is the only operation that touches the interpreter, and `Drop` always
+// runs it under `Python::try_attach`.
+unsafe impl Send for PyManagedTensor {}
+impl Drop for PyManagedTensor {
+    fn drop(&mut self) {
+        // Try to drop the tensor with the GIL held.
+        let drop_successful = Python::try_attach(|_py| drop(self.0.take())).is_some();
+
+        // If the GIL could not be acquired, the interpreter is shutting down and the deleter
+        // cannot run safely.
+        //
+        // We leak the tensor instead of running the deleter. The process is ending, so the memory
+        // returns to the operating system regardless.
+        //
+        // Numpy appears to do the same. If the interpreter is shutting down, it does not run the
+        // deleter, and the memory leaks.
+        // <https://github.com/numpy/numpy/blob/4978efe1055ddda49a26524bca5ae6a2d01e6802/numpy/_core/src/multiarray/dlpack.c#L91-L115>
+        if !drop_successful {
+            std::mem::forget(self.0.take());
+        }
+    }
+}
