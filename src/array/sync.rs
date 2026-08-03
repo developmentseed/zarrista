@@ -19,7 +19,8 @@ use crate::node::PyNodePath;
 use crate::storage::{PySyncStorage, ReadOnlyStorageAdapter};
 
 /// A Zarr array.
-#[pyclass(module = "zarrista", frozen, name = "Array")]
+#[pyclass(module = "zarrista", frozen, name = "Array", skip_from_py_object)]
+#[derive(Clone)]
 pub struct PyArray {
     pub(crate) inner: Arc<Array<dyn ReadableWritableListableStorageTraits>>,
     pub(crate) store: PySyncStorage,

@@ -22,8 +22,8 @@ use crate::node::PyNodePath;
 use crate::storage::{AsyncReadOnlyStorageAdapter, PyAsyncStorage};
 
 /// A Zarr array.
-#[derive(Clone)]
 #[pyclass(module = "zarrista", frozen, name = "AsyncArray", from_py_object)]
+#[derive(Clone)]
 pub struct PyAsyncArray {
     pub(crate) inner: Arc<Array<dyn AsyncReadableWritableListableStorageTraits>>,
     store: PyAsyncStorage,
