@@ -179,6 +179,34 @@ pub struct PyManagedTensor(Option<ManagedBox<DLManagedTensorVersioned>>);
 // runs it under `Python::try_attach`.
 unsafe impl Send for PyManagedTensor {}
 
+impl PyManagedTensor {
+    /// The DLPack tensor description: data pointer, device, shape, and strides.
+    pub(crate) fn tensor(&self) -> &DLTensor {
+        self.0
+            .as_ref()
+            .expect("the tensor is taken only while dropping")
+            .tensor()
+    }
+
+
+    /// Access the zarr data type
+    pub fn data_type(&self) -> ZarristaResult<DataType> {
+        self.tensor().dtype.zarrs_data_type()
+    }
+
+    /// The tensor's shape, in elements along each dimension.
+    pub(crate) fn shape(&self) -> ZarristaResult<Vec<u64>> {
+        // SAFETY: `Self` owns the tensor, so the producer's shape, strides, and
+        // data pointer stay valid and readable for this borrow.
+        let shape = unsafe { self.tensor().shape().map_err(dlpack_import_error)? };
+        shape
+            .iter()
+            .map(|dim| u64::try_from(*dim))
+            .collect::<Result<Vec<_>, _>>()
+            .map_err(|_| PyValueError::new_err("the data has a negative dimension").into())
+    }
+}
+
 impl FromPyObject<'_, '_> for PyManagedTensor {
     type Error = PyErr;
 
