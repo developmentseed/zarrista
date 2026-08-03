@@ -1,11 +1,18 @@
 use std::ffi::c_void;
 
-use dlpark::ffi::{DLDataType, DLDataTypeCode, DLDevice, DLDeviceType};
+use dlpark::ManagedBox;
+use dlpark::ffi::{
+    DLDataType, DLDataTypeCode, DLDevice, DLDeviceType, DLManagedTensorVersioned,
+    DLPACK_MAJOR_VERSION, DLPACK_MINOR_VERSION, DLTensor,
+};
 use dlpark::metadata::CopiedSlice;
+use dlpark::python::device::dlpack_device;
 use dlpark::{Builder, legacy};
 use pyo3::exceptions::PyValueError;
+use pyo3::intern;
 use pyo3::prelude::*;
 use pyo3::types::PyDict;
+use zarrs::array::DataType;
 
 use crate::data::PyTensor;
 use crate::error::ZarristaResult;
@@ -19,7 +26,8 @@ impl PyTensor {
         &self,
         _kwargs: Option<Bound<'py, PyDict>>,
     ) -> ZarristaResult<legacy::Dlpack> {
-        let dlpack_dtype = self.dlpack_data_type()?;
+        let dlpack_dtype = DLDataType::from_zarrs_data_type(&self.data_type)?;
+
         let shape = self
             .shape
             .iter()
@@ -61,45 +69,6 @@ impl PyTensor {
     }
 }
 
-impl PyTensor {
-    /// The DLPack element descriptor for this tensor's zarr data type.
-    fn dlpack_data_type(&self) -> ZarristaResult<DLDataType> {
-        use zarrs::array::data_type::*;
-
-        let dtype = &self.data_type;
-        let (code, bits) = if dtype.is::<BoolDataType>() {
-            (DLDataTypeCode::BOOL, 8)
-        } else if dtype.is::<Int8DataType>() {
-            (DLDataTypeCode::INT, 8)
-        } else if dtype.is::<Int16DataType>() {
-            (DLDataTypeCode::INT, 16)
-        } else if dtype.is::<Int32DataType>() {
-            (DLDataTypeCode::INT, 32)
-        } else if dtype.is::<Int64DataType>() {
-            (DLDataTypeCode::INT, 64)
-        } else if dtype.is::<UInt8DataType>() {
-            (DLDataTypeCode::UINT, 8)
-        } else if dtype.is::<UInt16DataType>() {
-            (DLDataTypeCode::UINT, 16)
-        } else if dtype.is::<UInt32DataType>() {
-            (DLDataTypeCode::UINT, 32)
-        } else if dtype.is::<UInt64DataType>() {
-            (DLDataTypeCode::UINT, 64)
-        } else if dtype.is::<Float16DataType>() {
-            (DLDataTypeCode::FLOAT, 16)
-        } else if dtype.is::<Float32DataType>() {
-            (DLDataTypeCode::FLOAT, 32)
-        } else if dtype.is::<Float64DataType>() {
-            (DLDataTypeCode::FLOAT, 64)
-        } else if dtype.is::<BFloat16DataType>() {
-            (DLDataTypeCode::BFLOAT, 16)
-        } else {
-            return Err(PyValueError::new_err("Unsupported data type in dlpack").into());
-        };
-        Ok(DLDataType::scalar(code, bits))
-    }
-}
-
 /// Strides, in elements, for a row-major contiguous buffer of the given shape.
 fn row_major_compact_strides(shape: &[i64]) -> Vec<i64> {
     let mut strides = vec![1; shape.len()];
@@ -107,4 +76,93 @@ fn row_major_compact_strides(shape: &[i64]) -> Vec<i64> {
         strides[axis] = strides[axis + 1] * shape[axis + 1];
     }
     strides
+}
+
+pub trait DLPackDataTypeExt {
+    /// Convert from DLPack data type to Zarr data type.
+    fn zarrs_data_type(&self) -> ZarristaResult<DataType>;
+
+    // Convert from Zarr data type to DLPack data type
+    fn from_zarrs_data_type(data_type: &DataType) -> ZarristaResult<Self>
+    where
+        Self: Sized;
+}
+
+impl DLPackDataTypeExt for DLDataType {
+    fn zarrs_data_type(&self) -> ZarristaResult<DataType> {
+        use zarrs::array::data_type::*;
+
+        if self.lanes != 1 {
+            return Err(PyValueError::new_err(format!(
+                "the data has {} lanes per element, but only scalar elements are supported",
+                self.lanes
+            ))
+            .into());
+        }
+
+        let data_type = match (self.code, self.bits) {
+            (DLDataTypeCode::BOOL, 8) => DataType::new(BoolDataType),
+            (DLDataTypeCode::INT, 8) => DataType::new(Int8DataType),
+            (DLDataTypeCode::INT, 16) => DataType::new(Int16DataType),
+            (DLDataTypeCode::INT, 32) => DataType::new(Int32DataType),
+            (DLDataTypeCode::INT, 64) => DataType::new(Int64DataType),
+            (DLDataTypeCode::UINT, 8) => DataType::new(UInt8DataType),
+            (DLDataTypeCode::UINT, 16) => DataType::new(UInt16DataType),
+            (DLDataTypeCode::UINT, 32) => DataType::new(UInt32DataType),
+            (DLDataTypeCode::UINT, 64) => DataType::new(UInt64DataType),
+            (DLDataTypeCode::FLOAT, 16) => DataType::new(Float16DataType),
+            (DLDataTypeCode::FLOAT, 32) => DataType::new(Float32DataType),
+            (DLDataTypeCode::FLOAT, 64) => DataType::new(Float64DataType),
+            (DLDataTypeCode::BFLOAT, 16) => DataType::new(BFloat16DataType),
+            (code, bits) => {
+                return Err(PyValueError::new_err(format!(
+                    "the data has DLPack type code {} at {bits} bits, \
+                 which has no Zarr data type",
+                    code.0
+                ))
+                .into());
+            }
+        };
+
+        Ok(data_type)
+    }
+
+    fn from_zarrs_data_type(data_type: &DataType) -> ZarristaResult<Self>
+    where
+        Self: Sized,
+    {
+        use zarrs::array::data_type::*;
+
+        let (code, bits) = if data_type.is::<BoolDataType>() {
+            (DLDataTypeCode::BOOL, 8)
+        } else if data_type.is::<Int8DataType>() {
+            (DLDataTypeCode::INT, 8)
+        } else if data_type.is::<Int16DataType>() {
+            (DLDataTypeCode::INT, 16)
+        } else if data_type.is::<Int32DataType>() {
+            (DLDataTypeCode::INT, 32)
+        } else if data_type.is::<Int64DataType>() {
+            (DLDataTypeCode::INT, 64)
+        } else if data_type.is::<UInt8DataType>() {
+            (DLDataTypeCode::UINT, 8)
+        } else if data_type.is::<UInt16DataType>() {
+            (DLDataTypeCode::UINT, 16)
+        } else if data_type.is::<UInt32DataType>() {
+            (DLDataTypeCode::UINT, 32)
+        } else if data_type.is::<UInt64DataType>() {
+            (DLDataTypeCode::UINT, 64)
+        } else if data_type.is::<Float16DataType>() {
+            (DLDataTypeCode::FLOAT, 16)
+        } else if data_type.is::<Float32DataType>() {
+            (DLDataTypeCode::FLOAT, 32)
+        } else if data_type.is::<Float64DataType>() {
+            (DLDataTypeCode::FLOAT, 64)
+        } else if data_type.is::<BFloat16DataType>() {
+            (DLDataTypeCode::BFLOAT, 16)
+        } else {
+            return Err(PyValueError::new_err("Unsupported data type in dlpack").into());
+        };
+
+        Ok(DLDataType::scalar(code, bits))
+    }
 }
