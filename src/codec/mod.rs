@@ -4,6 +4,7 @@ mod bytes_to_bytes;
 mod options;
 
 pub use array_to_array::{PyArrayToArrayCodec, bitround, transpose};
+pub(crate) use array_to_bytes::CodecChainSubchunkExt;
 pub use array_to_bytes::{PyArrayToBytesCodec, PyCodecChain};
 pub use bytes_to_bytes::PyBytesToBytesCodec;
 pub use bytes_to_bytes::blosc::blosc;

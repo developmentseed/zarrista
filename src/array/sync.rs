@@ -4,14 +4,16 @@ use std::sync::Arc;
 
 use pyo3::prelude::*;
 use pyo3_bytes::PyBytes;
-use zarrs::array::{Array, ArrayShardedReadableExt, ArrayShardedReadableExtCache, ArraySubset};
+use zarrs::array::{
+    Array, ArrayShardedExt, ArrayShardedReadableExt, ArrayShardedReadableExtCache, ArraySubset,
+};
 use zarrs::storage::ReadableWritableListableStorageTraits;
 
 use crate::array::selection::PySelection;
 use crate::array::shared::shared_array_methods;
 use crate::array::{PyChunkIndices, PyEncodedChunk};
 use crate::array_bytes::PyArrayBytes;
-use crate::codec::PyCodecOptions;
+use crate::codec::{CodecChainSubchunkExt, PyCodecOptions};
 use crate::data::DecodedArray;
 use crate::error::ZarristaResult;
 use crate::metadata::PyArrayMetadata;
@@ -177,14 +179,35 @@ impl PyArray {
     fn retrieve_encoded_subchunk(
         &self,
         subchunk_indices: PyChunkIndices,
-    ) -> ZarristaResult<Option<PyBytes>> {
+    ) -> ZarristaResult<Option<PyEncodedChunk>> {
         // TODO: allow user to manage shard cache
         let subchunk_cache = ArrayShardedReadableExtCache::new(&self.inner);
 
-        let encoded = self
+        let Some(encoded) = self
             .inner
-            .retrieve_encoded_subchunk(&subchunk_cache, &subchunk_indices)?;
-        Ok(encoded.map(|buf| PyBytes::new(buf.into())))
+            .retrieve_encoded_subchunk(&subchunk_cache, &subchunk_indices)?
+        else {
+            return Ok(None);
+        };
+
+        let subchunk_codec_chain = self
+            .inner
+            .codecs()
+            .subchunk_chain()?
+            .expect("zarrs already validated that the array is an exclusively sharded array");
+
+        let subchunk_shape = self
+            .inner
+            .effective_subchunk_shape()
+            .expect("zarrs already validated that the array is an exclusively sharded array");
+
+        Ok(Some(PyEncodedChunk::new(
+            encoded.into(),
+            subchunk_codec_chain,
+            self.inner.data_type().clone(),
+            self.inner.fill_value().clone(),
+            subchunk_shape,
+        )))
     }
 
     #[pyo3(signature = (subchunk_indices, **codec_options))]
