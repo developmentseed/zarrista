@@ -308,10 +308,7 @@ class Array:
         updates, and rewrites each chunk that the region touches, so a write
         that covers whole chunks is cheaper than one that covers parts of them.
 
-        `data` may be anything that
-        [`DataInput`][zarrista.DataInput] accepts. An object that supports
-        DLPack, such as a numpy array, is checked against the array's data type
-        and against the shape of the selected region.
+        `data` may be any type allowed by `DataInput`.
 
         Args:
             selection: The region to write, in element coordinates.
@@ -840,10 +837,7 @@ class AsyncArray:
         updates, and rewrites each chunk that the region touches, so a write
         that covers whole chunks is cheaper than one that covers parts of them.
 
-        `data` may be anything that
-        [`DataInput`][zarrista.DataInput] accepts. An object that supports
-        DLPack, such as a numpy array, is checked against the array's data type
-        and against the shape of the selected region.
+        `data` may be any type allowed by `DataInput`.
 
         Args:
             selection: The region to write, in element coordinates.
