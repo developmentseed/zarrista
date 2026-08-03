@@ -6,7 +6,8 @@ use pyo3::prelude::*;
 use pyo3_async_runtimes::tokio::future_into_py;
 use pyo3_bytes::PyBytes;
 use zarrs::array::{
-    Array, ArraySubset, AsyncArrayShardedReadableExt, AsyncArrayShardedReadableExtCache,
+    Array, ArrayShardedExt, ArraySubset, AsyncArrayShardedReadableExt,
+    AsyncArrayShardedReadableExtCache,
 };
 use zarrs::storage::AsyncReadableWritableListableStorageTraits;
 
@@ -14,7 +15,7 @@ use crate::array::selection::PySelection;
 use crate::array::shared::shared_array_methods;
 use crate::array::{PyChunkIndices, PyEncodedChunk};
 use crate::array_bytes::PyArrayBytes;
-use crate::codec::PyCodecOptions;
+use crate::codec::{CodecChainSubchunkExt, PyCodecOptions};
 use crate::data::DecodedArray;
 use crate::error::{ZarristaError, ZarristaResult};
 use crate::metadata::PyArrayMetadata;
@@ -258,11 +259,29 @@ impl PyAsyncArray {
 
         let inner = self.inner.clone();
         future_into_py(py, async move {
-            let encoded = inner
+            let Some(encoded) = inner
                 .async_retrieve_encoded_subchunk(&subchunk_cache, &subchunk_indices)
                 .await
-                .map_err(ZarristaError::from)?;
-            Ok(encoded.map(|buf| PyBytes::new(buf.into())))
+                .map_err(ZarristaError::from)?
+            else {
+                return Ok(None);
+            };
+
+            let subchunk_codec_chain = inner.codecs().subchunk_chain()?.expect(
+                "zarrs accepts only an exclusively sharded array, so the serializer shards",
+            );
+
+            let subchunk_shape = inner
+                .effective_subchunk_shape()
+                .expect("an exclusively sharded array has no outer array-to-array codecs");
+
+            Ok(Some(PyEncodedChunk::new(
+                encoded.into(),
+                subchunk_codec_chain,
+                inner.data_type().clone(),
+                inner.fill_value().clone(),
+                subchunk_shape,
+            )))
         })
     }
 

@@ -1,7 +1,9 @@
 //! Array to bytes codecs, or "serializers".
 
 pub use codec_chain::PyCodecChain;
+pub(crate) use subchunk::CodecChainSubchunkExt;
 mod codec_chain;
+mod subchunk;
 
 use std::borrow::Cow;
 use std::sync::Arc;
