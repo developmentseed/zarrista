@@ -10,9 +10,9 @@ use zarrs::array::{
 };
 use zarrs::storage::AsyncReadableWritableListableStorageTraits;
 
-use crate::array::PyChunkIndices;
 use crate::array::selection::PySelection;
 use crate::array::shared::shared_array_methods;
+use crate::array::{PyChunkIndices, PyEncodedChunk};
 use crate::array_bytes::PyArrayBytes;
 use crate::codec::PyCodecOptions;
 use crate::data::DecodedArray;
@@ -233,7 +233,18 @@ impl PyAsyncArray {
                 .async_retrieve_encoded_chunk(&chunk_indices)
                 .await
                 .map_err(ZarristaError::from)?;
-            Ok(encoded.map(PyBytes::new))
+            let chunk_shape = inner
+                .chunk_shape(&chunk_indices)
+                .map_err(ZarristaError::from)?;
+            Ok(encoded.map(|buf| {
+                PyEncodedChunk::new(
+                    buf,
+                    inner.codecs(),
+                    inner.data_type().clone(),
+                    inner.fill_value().clone(),
+                    chunk_shape,
+                )
+            }))
         })
     }
 
