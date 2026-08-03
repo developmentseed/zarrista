@@ -190,16 +190,15 @@ impl PyArray {
             return Ok(None);
         };
 
-        let subchunk_codec_chain = self
-            .inner
-            .codecs()
-            .subchunk_chain()?
-            .expect("zarrs already validated that the array is an exclusively sharded array");
+        let subchunk_codec_chain =
+            self.inner.codecs().subchunk_chain()?.expect(
+                "zarrs accepts only an exclusively sharded array, so the serializer shards",
+            );
 
         let subchunk_shape = self
             .inner
             .effective_subchunk_shape()
-            .expect("zarrs already validated that the array is an exclusively sharded array");
+            .expect("an exclusively sharded array has no outer array-to-array codecs");
 
         Ok(Some(PyEncodedChunk::new(
             encoded.into(),
