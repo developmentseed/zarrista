@@ -92,7 +92,7 @@ impl PyEncodedChunk {
         py: Python,
         codec_options: Option<PyCodecOptions>,
     ) -> ZarristaResult<DecodedArray> {
-        py.detach(|| {
+        crate::py::detach(py, || {
             let codec_options = codec_options
                 .map(|opts| opts.into_inner())
                 .unwrap_or_default();
