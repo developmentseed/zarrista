@@ -91,7 +91,7 @@ def test_existing_chunks_are_not_migrated() -> None:
 
     # `array` still describes the 2x2 grid, so it can still address the old chunk.
     # It is untouched: still 4 bytes, not re-encoded to 16.
-    assert len(array.retrieve_encoded_chunk([0, 0])) == 4
+    assert len(array.retrieve_encoded_chunk([0, 0]).buffer) == 4
 
 
 # --- async --------------------------------------------------------------------
