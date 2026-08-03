@@ -178,6 +178,40 @@ pub struct PyManagedTensor(Option<ManagedBox<DLManagedTensorVersioned>>);
 // deleter is the only operation that touches the interpreter, and `Drop` always
 // runs it under `Python::try_attach`.
 unsafe impl Send for PyManagedTensor {}
+
+impl FromPyObject<'_, '_> for PyManagedTensor {
+    type Error = PyErr;
+
+    /// Import a DLPack tensor, asking the provider to copy it to CPU memory if necessary.
+    fn extract(obj: Borrowed<'_, '_, PyAny>) -> Result<Self, Self::Error> {
+        let py = obj.py();
+        let kwargs = PyDict::new(py);
+        kwargs.set_item(
+            intern!(py, "max_version"),
+            (DLPACK_MAJOR_VERSION, DLPACK_MINOR_VERSION),
+        )?;
+        kwargs.set_item(intern!(py, "dl_device"), (DLDeviceType::CPU.0, 0))?;
+
+        let capsule = obj
+            .call_method(intern!(py, "__dlpack__"), (), Some(&kwargs))
+            .map_err(|err| {
+                let device = dlpack_device(obj).map_or_else(
+                    |_| "an unknown device".to_string(),
+                    |device| format!("device {:?}", device.device_type),
+                );
+                PyValueError::new_err(format!(
+                    "The data is on {device}, and the producer could not move it to the host: {err}."
+                ))
+            })?;
+
+        // dlpark reads a capsule directly, so this does not call `__dlpack__`
+        // a second time.
+        Ok(Self(Some(
+            capsule.extract::<ManagedBox<DLManagedTensorVersioned>>()?,
+        )))
+    }
+}
+
 impl Drop for PyManagedTensor {
     fn drop(&mut self) {
         // Try to drop the tensor with the GIL held.
@@ -196,4 +230,9 @@ impl Drop for PyManagedTensor {
             std::mem::forget(self.0.take());
         }
     }
+}
+
+/// Add DLPack error prefix text
+fn dlpack_import_error(err: impl std::fmt::Display) -> PyErr {
+    PyValueError::new_err(format!("Error in DLPack import: {err}"))
 }
