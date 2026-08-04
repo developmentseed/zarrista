@@ -80,10 +80,12 @@ impl PyArrayBuilder {
         })
     }
 
-    fn create(&self, store: PySyncStorage, path: &str) -> ZarristaResult<PyArray> {
-        let array = self.0.build_arc(store.inner(), path)?;
-        array.store_metadata()?;
-        Ok(PyArray::new(array, store))
+    fn create(&self, py: Python, store: PySyncStorage, path: &str) -> ZarristaResult<PyArray> {
+        crate::py::detach(py, || {
+            let array = self.0.build_arc(store.inner(), path)?;
+            array.store_metadata()?;
+            Ok(PyArray::new(array, store))
+        })
     }
 
     #[cfg(feature = "async")]

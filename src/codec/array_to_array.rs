@@ -90,36 +90,42 @@ impl PyArrayToArrayCodec {
 
     fn encode(
         &self,
+        py: Python,
         bytes: &PyArrayBytes,
         shape: Vec<NonZeroU64>,
         data_type: &PyDataType,
         fill_value: &PyFillValue,
     ) -> ZarristaResult<PyArrayBytes> {
-        let encoded = self.0.encode(
-            bytes.as_array_bytes()?,
-            &shape,
-            data_type.inner(),
-            fill_value.inner(),
-            &CodecOptions::default(),
-        )?;
-        Ok(PyArrayBytes::from_zarrs(encoded))
+        crate::py::detach(py, || {
+            let encoded = self.0.encode(
+                bytes.as_array_bytes()?,
+                &shape,
+                data_type.inner(),
+                fill_value.inner(),
+                &CodecOptions::default(),
+            )?;
+            Ok(PyArrayBytes::from_zarrs(encoded))
+        })
     }
 
     fn decode(
         &self,
+        py: Python,
         bytes: &PyArrayBytes,
         shape: Vec<NonZeroU64>,
         data_type: &PyDataType,
         fill_value: &PyFillValue,
     ) -> ZarristaResult<PyArrayBytes> {
-        let decoded = self.0.decode(
-            bytes.as_array_bytes()?,
-            &shape,
-            data_type.inner(),
-            fill_value.inner(),
-            &CodecOptions::default(),
-        )?;
-        Ok(PyArrayBytes::from_zarrs(decoded))
+        crate::py::detach(py, || {
+            let decoded = self.0.decode(
+                bytes.as_array_bytes()?,
+                &shape,
+                data_type.inner(),
+                fill_value.inner(),
+                &CodecOptions::default(),
+            )?;
+            Ok(PyArrayBytes::from_zarrs(decoded))
+        })
     }
 
     fn encoded_shape(&self, decoded_shape: Vec<NonZeroU64>) -> ZarristaResult<Vec<NonZeroU64>> {

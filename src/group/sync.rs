@@ -50,114 +50,134 @@ impl PyGroup {
         signature = (store, path = PyNodePath::root()),
         text_signature = "(store, path='/')"
     )]
-    fn open(store: PySyncStorage, path: PyNodePath) -> ZarristaResult<Self> {
-        let inner = Group::open(store.inner(), path.as_str())?;
+    fn open(py: Python, store: PySyncStorage, path: PyNodePath) -> ZarristaResult<Self> {
+        let inner = crate::py::detach(py, || Group::open(store.inner(), path.as_str()))?;
         Ok(Self::new(Arc::new(inner), store))
     }
 
     /// Names of the direct child arrays.
-    fn array_keys(&self) -> ZarristaResult<Vec<String>> {
-        let paths = self.inner.child_array_paths()?;
-        Ok(paths.iter().map(|p| last_segment(p.as_str())).collect())
+    fn array_keys(&self, py: Python) -> ZarristaResult<Vec<String>> {
+        crate::py::detach(py, || {
+            let paths = self.inner.child_array_paths()?;
+            Ok(paths.iter().map(|p| last_segment(p.as_str())).collect())
+        })
     }
 
     /// Names of the direct child groups.
-    fn group_keys(&self) -> ZarristaResult<Vec<String>> {
-        let paths = self.inner.child_group_paths()?;
-        Ok(paths.iter().map(|p| last_segment(p.as_str())).collect())
+    fn group_keys(&self, py: Python) -> ZarristaResult<Vec<String>> {
+        crate::py::detach(py, || {
+            let paths = self.inner.child_group_paths()?;
+            Ok(paths.iter().map(|p| last_segment(p.as_str())).collect())
+        })
     }
 
     /// Open a direct child array or group by name.
-    fn __getitem__(&self, name: PyBackedStr) -> ZarristaResult<PyNode> {
-        self.child(name)
+    fn __getitem__(&self, py: Python, name: PyBackedStr) -> ZarristaResult<PyNode> {
+        self.child(py, name)
     }
 
-    fn child(&self, name: PyBackedStr) -> ZarristaResult<PyNode> {
-        let children = self.inner.children(false)?;
-        let selected_child = children
-            .into_iter()
-            .find(|child| child.name().as_str() == name.as_str())
-            .ok_or(PyKeyError::new_err(format!("child {name} not found")))?;
-        Ok(PyNode::new(selected_child, self.store.clone()))
+    fn child(&self, py: Python, name: PyBackedStr) -> ZarristaResult<PyNode> {
+        crate::py::detach(py, || {
+            let children = self.inner.children(false)?;
+            let selected_child = children
+                .into_iter()
+                .find(|child| child.name().as_str() == name)
+                .ok_or(PyKeyError::new_err(format!("child {name} not found")))?;
+            Ok(PyNode::new(selected_child, self.store.clone()))
+        })
     }
 
     /// Every node under the group, recursively, as `Array`/`Group` objects.
-    fn traverse(&self) -> ZarristaResult<Vec<PyArrayOrGroup>> {
-        self.inner
-            .traverse()?
-            .into_iter()
-            .map(|(path, metadata)| {
-                let storage = self.storage();
-                match metadata {
-                    NodeMetadata::Array(array_metadata) => {
-                        let array =
-                            Array::new_with_metadata(storage, path.as_str(), array_metadata)?;
-                        Ok(PyArray::new(Arc::new(array), self.store.clone()).into())
+    fn traverse(&self, py: Python) -> ZarristaResult<Vec<PyArrayOrGroup>> {
+        crate::py::detach(py, || {
+            self.inner
+                .traverse()?
+                .into_iter()
+                .map(|(path, metadata)| {
+                    let storage = self.storage();
+                    match metadata {
+                        NodeMetadata::Array(array_metadata) => {
+                            let array =
+                                Array::new_with_metadata(storage, path.as_str(), array_metadata)?;
+                            Ok(PyArray::new(Arc::new(array), self.store.clone()).into())
+                        }
+                        NodeMetadata::Group(group_metadata) => {
+                            let group =
+                                Group::new_with_metadata(storage, path.as_str(), group_metadata)?;
+                            Ok(PyGroup::new(Arc::new(group), self.store.clone()).into())
+                        }
                     }
-                    NodeMetadata::Group(group_metadata) => {
-                        let group =
-                            Group::new_with_metadata(storage, path.as_str(), group_metadata)?;
-                        Ok(PyGroup::new(Arc::new(group), self.store.clone()).into())
-                    }
-                }
-            })
-            .collect()
+                })
+                .collect()
+        })
     }
 
     /// The direct child arrays of the group.
-    fn child_arrays(&self) -> ZarristaResult<Vec<PyArray>> {
-        Ok(self
-            .inner
-            .child_arrays()?
-            .into_iter()
-            .map(|array| PyArray::new(Arc::new(array), self.store.clone()))
-            .collect())
+    fn child_arrays(&self, py: Python) -> ZarristaResult<Vec<PyArray>> {
+        crate::py::detach(py, || {
+            Ok(self
+                .inner
+                .child_arrays()?
+                .into_iter()
+                .map(|array| PyArray::new(Arc::new(array), self.store.clone()))
+                .collect())
+        })
     }
 
     /// The direct child groups of the group.
-    fn child_groups(&self) -> ZarristaResult<Vec<PyGroup>> {
-        Ok(self
-            .inner
-            .child_groups()?
-            .into_iter()
-            .map(|group| PyGroup::new(Arc::new(group), self.store.clone()))
-            .collect())
+    fn child_groups(&self, py: Python) -> ZarristaResult<Vec<PyGroup>> {
+        crate::py::detach(py, || {
+            Ok(self
+                .inner
+                .child_groups()?
+                .into_iter()
+                .map(|group| PyGroup::new(Arc::new(group), self.store.clone()))
+                .collect())
+        })
     }
 
     /// The full paths of the group's direct children.
-    fn child_paths(&self) -> ZarristaResult<Vec<PyNodePath>> {
-        Ok(self
-            .inner
-            .child_paths()?
-            .into_iter()
-            .map(|p| p.into())
-            .collect())
+    fn child_paths(&self, py: Python) -> ZarristaResult<Vec<PyNodePath>> {
+        crate::py::detach(py, || {
+            Ok(self
+                .inner
+                .child_paths()?
+                .into_iter()
+                .map(|p| p.into())
+                .collect())
+        })
     }
 
     /// The full paths of the group's direct child arrays.
-    fn child_array_paths(&self) -> ZarristaResult<Vec<PyNodePath>> {
-        Ok(self
-            .inner
-            .child_array_paths()?
-            .into_iter()
-            .map(|p| p.into())
-            .collect())
+    fn child_array_paths(&self, py: Python) -> ZarristaResult<Vec<PyNodePath>> {
+        crate::py::detach(py, || {
+            Ok(self
+                .inner
+                .child_array_paths()?
+                .into_iter()
+                .map(|p| p.into())
+                .collect())
+        })
     }
 
     /// The full paths of the group's direct child groups.
-    fn child_group_paths(&self) -> ZarristaResult<Vec<PyNodePath>> {
-        Ok(self
-            .inner
-            .child_group_paths()?
-            .into_iter()
-            .map(|p| p.into())
-            .collect())
+    fn child_group_paths(&self, py: Python) -> ZarristaResult<Vec<PyNodePath>> {
+        crate::py::detach(py, || {
+            Ok(self
+                .inner
+                .child_group_paths()?
+                .into_iter()
+                .map(|p| p.into())
+                .collect())
+        })
     }
 
     /// Erase the group metadata from the store. Succeeds if it does not exist.
-    fn erase_metadata(&self) -> ZarristaResult<()> {
-        self.inner.erase_metadata()?;
-        Ok(())
+    fn erase_metadata(&self, py: Python) -> ZarristaResult<()> {
+        crate::py::detach(py, || {
+            self.inner.erase_metadata()?;
+            Ok(())
+        })
     }
 
     #[getter]
@@ -166,9 +186,11 @@ impl PyGroup {
     }
 
     /// Write the group metadata to the store.
-    fn store_metadata(&self) -> ZarristaResult<()> {
-        self.inner.store_metadata()?;
-        Ok(())
+    fn store_metadata(&self, py: Python) -> ZarristaResult<()> {
+        crate::py::detach(py, || {
+            self.inner.store_metadata()?;
+            Ok(())
+        })
     }
 
     fn __repr__(&self) -> String {
