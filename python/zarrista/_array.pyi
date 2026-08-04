@@ -1,6 +1,6 @@
 from collections.abc import Buffer
 from types import EllipsisType
-from typing import TypeAlias, Unpack
+from typing import Protocol, TypeAlias, Unpack
 
 from zarr_metadata import JSONValue, ZarrV3ArrayMetadataJSON
 
@@ -25,6 +25,33 @@ indices and slice bounds are normalized.
 
 The following are not supported: a slice with a step that is not 1, `None` (also
 called `np.newaxis`), boolean indexing, and fancy or array indexing.
+"""
+
+class SupportsDLPack(Protocol):
+    """An object that exports its data through the DLPack protocol.
+
+    numpy arrays, PyTorch tensors, JAX arrays, and CuPy arrays all satisfy this.
+
+    !!! warning "Not importable at runtime"
+
+        To use this type hint in your code, import it within a `TYPE_CHECKING`
+        block.
+    """
+
+    def __dlpack__(self, **kwargs: object) -> object: ...
+    def __dlpack_device__(self) -> tuple[int, int]: ...
+
+DataInput: TypeAlias = SupportsDLPack | ArrayBytes | Buffer
+"""In-memory array-like data that can be written to a Zarr Array/AsyncArray.
+
+Prefer rich types such as numpy arrays or anything that supports the DLPack interface.
+These allow richer validation. Passing a plain buffer will skip any data type or shape
+validation.
+
+!!! warning "Not importable at runtime"
+
+    To use this type hint in your code, import it within a `TYPE_CHECKING`
+    block.
 """
 
 class Array:
@@ -269,6 +296,38 @@ class Array:
     @property
     def store(self) -> FilesystemStore | MemoryStore:
         """Retrieve the store backing this array."""
+    def store_array_subset(
+        self,
+        selection: Selection,
+        data: DataInput,
+        **codec_options: Unpack[CodecOptions],
+    ) -> None:
+        """Encode `data` and write it to the region selected by `selection`.
+
+        The region does not have to align with the chunk grid. zarrista reads,
+        updates, and rewrites each chunk that the region touches, so a write
+        that covers whole chunks is cheaper than one that covers parts of them.
+
+        `data` may be any type allowed by `DataInput`.
+
+        Args:
+            selection: The region to write, in element coordinates.
+            data: The data to write.
+            **codec_options: The codec options, as
+                [`CodecOptions`][zarrista.codec.CodecOptions].
+
+        Raises:
+            TypeError: If `data` has a different data type from the array, or if
+                a keyword argument is not a known codec option.
+            ValueError: If `data` has a different shape from the selected
+                region, or if it is not C-contiguous.
+            NotImplementedError: If `selection` uses a slice with a step that is
+                not 1, or if it uses `None` (`np.newaxis`).
+            IndexError: If `selection` has more entries than the array has
+                dimensions.
+            ArrayError: If the array is read-only, or if the size of `data` does
+                not match the selected region.
+        """
     def store_chunk(
         self,
         chunk_indices: list[int],
@@ -766,6 +825,38 @@ class AsyncArray:
     @property
     def store(self) -> AsyncStore:
         """Retrieve the store backing this array."""
+    async def store_array_subset(
+        self,
+        selection: Selection,
+        data: DataInput,
+        **codec_options: Unpack[CodecOptions],
+    ) -> None:
+        """Encode `data` and write it to the region selected by `selection`.
+
+        The region does not have to align with the chunk grid. zarrista reads,
+        updates, and rewrites each chunk that the region touches, so a write
+        that covers whole chunks is cheaper than one that covers parts of them.
+
+        `data` may be any type allowed by `DataInput`.
+
+        Args:
+            selection: The region to write, in element coordinates.
+            data: The data to write.
+            **codec_options: The codec options, as
+                [`CodecOptions`][zarrista.codec.CodecOptions].
+
+        Raises:
+            TypeError: If `data` has a different data type from the array, or if
+                a keyword argument is not a known codec option.
+            ValueError: If `data` has a different shape from the selected
+                region, or if it is not C-contiguous.
+            NotImplementedError: If `selection` uses a slice with a step that is
+                not 1, or if it uses `None` (`np.newaxis`).
+            IndexError: If `selection` has more entries than the array has
+                dimensions.
+            ArrayError: If the array is read-only, or if the size of `data` does
+                not match the selected region.
+        """
     async def store_chunk(
         self,
         chunk_indices: list[int],

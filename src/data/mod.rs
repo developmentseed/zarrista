@@ -21,6 +21,7 @@
 
 mod buffer_protocol;
 mod dlpack;
+mod input;
 mod tensor;
 mod variable;
 
@@ -28,6 +29,7 @@ use std::borrow::Cow;
 use std::sync::Arc;
 
 use bytes::Bytes;
+pub use input::PyDataInput;
 use pyo3::IntoPyObjectExt;
 use pyo3::prelude::*;
 pub use tensor::{PyMaskedTensor, PyTensor};

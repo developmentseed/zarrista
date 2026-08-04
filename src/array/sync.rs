@@ -14,7 +14,7 @@ use crate::array::shared::shared_array_methods;
 use crate::array::{PyChunkIndices, PyEncodedChunk};
 use crate::array_bytes::PyArrayBytes;
 use crate::codec::{CodecChainSubchunkExt, PyCodecOptions};
-use crate::data::DecodedArray;
+use crate::data::{DecodedArray, PyDataInput};
 use crate::error::ZarristaResult;
 use crate::metadata::PyArrayMetadata;
 use crate::node::PyNodePath;
@@ -230,6 +230,23 @@ impl PyArray {
     #[getter]
     fn store(&self) -> PySyncStorage {
         self.store.clone()
+    }
+
+    #[pyo3(signature = (selection, data, **codec_options))]
+    fn store_array_subset(
+        &self,
+        selection: PySelection,
+        data: PyDataInput,
+        codec_options: Option<PyCodecOptions>,
+    ) -> ZarristaResult<()> {
+        let codec_options = codec_options
+            .map(|opts| opts.into_inner())
+            .unwrap_or_default();
+        let array_subset = self.array_subset(&selection)?;
+        let subset_data = data.as_array_bytes(self.inner.data_type(), array_subset.shape())?;
+        self.inner
+            .store_array_subset_opt(&array_subset, subset_data, &codec_options)?;
+        Ok(())
     }
 
     #[pyo3(signature = (chunk_indices, decoded_chunk, **codec_options))]

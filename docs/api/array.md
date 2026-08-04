@@ -7,3 +7,7 @@
 ::: zarrista.AsyncArray
     options:
       show_bases: false
+
+## Types
+
+::: zarrista._array.DataInput
