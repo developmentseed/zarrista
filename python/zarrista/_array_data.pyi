@@ -199,10 +199,15 @@ class MaskedVariableArray:
         """The Zarr data type."""
 
 ArrayData: TypeAlias = Tensor | VariableArray | MaskedTensor | MaskedVariableArray
-"""In-memory array data: one of the four layouts a read can return.
+"""In-memory array data, with its data type and shape.
 
-The layout depends on the byte layout of the data type. A data type is either
-fixed-width or variable-length, and it either carries a validity mask or does
-not. Use `isinstance` to narrow to a concrete type before you use a method that
-belongs to one layout.
+An [`Array`][zarrista.Array]/[`AsyncArray`][zarrista.AsyncArray] is a Zarr array that
+keeps its data in its `store`. It often references larger-than-memory data.
+
+An `ArrayData` is a typed piece of that data in memory.
+
+A read returns one of four layouts. The layout depends on the byte layout of
+the data type. A data type is either fixed-width or variable-length, and it
+either carries a validity mask or does not. Use `isinstance` to narrow to a
+concrete type before you use a method that belongs to one layout.
 """

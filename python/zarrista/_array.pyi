@@ -55,7 +55,12 @@ validation.
 """
 
 class Array:
-    """A Zarr array."""
+    """A Zarr array.
+
+    The array's data stays in the store, which is usually not in memory. A read
+    fetches only the region that you ask for, decodes it, and returns it as
+    [`ArrayData`][zarrista.ArrayData].
+    """
 
     @staticmethod
     def open(store: FilesystemStore | MemoryStore, path: str = "/") -> Array:
@@ -579,7 +584,12 @@ class Array:
         """
 
 class AsyncArray:
-    """A Zarr array backed by an async store."""
+    """A Zarr array backed by an async store.
+
+    The array's data stays in the store, which is usually not in memory. A read
+    fetches only the region that you ask for, decodes it, and returns it as
+    [`ArrayData`][zarrista.ArrayData].
+    """
 
     @staticmethod
     async def open_async(store: AsyncStore, path: str = "/") -> AsyncArray:

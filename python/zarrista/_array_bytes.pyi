@@ -1,7 +1,10 @@
 from collections.abc import Buffer
 
 class ArrayBytes:
-    """Chunk bytes as input to or output from a codec.
+    """In-memory chunk bytes, as input to or output from a codec.
+
+    The bytes are untyped: they carry no data type and no shape. Compare to
+    [`ArrayData`][zarrista.ArrayData], the typed analog to `ArrayBytes`.
 
     The object holds a data buffer. It can also hold the element byte offsets
     for variable-length data, and a validity mask.
