@@ -73,13 +73,16 @@ impl FromPyObject<'_, '_> for PyDataInput {
 
         // Anything else that exposes bytes. There is no type information here,
         // so the caller has opted out of the data type and shape checks.
-        if let Ok(buf) = obj.extract::<PyBytes>() {
-            return Ok(Self::Bytes(buf));
-        }
+        let buffer_import_error = match obj.extract::<PyBytes>() {
+            Ok(buf) => return Ok(Self::Bytes(buf)),
+            Err(err) => err,
+        };
 
         let type_name = obj.get_type().name()?;
         Err(PyTypeError::new_err(format!(
-            "Expected one of ArrayBytes, a DLPack tensor, or a buffer, but got {type_name}."
+            "expected an ArrayBytes, an object that supports DLPack such as a \
+             numpy array, or an object that exposes bytes, but got `{type_name}`. \
+             Extracting a buffer failed with: {buffer_import_error}"
         )))
     }
 }
