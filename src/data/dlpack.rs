@@ -180,7 +180,7 @@ unsafe impl Send for PyManagedTensor {}
 
 impl PyManagedTensor {
     /// The DLPack tensor description: data pointer, device, shape, and strides.
-    pub(crate) fn tensor(&self) -> &DLTensor {
+    pub fn tensor(&self) -> &DLTensor {
         self.0
             .as_ref()
             .expect("the tensor is taken only while dropping")
@@ -191,7 +191,7 @@ impl PyManagedTensor {
     ///
     /// This returns an `Err` for a tensor that is not on the host, or whose strides are not
     /// compact.
-    pub(crate) fn as_bytes(&self) -> ZarristaResult<&[u8]> {
+    pub fn as_bytes(&self) -> ZarristaResult<&[u8]> {
         let tensor = self.tensor();
 
         // Every call below needs the same thing: that the producer's `shape`,
@@ -243,7 +243,7 @@ impl PyManagedTensor {
     }
 
     /// The tensor's shape, in elements along each dimension.
-    pub(crate) fn shape(&self) -> ZarristaResult<Vec<u64>> {
+    pub fn shape(&self) -> ZarristaResult<Vec<u64>> {
         // SAFETY: `Self` owns the tensor, so the producer's shape, strides, and
         // data pointer stay valid and readable for this borrow.
         let shape = unsafe { self.tensor().shape().map_err(dlpack_import_error)? };
