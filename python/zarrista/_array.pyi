@@ -389,6 +389,44 @@ class Array:
                 or if the array is read-only.
             TypeError: If a keyword argument is not a known codec option.
         """
+    def store_chunks(
+        self,
+        chunks: Selection,
+        data: DataInput,
+        **codec_options: Unpack[CodecOptions],
+    ) -> None:
+        """Encode `data` and write it to the chunks selected by `chunks`.
+
+        `chunks` selects in **chunk-grid** coordinates, not element coordinates,
+        so chunk index 0 covers the whole first chunk. `data` holds the elements
+        that the selected chunks span. For a 4x4 array chunked 2x2, one chunk
+        therefore takes 2x2 elements of `data`.
+
+        The method writes whole chunks, so it never reads a chunk before it
+        writes. Use
+        [`Array.store_array_subset`][zarrista.Array.store_array_subset] to write
+        a region that does not align with the chunk grid.
+
+        `data` may be any type allowed by `DataInput`.
+
+        Args:
+            chunks: The chunks to write, in chunk-grid coordinates.
+            data: The data to write.
+            **codec_options: The codec options, as
+                [`CodecOptions`][zarrista.codec.CodecOptions].
+
+        Raises:
+            TypeError: If `data` has a different data type from the array, or if
+                a keyword argument is not a known codec option.
+            ValueError: If `data` has a different shape from the elements that
+                the selected chunks span, or if it is not C-contiguous.
+            NotImplementedError: If `chunks` uses a slice with a step that is
+                not 1, or if it uses `None` (`np.newaxis`).
+            IndexError: If `chunks` has more entries than the array has
+                dimensions.
+            ArrayError: If the array is read-only, or if the size of `data` does
+                not match the selected chunks.
+        """
     def store_encoded_chunk(
         self,
         chunk_indices: list[int],
