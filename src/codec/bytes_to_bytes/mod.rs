@@ -64,12 +64,14 @@ impl PyBytesToBytesCodec {
             .map(|config| config.into())
     }
 
-    fn encode(&self, decoded_value: PyBytes) -> ZarristaResult<PyBytes> {
-        let encoded = self.0.encode(
-            Cow::Borrowed(decoded_value.as_ref()),
-            &CodecOptions::default(),
-        )?;
-        Ok(PyBytes::new(encoded.into_owned().into()))
+    fn encode(&self, py: Python, decoded_value: PyBytes) -> ZarristaResult<PyBytes> {
+        py.detach(|| {
+            let encoded = self.0.encode(
+                Cow::Borrowed(decoded_value.as_ref()),
+                &CodecOptions::default(),
+            )?;
+            Ok(PyBytes::new(encoded.into_owned().into()))
+        })
     }
 
     /// The codec's Zarr v3 name if it has one.

@@ -59,8 +59,8 @@ shared_array_methods!(PyArray);
 #[pymethods]
 impl PyArray {
     /// Read a region with numpy-style basic indexing, e.g. `arr[0:10, :, 5]`.
-    fn __getitem__(&self, selection: PySelection) -> ZarristaResult<DecodedArray> {
-        self.retrieve_array_subset(selection)
+    fn __getitem__(&self, py: Python, selection: PySelection) -> ZarristaResult<DecodedArray> {
+        self.retrieve_array_subset(py, selection)
     }
 
     fn __repr__(&self) -> String {
@@ -102,24 +102,31 @@ impl PyArray {
     #[pyo3(signature = (chunk_indices, **codec_options))]
     fn compact_chunk(
         &self,
+        py: Python,
         chunk_indices: PyChunkIndices,
         codec_options: Option<PyCodecOptions>,
     ) -> ZarristaResult<bool> {
-        let codec_options = codec_options
-            .map(|opts| opts.into_inner())
-            .unwrap_or_default();
-        Ok(self.inner.compact_chunk(&chunk_indices, &codec_options)?)
+        py.detach(move || {
+            let codec_options = codec_options
+                .map(|opts| opts.into_inner())
+                .unwrap_or_default();
+            Ok(self.inner.compact_chunk(&chunk_indices, &codec_options)?)
+        })
     }
 
-    fn erase_chunk(&self, chunk_indices: PyChunkIndices) -> ZarristaResult<()> {
-        self.inner.erase_chunk(&chunk_indices)?;
-        Ok(())
+    fn erase_chunk(&self, py: Python, chunk_indices: PyChunkIndices) -> ZarristaResult<()> {
+        py.detach(|| {
+            self.inner.erase_chunk(&chunk_indices)?;
+            Ok(())
+        })
     }
 
-    fn erase_chunks(&self, chunks: PySelection) -> ZarristaResult<()> {
-        let chunks = self.chunk_grid_subset(&chunks)?;
-        self.inner.erase_chunks(&chunks)?;
-        Ok(())
+    fn erase_chunks(&self, py: Python, chunks: PySelection) -> ZarristaResult<()> {
+        py.detach(move || {
+            let chunks = self.chunk_grid_subset(&chunks)?;
+            self.inner.erase_chunks(&chunks)?;
+            Ok(())
+        })
     }
 
     fn erase_metadata(&self) -> ZarristaResult<()> {
@@ -140,91 +147,110 @@ impl PyArray {
     ///
     /// Returns one of the decoded result classes (`Tensor`, `VariableArray`,
     /// `MaskedTensor`, `MaskedVariableArray`) depending on the dtype layout.
-    fn retrieve_array_subset(&self, selection: PySelection) -> ZarristaResult<DecodedArray> {
-        let array_subset = self.array_subset(&selection)?;
-        Ok(self.inner.retrieve_array_subset(&array_subset)?)
+    fn retrieve_array_subset(
+        &self,
+        py: Python,
+        selection: PySelection,
+    ) -> ZarristaResult<DecodedArray> {
+        py.detach(move || {
+            let array_subset = self.array_subset(&selection)?;
+            Ok(self.inner.retrieve_array_subset(&array_subset)?)
+        })
     }
 
     #[pyo3(signature = (chunk_indices, **codec_options))]
     fn retrieve_chunk(
         &self,
+        py: Python,
         chunk_indices: PyChunkIndices,
         codec_options: Option<PyCodecOptions>,
     ) -> ZarristaResult<DecodedArray> {
-        let codec_options = codec_options
-            .map(|opts| opts.into_inner())
-            .unwrap_or_default();
-        Ok(self
-            .inner
-            .retrieve_chunk_opt(&chunk_indices, &codec_options)?)
+        py.detach(move || {
+            let codec_options = codec_options
+                .map(|opts| opts.into_inner())
+                .unwrap_or_default();
+            Ok(self
+                .inner
+                .retrieve_chunk_opt(&chunk_indices, &codec_options)?)
+        })
     }
 
     fn retrieve_encoded_chunk(
         &self,
+        py: Python,
         chunk_indices: PyChunkIndices,
     ) -> ZarristaResult<Option<PyEncodedChunk>> {
-        let encoded = self.inner.retrieve_encoded_chunk(&chunk_indices)?;
-        let chunk_shape = self.inner.chunk_shape(&chunk_indices)?;
-        Ok(encoded.map(|buf| {
-            PyEncodedChunk::new(
-                buf.into(),
-                self.inner.codecs(),
-                self.inner.data_type().clone(),
-                self.inner.fill_value().clone(),
-                chunk_shape,
-            )
-        }))
+        py.detach(move || {
+            let encoded = self.inner.retrieve_encoded_chunk(&chunk_indices)?;
+            let chunk_shape = self.inner.chunk_shape(&chunk_indices)?;
+            Ok(encoded.map(|buf| {
+                PyEncodedChunk::new(
+                    buf.into(),
+                    self.inner.codecs(),
+                    self.inner.data_type().clone(),
+                    self.inner.fill_value().clone(),
+                    chunk_shape,
+                )
+            }))
+        })
     }
 
     fn retrieve_encoded_subchunk(
         &self,
+        py: Python,
         subchunk_indices: PyChunkIndices,
     ) -> ZarristaResult<Option<PyEncodedChunk>> {
-        // TODO: allow user to manage shard cache
-        let subchunk_cache = ArrayShardedReadableExtCache::new(&self.inner);
+        py.detach(move || {
+            // TODO: allow user to manage shard cache
+            let subchunk_cache = ArrayShardedReadableExtCache::new(&self.inner);
 
-        let Some(encoded) = self
-            .inner
-            .retrieve_encoded_subchunk(&subchunk_cache, &subchunk_indices)?
-        else {
-            return Ok(None);
-        };
+            let Some(encoded) = self
+                .inner
+                .retrieve_encoded_subchunk(&subchunk_cache, &subchunk_indices)?
+            else {
+                return Ok(None);
+            };
 
-        let subchunk_codec_chain =
-            self.inner.codecs().subchunk_chain()?.expect(
+            let subchunk_codec_chain = self.inner.codecs().subchunk_chain()?.expect(
                 "zarrs accepts only an exclusively sharded array, so the serializer shards",
             );
 
-        let subchunk_shape = self
-            .inner
-            .effective_subchunk_shape()
-            .expect("an exclusively sharded array has no outer array-to-array codecs");
+            let subchunk_shape = self
+                .inner
+                .effective_subchunk_shape()
+                .expect("an exclusively sharded array has no outer array-to-array codecs");
 
-        Ok(Some(PyEncodedChunk::new(
-            encoded.into(),
-            subchunk_codec_chain,
-            self.inner.data_type().clone(),
-            self.inner.fill_value().clone(),
-            subchunk_shape,
-        )))
+            Ok(Some(PyEncodedChunk::new(
+                encoded.into(),
+                subchunk_codec_chain,
+                self.inner.data_type().clone(),
+                self.inner.fill_value().clone(),
+                subchunk_shape,
+            )))
+        })
     }
 
     #[pyo3(signature = (subchunk_indices, **codec_options))]
     fn retrieve_subchunk(
         &self,
+        py: Python,
         subchunk_indices: PyChunkIndices,
         codec_options: Option<PyCodecOptions>,
     ) -> ZarristaResult<DecodedArray> {
-        let codec_options = codec_options
-            .map(|opts| opts.into_inner())
-            .unwrap_or_default();
+        py.detach(move || {
+            let codec_options = codec_options
+                .map(|opts| opts.into_inner())
+                .unwrap_or_default();
 
-        // TODO: allow user to manage shard cache
-        let subchunk_cache = ArrayShardedReadableExtCache::new(&self.inner);
+            // TODO: allow user to manage shard cache
+            let subchunk_cache = ArrayShardedReadableExtCache::new(&self.inner);
 
-        Ok(self
-            .inner
-            .retrieve_subchunk_opt(&subchunk_cache, &subchunk_indices, &codec_options)?)
+            Ok(self.inner.retrieve_subchunk_opt(
+                &subchunk_cache,
+                &subchunk_indices,
+                &codec_options,
+            )?)
+        })
     }
 
     #[getter]
@@ -235,55 +261,66 @@ impl PyArray {
     #[pyo3(signature = (selection, data, **codec_options))]
     fn store_array_subset(
         &self,
+        py: Python,
         selection: PySelection,
         data: PyDataInput,
         codec_options: Option<PyCodecOptions>,
     ) -> ZarristaResult<()> {
-        let codec_options = codec_options
-            .map(|opts| opts.into_inner())
-            .unwrap_or_default();
-        let array_subset = self.array_subset(&selection)?;
-        let subset_data = data.as_array_bytes(self.inner.data_type(), array_subset.shape())?;
-        self.inner
-            .store_array_subset_opt(&array_subset, subset_data, &codec_options)?;
-        Ok(())
+        py.detach(move || {
+            let codec_options = codec_options
+                .map(|opts| opts.into_inner())
+                .unwrap_or_default();
+            let array_subset = self.array_subset(&selection)?;
+            let subset_data = data.as_array_bytes(self.inner.data_type(), array_subset.shape())?;
+            self.inner
+                .store_array_subset_opt(&array_subset, subset_data, &codec_options)?;
+            Ok(())
+        })
     }
 
     #[pyo3(signature = (chunk_indices, decoded_chunk, **codec_options))]
     fn store_chunk(
         &self,
+        py: Python,
         chunk_indices: PyChunkIndices,
         decoded_chunk: &PyArrayBytes,
         codec_options: Option<PyCodecOptions>,
     ) -> ZarristaResult<()> {
-        let codec_options = codec_options
-            .map(|opts| opts.into_inner())
-            .unwrap_or_default();
-        self.inner.store_chunk_opt(
-            &chunk_indices,
-            decoded_chunk.as_array_bytes()?,
-            &codec_options,
-        )?;
-        Ok(())
+        py.detach(move || {
+            let codec_options = codec_options
+                .map(|opts| opts.into_inner())
+                .unwrap_or_default();
+            self.inner.store_chunk_opt(
+                &chunk_indices,
+                decoded_chunk.as_array_bytes()?,
+                &codec_options,
+            )?;
+            Ok(())
+        })
     }
 
     fn store_encoded_chunk(
         &self,
+        py: Python,
         chunk_indices: PyChunkIndices,
         encoded_chunk: PyBytes,
     ) -> ZarristaResult<()> {
-        // Safety:
-        // The responsibility is on the caller to ensure the chunk is encoded correctly
-        unsafe {
-            self.inner
-                .store_encoded_chunk(&chunk_indices, encoded_chunk.into_inner())?;
-        }
-        Ok(())
+        py.detach(move || {
+            // Safety:
+            // The responsibility is on the caller to ensure the chunk is encoded correctly
+            unsafe {
+                self.inner
+                    .store_encoded_chunk(&chunk_indices, encoded_chunk.into_inner())?;
+            }
+            Ok(())
+        })
     }
 
     /// Write the array metadata to the store.
-    fn store_metadata(&self) -> ZarristaResult<()> {
-        self.inner.store_metadata()?;
-        Ok(())
+    fn store_metadata(&self, py: Python) -> ZarristaResult<()> {
+        py.detach(|| {
+            self.inner.store_metadata()?;
+            Ok(())
+        })
     }
 }
