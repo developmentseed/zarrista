@@ -141,6 +141,14 @@ macro_rules! shared_array_methods {
                 self.inner.subset_all().into()
             }
 
+            /// Return a new array reference with `attrs`, leaving this one unchanged.
+            fn with_attrs(&self, attrs: $crate::metadata::PyAttributes) -> Self {
+                // Workaround for missing Clone
+                let mut updated = self.inner.with_storage(self.inner.storage());
+                *updated.attributes_mut() = attrs.into_inner();
+                Self::new(::std::sync::Arc::new(updated), self.store.clone())
+            }
+
             /// Return a new array reference with `chunk_grid`, leaving this one unchanged.
             fn with_chunk_grid(
                 &self,
