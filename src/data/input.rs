@@ -79,7 +79,7 @@ impl FromPyObject<'_, '_> for PyDataInput {
 
         let type_name = obj.get_type().name()?;
         Err(PyTypeError::new_err(format!(
-            "Expected one of `PyArrayBytes`, a DLPack tensor, or a buffer, but got {type_name}."
+            "Expected one of ArrayBytes, a DLPack tensor, or a buffer, but got {type_name}."
         )))
     }
 }
