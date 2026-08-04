@@ -313,14 +313,14 @@ class Array:
             ArrayError: If the array is not exclusively sharded.
         """
     def subchunk_cache(self) -> ShardCache:
-        """Construct an empty cache of the shard indexes of this array.
+        """Create an empty cache of the shard indexes of this array.
 
         Pass the cache to [`retrieve_subchunk`][zarrista.Array.retrieve_subchunk]
         or to
         [`retrieve_encoded_subchunk`][zarrista.Array.retrieve_encoded_subchunk].
         Then those methods read the index of each shard one time only.
 
-        Use the cache only with the array that constructed it. See
+        Use the cache only with the array that created it. See
         [`ShardCache`][zarrista.ShardCache].
 
         Returns:
@@ -874,7 +874,7 @@ class AsyncArray:
             ArrayError: If the array is not exclusively sharded.
         """
     def subchunk_cache(self) -> AsyncShardCache:
-        """Construct an empty cache of the shard indexes of this array.
+        """Create an empty cache of the shard indexes of this array.
 
         This method is not a coroutine. It does not read from the store.
 
@@ -883,7 +883,7 @@ class AsyncArray:
         [`retrieve_encoded_subchunk`][zarrista.AsyncArray.retrieve_encoded_subchunk].
         Then those methods read the index of each shard one time only.
 
-        Use the cache only with the array that constructed it. See
+        Use the cache only with the array that created it. See
         [`AsyncShardCache`][zarrista.AsyncShardCache].
 
         Returns:

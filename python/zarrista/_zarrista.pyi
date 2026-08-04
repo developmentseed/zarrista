@@ -8,6 +8,7 @@ from ._dtype import DataType
 from ._encoded_chunk import EncodedChunk
 from ._fill_value import FillValue
 from ._group import AsyncGroup, Group
+from ._shard_cache import AsyncShardCache, ShardCache
 from ._store import FilesystemStore, MemoryStore
 from ._thread_pool import ThreadPool
 
@@ -19,6 +20,7 @@ __all__ = [
     "ArrayBytes",
     "AsyncArray",
     "AsyncGroup",
+    "AsyncShardCache",
     "ChunkGrid",
     "ChunkKeyEncoding",
     "DataType",
@@ -29,6 +31,7 @@ __all__ = [
     "MaskedTensor",
     "MaskedVariableArray",
     "MemoryStore",
+    "ShardCache",
     "Tensor",
     "ThreadPool",
     "VariableArray",

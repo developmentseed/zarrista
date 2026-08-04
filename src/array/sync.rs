@@ -329,7 +329,7 @@ impl PyArray {
         })
     }
 
-    /// Construct an empty shard index cache for this array.
+    /// Create an empty shard index cache for this array.
     fn subchunk_cache(&self) -> PyShardCache {
         PyShardCache::new(self.clone())
     }

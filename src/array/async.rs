@@ -407,7 +407,7 @@ impl PyAsyncArray {
         })
     }
 
-    /// Construct an empty shard index cache for this array.
+    /// Create an empty shard index cache for this array.
     fn subchunk_cache(&self) -> PyAsyncShardCache {
         PyAsyncShardCache::new(self.clone())
     }
