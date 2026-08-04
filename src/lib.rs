@@ -22,6 +22,7 @@ use pyo3::prelude::*;
 
 use crate::array::{
     PyArray, PyArrayBuilder, PyChunkGrid, PyChunkKeyEncoding, PyEncodedChunk, PyFillValue,
+    PyShardCache,
 };
 use crate::array_bytes::PyArrayBytes;
 use crate::codec::register_codec_module;
@@ -44,6 +45,8 @@ fn _zarrista(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<crate::array::PyAsyncArray>()?;
     #[cfg(feature = "async")]
     m.add_class::<crate::group::PyAsyncGroup>()?;
+    #[cfg(feature = "async")]
+    m.add_class::<crate::array::PyAsyncShardCache>()?;
     m.add_class::<PyChunkGrid>()?;
     m.add_class::<PyChunkKeyEncoding>()?;
     m.add_class::<PyDataType>()?;
@@ -54,6 +57,7 @@ fn _zarrista(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<PyMaskedTensor>()?;
     m.add_class::<PyMaskedVariableArray>()?;
     m.add_class::<PyMemoryStore>()?;
+    m.add_class::<PyShardCache>()?;
     m.add_class::<PyTensor>()?;
     m.add_class::<PyThreadPool>()?;
     m.add_class::<PyVariableArray>()?;
