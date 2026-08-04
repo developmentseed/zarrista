@@ -1,4 +1,4 @@
-//! Decoded array data exposed to Python.
+//! In-memory array data exposed to Python.
 //!
 //! Instead of choosing one preferred representation of decoded array data, such as numpy, or
 //! arrow, or dlpack, we expose the raw post-codec bytes and let consumers choose how to
@@ -39,14 +39,14 @@ use zarrs::array::{ArrayBytes, ArrayError, DataType, FromArrayBytes, data_type};
 /// Internal decoded result, produced by our [`FromArrayBytes`] impl. Carries the
 /// post-codec bytes (zero-copy), the data type, and the region shape (which
 /// zarrs hands us, so we never have to re-derive it).
-pub enum DecodedArray {
+pub enum ArrayData {
     Tensor(PyTensor),
     Variable(PyVariableArray),
     MaskedTensor(PyMaskedTensor),
     MaskedVariable(PyMaskedVariableArray),
 }
 
-impl FromArrayBytes for DecodedArray {
+impl FromArrayBytes for ArrayData {
     fn from_array_bytes(
         bytes: ArrayBytes<'static>,
         shape: &[u64],
@@ -56,11 +56,11 @@ impl FromArrayBytes for DecodedArray {
         let data_type = data_type.clone();
         Ok(match bytes {
             ArrayBytes::Fixed(bytes) => {
-                DecodedArray::Tensor(PyTensor::new(cow_to_bytes(bytes), data_type, shape)?)
+                ArrayData::Tensor(PyTensor::new(cow_to_bytes(bytes), data_type, shape)?)
             }
             ArrayBytes::Variable(v) => {
                 let (buf, offsets) = v.into_parts();
-                DecodedArray::Variable(PyVariableArray::new(
+                ArrayData::Variable(PyVariableArray::new(
                     cow_to_bytes(buf),
                     offsets.to_vec(),
                     data_type,
@@ -70,13 +70,13 @@ impl FromArrayBytes for DecodedArray {
             ArrayBytes::Optional(optional) => {
                 let (data, mask) = optional.into_parts();
                 match *data {
-                    ArrayBytes::Fixed(fixed) => DecodedArray::MaskedTensor(PyMaskedTensor::new(
+                    ArrayBytes::Fixed(fixed) => ArrayData::MaskedTensor(PyMaskedTensor::new(
                         PyTensor::new(cow_to_bytes(fixed), data_type, shape.clone())?,
                         PyTensor::new(cow_to_bytes(mask), data_type::bool(), shape)?,
                     )),
                     ArrayBytes::Variable(variable) => {
                         let (buf, offsets) = variable.into_parts();
-                        DecodedArray::MaskedVariable(PyMaskedVariableArray::new(
+                        ArrayData::MaskedVariable(PyMaskedVariableArray::new(
                             cow_to_bytes(buf),
                             offsets.to_vec(),
                             cow_to_bytes(mask),
@@ -93,17 +93,17 @@ impl FromArrayBytes for DecodedArray {
     }
 }
 
-impl<'py> IntoPyObject<'py> for DecodedArray {
+impl<'py> IntoPyObject<'py> for ArrayData {
     type Target = PyAny;
     type Output = Bound<'py, PyAny>;
     type Error = PyErr;
 
     fn into_pyobject(self, py: Python<'py>) -> Result<Self::Output, Self::Error> {
         match self {
-            DecodedArray::Tensor(py_tensor) => py_tensor.into_bound_py_any(py),
-            DecodedArray::Variable(py_variable_array) => py_variable_array.into_bound_py_any(py),
-            DecodedArray::MaskedTensor(py_masked_tensor) => py_masked_tensor.into_bound_py_any(py),
-            DecodedArray::MaskedVariable(py_masked_variable_array) => {
+            ArrayData::Tensor(py_tensor) => py_tensor.into_bound_py_any(py),
+            ArrayData::Variable(py_variable_array) => py_variable_array.into_bound_py_any(py),
+            ArrayData::MaskedTensor(py_masked_tensor) => py_masked_tensor.into_bound_py_any(py),
+            ArrayData::MaskedVariable(py_masked_variable_array) => {
                 py_masked_variable_array.into_bound_py_any(py)
             }
         }

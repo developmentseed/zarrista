@@ -198,8 +198,8 @@ class MaskedVariableArray:
     def dtype(self) -> DataType:
         """The Zarr data type."""
 
-DecodedArray: TypeAlias = Tensor | VariableArray | MaskedTensor | MaskedVariableArray
-"""The result of a read: one of the four decoded array layouts.
+ArrayData: TypeAlias = Tensor | VariableArray | MaskedTensor | MaskedVariableArray
+"""In-memory array data: one of the four layouts a read can return.
 
 The layout depends on the byte layout of the data type. A data type is either
 fixed-width or variable-length, and it either carries a validity mask or does

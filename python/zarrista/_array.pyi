@@ -7,9 +7,9 @@ from zarr_metadata import JSONValue, ZarrV3ArrayMetadataJSON
 from zarrista.codec import CodecChain, CodecOptions
 
 from ._array_bytes import ArrayBytes
+from ._array_data import ArrayData
 from ._chunk_key_encoding import ChunkKeyEncoding
 from ._chunks import ChunkGrid
-from ._decoded_array import DecodedArray
 from ._dtype import DataType
 from ._encoded_chunk import EncodedChunk
 from ._fill_value import FillValue
@@ -188,7 +188,7 @@ class Array:
         self,
         selection: Selection,
         **codec_options: Unpack[CodecOptions],
-    ) -> DecodedArray:
+    ) -> ArrayData:
         """Read and decode an array region selected with numpy-style basic indexing.
 
         The result keeps the number of dimensions, which agrees with a zarrs
@@ -214,7 +214,7 @@ class Array:
         self,
         chunk_indices: list[int],
         **codec_options: Unpack[CodecOptions],
-    ) -> DecodedArray:
+    ) -> ArrayData:
         """Read and decode the chunk at the given chunk grid indices.
 
         Args:
@@ -246,7 +246,7 @@ class Array:
         self,
         subchunk_indices: list[int],
         **codec_options: Unpack[CodecOptions],
-    ) -> DecodedArray:
+    ) -> ArrayData:
         """Read and decode a single subchunk (inner chunk) of a sharded array.
 
         `subchunk_indices` index the subchunk grid (see `subchunk_grid_shape`).
@@ -560,7 +560,7 @@ class Array:
     @property
     def subset_all(self) -> tuple[slice, ...]:
         """The array subset that spans the entire array, as a tuple of slices."""
-    def __getitem__(self, selection: Selection) -> DecodedArray:
+    def __getitem__(self, selection: Selection) -> ArrayData:
         """Read a region with numpy-style basic indexing, e.g. `arr[0:10, :, 5]`.
 
         This is sugar for `retrieve_array_subset`.
@@ -714,7 +714,7 @@ class AsyncArray:
         self,
         selection: Selection,
         **codec_options: Unpack[CodecOptions],
-    ) -> DecodedArray:
+    ) -> ArrayData:
         """Read and decode an array region selected with numpy-style basic indexing.
 
         The result keeps the number of dimensions, which agrees with a zarrs
@@ -740,7 +740,7 @@ class AsyncArray:
         self,
         chunk_indices: list[int],
         **codec_options: Unpack[CodecOptions],
-    ) -> DecodedArray:
+    ) -> ArrayData:
         """Read and decode the chunk at the given chunk grid indices.
 
         Args:
@@ -775,7 +775,7 @@ class AsyncArray:
         self,
         subchunk_indices: list[int],
         **codec_options: Unpack[CodecOptions],
-    ) -> DecodedArray:
+    ) -> ArrayData:
         """Read and decode a single subchunk (inner chunk) of a sharded array.
 
         `subchunk_indices` index the subchunk grid (see `subchunk_grid_shape`).
@@ -1088,7 +1088,7 @@ class AsyncArray:
     @property
     def subset_all(self) -> tuple[slice, ...]:
         """The array subset that spans the entire array, as a tuple of slices."""
-    async def __getitem__(self, selection: Selection) -> DecodedArray:
+    async def __getitem__(self, selection: Selection) -> ArrayData:
         """Read a region with numpy-style basic indexing: `await arr[0:10, :, 5]`.
 
         This is sugar for `retrieve_array_subset`.

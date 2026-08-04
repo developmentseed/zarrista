@@ -16,7 +16,7 @@ use crate::array::shared::shared_array_methods;
 use crate::array::{PyChunkIndices, PyEncodedChunk};
 use crate::array_bytes::PyArrayBytes;
 use crate::codec::{CodecChainSubchunkExt, PyCodecOptions};
-use crate::data::{DecodedArray, PyDataInput};
+use crate::data::{ArrayData, PyDataInput};
 use crate::error::{ZarristaError, ZarristaResult};
 use crate::metadata::PyArrayMetadata;
 use crate::node::PyNodePath;
@@ -184,7 +184,7 @@ impl PyAsyncArray {
         })
     }
 
-    /// Read a region of the array as `Data`, using numpy-style basic indexing.
+    /// Read a region of the array as `ArrayData`, using numpy-style basic indexing.
     fn retrieve_array_subset<'py>(
         &self,
         py: Python<'py>,
@@ -195,7 +195,7 @@ impl PyAsyncArray {
 
         future_into_py(py, async move {
             let decoded = inner
-                .async_retrieve_array_subset::<DecodedArray>(&array_subset)
+                .async_retrieve_array_subset::<ArrayData>(&array_subset)
                 .await
                 .map_err(ZarristaError::from)?;
             Ok(decoded)
@@ -216,7 +216,7 @@ impl PyAsyncArray {
 
         future_into_py(py, async move {
             let decoded = inner
-                .async_retrieve_chunk_opt::<DecodedArray>(&chunk_indices, &codec_options)
+                .async_retrieve_chunk_opt::<ArrayData>(&chunk_indices, &codec_options)
                 .await
                 .map_err(ZarristaError::from)?;
             Ok(decoded)
@@ -302,7 +302,7 @@ impl PyAsyncArray {
         let inner = self.inner.clone();
         future_into_py(py, async move {
             let decoded = inner
-                .async_retrieve_subchunk_opt::<DecodedArray>(
+                .async_retrieve_subchunk_opt::<ArrayData>(
                     &subchunk_cache,
                     &subchunk_indices,
                     &codec_options,

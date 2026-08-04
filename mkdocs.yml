@@ -25,10 +25,10 @@ nav:
       - api/builder.md
       - api/group.md
       - api/store.md
+      - api/array-data.md
       - api/chunk-grid.md
       - api/codec.md
       - api/concurrency.md
-      - api/decoded_array.md
       - api/dtype.md
       - api/encoded-chunk.md
       - api/exceptions.md

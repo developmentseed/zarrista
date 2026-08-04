@@ -14,7 +14,7 @@ use crate::array::shared::shared_array_methods;
 use crate::array::{PyChunkIndices, PyEncodedChunk};
 use crate::array_bytes::PyArrayBytes;
 use crate::codec::{CodecChainSubchunkExt, PyCodecOptions};
-use crate::data::{DecodedArray, PyDataInput};
+use crate::data::{ArrayData, PyDataInput};
 use crate::error::ZarristaResult;
 use crate::metadata::PyArrayMetadata;
 use crate::node::PyNodePath;
@@ -59,7 +59,7 @@ shared_array_methods!(PyArray);
 #[pymethods]
 impl PyArray {
     /// Read a region with numpy-style basic indexing, e.g. `arr[0:10, :, 5]`.
-    fn __getitem__(&self, py: Python, selection: PySelection) -> ZarristaResult<DecodedArray> {
+    fn __getitem__(&self, py: Python, selection: PySelection) -> ZarristaResult<ArrayData> {
         self.retrieve_array_subset(py, selection)
     }
 
@@ -147,13 +147,13 @@ impl PyArray {
 
     /// Read a region of the array, using numpy-style basic indexing.
     ///
-    /// Returns one of the decoded result classes (`Tensor`, `VariableArray`,
+    /// Returns one of the `ArrayData` classes (`Tensor`, `VariableArray`,
     /// `MaskedTensor`, `MaskedVariableArray`) depending on the dtype layout.
     fn retrieve_array_subset(
         &self,
         py: Python,
         selection: PySelection,
-    ) -> ZarristaResult<DecodedArray> {
+    ) -> ZarristaResult<ArrayData> {
         crate::py::detach(py, move || {
             let array_subset = self.array_subset(&selection)?;
             Ok(self.inner.retrieve_array_subset(&array_subset)?)
@@ -166,7 +166,7 @@ impl PyArray {
         py: Python,
         chunk_indices: PyChunkIndices,
         codec_options: Option<PyCodecOptions>,
-    ) -> ZarristaResult<DecodedArray> {
+    ) -> ZarristaResult<ArrayData> {
         crate::py::detach(py, move || {
             let codec_options = codec_options
                 .map(|opts| opts.into_inner())
@@ -238,7 +238,7 @@ impl PyArray {
         py: Python,
         subchunk_indices: PyChunkIndices,
         codec_options: Option<PyCodecOptions>,
-    ) -> ZarristaResult<DecodedArray> {
+    ) -> ZarristaResult<ArrayData> {
         crate::py::detach(py, move || {
             let codec_options = codec_options
                 .map(|opts| opts.into_inner())

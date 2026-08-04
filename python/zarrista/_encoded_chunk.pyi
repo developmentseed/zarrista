@@ -3,7 +3,7 @@ from typing import Unpack
 
 from zarrista.codec import CodecChain, CodecOptions
 
-from ._decoded_array import DecodedArray
+from ._array_data import ArrayData
 from ._dtype import DataType
 from ._fill_value import FillValue
 from ._thread_pool import ThreadPool
@@ -49,7 +49,7 @@ class EncodedChunk:
     @property
     def shape(self) -> list[int]:
         """The shape of the decoded chunk, in elements along each dimension."""
-    def decode(self, **codec_options: Unpack[CodecOptions]) -> DecodedArray:
+    def decode(self, **codec_options: Unpack[CodecOptions]) -> ArrayData:
         """Decode the chunk bytes on the calling thread.
 
         The method releases the GIL while it decodes. Other Python threads can
@@ -70,7 +70,7 @@ class EncodedChunk:
         *,
         pool: ThreadPool | None = None,
         **codec_options: Unpack[CodecOptions],
-    ) -> DecodedArray:
+    ) -> ArrayData:
         """Decode the chunk bytes on a Rust thread pool.
 
         The method does the work on a thread pool and does not hold the GIL.

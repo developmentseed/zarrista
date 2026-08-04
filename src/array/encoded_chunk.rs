@@ -12,7 +12,7 @@ use zarrs::array::{
 
 use crate::array::PyFillValue;
 use crate::codec::{PyCodecChain, PyCodecOptions};
-use crate::data::DecodedArray;
+use crate::data::ArrayData;
 use crate::dtype::PyDataType;
 use crate::error::ZarristaResult;
 #[cfg(feature = "async")]
@@ -52,7 +52,7 @@ impl PyEncodedChunk {
         }
     }
 
-    fn _decode(&self, codec_options: &CodecOptions) -> Result<DecodedArray, ArrayError> {
+    fn _decode(&self, codec_options: &CodecOptions) -> Result<ArrayData, ArrayError> {
         let bytes = self.codecs.decode(
             Cow::Borrowed(&self.bytes),
             &self.shape,
@@ -61,7 +61,7 @@ impl PyEncodedChunk {
             codec_options,
         )?;
         let shape = self.shape.iter().map(|v| v.get()).collect::<Vec<_>>();
-        DecodedArray::from_array_bytes(bytes.into_owned(), &shape, &self.data_type)
+        ArrayData::from_array_bytes(bytes.into_owned(), &shape, &self.data_type)
     }
 }
 
@@ -91,7 +91,7 @@ impl PyEncodedChunk {
         &self,
         py: Python,
         codec_options: Option<PyCodecOptions>,
-    ) -> ZarristaResult<DecodedArray> {
+    ) -> ZarristaResult<ArrayData> {
         crate::py::detach(py, || {
             let codec_options = codec_options
                 .map(|opts| opts.into_inner())
