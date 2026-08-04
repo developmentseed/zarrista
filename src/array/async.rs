@@ -406,6 +406,10 @@ impl PyAsyncArray {
             Ok(())
         })
     }
+
+    fn subchunk_cache(&self) -> PyAsyncShardCache {
+        PyAsyncShardCache::new(&self.inner)
+    }
 }
 
 #[pyclass(
