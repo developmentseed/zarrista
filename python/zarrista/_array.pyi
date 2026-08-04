@@ -1,4 +1,4 @@
-from collections.abc import Buffer
+from collections.abc import Buffer, Mapping
 from types import EllipsisType
 from typing import Protocol, TypeAlias, Unpack
 
@@ -98,7 +98,12 @@ class Array:
         """
     @property
     def attrs(self) -> dict[str, JSONValue]:
-        """The array's user attributes as a dict."""
+        """The array's user attributes as a dict.
+
+        This is a copy. Changing the returned dict does not change the array.
+        Use [`Array.with_attrs`][zarrista.Array.with_attrs] to set the
+        attributes.
+        """
     @property
     def chunk_grid(self) -> ChunkGrid:
         """The chunk grid of the array."""
@@ -522,6 +527,44 @@ class Array:
         Returns:
             A new array reference that uses `chunk_grid`.
         """
+    def with_attrs(self, attrs: Mapping[str, JSONValue]) -> Array:
+        """Return a new array reference with `attrs`, leaving this one unchanged.
+
+        The new attributes replace the old ones. Any key that `attrs` does not
+        contain is gone from the new array reference. To keep the existing
+        attributes, merge them yourself:
+
+        ```py
+        array = array.with_attrs({**array.attrs, "units": "m"})
+        ```
+
+        Nothing is persisted to the store. Call
+        [`Array.store_metadata`][zarrista.Array.store_metadata] to persist the new
+        attributes to the store:
+
+        ```py
+        array = array.with_attrs({"units": "m"})
+        array.store_metadata()
+        ```
+
+        This array is unaffected and remains usable; it simply goes on describing
+        the old attributes. Rebinding, as above, is the intended usage.
+
+        [`Array.store_metadata`][zarrista.Array.store_metadata] adds a `_zarrs`
+        key that records the zarrs version. An array that you read back from a
+        store therefore holds one attribute that you did not set here.
+
+        Args:
+            attrs: The user attributes of the new array reference. Each value
+                must be JSON-serializable.
+
+        Returns:
+            A new array reference that uses `attrs`.
+
+        Raises:
+            TypeError: If a key is not a string, or if a value is not
+                JSON-serializable.
+        """
     def with_shape(self, shape: list[int]) -> Array:
         """Return a new array reference with `shape`, leaving this one unchanged.
 
@@ -656,7 +699,12 @@ class AsyncArray:
         """
     @property
     def attrs(self) -> dict[str, JSONValue]:
-        """The array's user attributes as a dict."""
+        """The array's user attributes as a dict.
+
+        This is a copy. Changing the returned dict does not change the array.
+        Use [`AsyncArray.with_attrs`][zarrista.AsyncArray.with_attrs] to set the
+        attributes.
+        """
     @property
     def chunk_grid(self) -> ChunkGrid:
         """The chunk grid of the array."""
@@ -1082,6 +1130,45 @@ class AsyncArray:
 
         Returns:
             A new array reference that uses `chunk_grid`.
+        """
+    def with_attrs(self, attrs: Mapping[str, JSONValue]) -> AsyncArray:
+        """Return a new array reference with `attrs`, leaving this one unchanged.
+
+        The new attributes replace the old ones. Any key that `attrs` does not
+        contain is gone from the new array reference. To keep the existing
+        attributes, merge them yourself:
+
+        ```py
+        array = array.with_attrs({**array.attrs, "units": "m"})
+        ```
+
+        This method is synchronous: it performs no I/O. Nothing is persisted to
+        the store. Call
+        [`AsyncArray.store_metadata`][zarrista.AsyncArray.store_metadata] to
+        persist the new attributes to the store:
+
+        ```py
+        array = array.with_attrs({"units": "m"})
+        await array.store_metadata()
+        ```
+
+        This array is unaffected and remains usable; it simply goes on describing
+        the old attributes. Rebinding, as above, is the intended usage.
+
+        [`AsyncArray.store_metadata`][zarrista.AsyncArray.store_metadata] adds a
+        `_zarrs` key that records the zarrs version. An array that you read back
+        from a store therefore holds one attribute that you did not set here.
+
+        Args:
+            attrs: The user attributes of the new array reference. Each value
+                must be JSON-serializable.
+
+        Returns:
+            A new array reference that uses `attrs`.
+
+        Raises:
+            TypeError: If a key is not a string, or if a value is not
+                JSON-serializable.
         """
     def with_shape(self, shape: list[int]) -> AsyncArray:
         """Return a new array reference with `shape`, leaving this one unchanged.
