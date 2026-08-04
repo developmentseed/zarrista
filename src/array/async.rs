@@ -9,7 +9,7 @@ use zarrs::array::{
     Array, ArrayShardedExt, ArraySubset, AsyncArrayShardedReadableExt,
     AsyncArrayShardedReadableExtCache,
 };
-use zarrs::storage::{AsyncReadableStorageTraits, AsyncReadableWritableListableStorageTraits};
+use zarrs::storage::AsyncReadableWritableListableStorageTraits;
 
 use crate::array::selection::PySelection;
 use crate::array::shared::shared_array_methods;
@@ -258,7 +258,7 @@ impl PyAsyncArray {
     ) -> PyResult<Bound<'py, PyAny>> {
         let subchunk_cache = subchunk_cache
             .cloned()
-            .unwrap_or_else(|| PyAsyncShardCache::new(&self.inner));
+            .unwrap_or_else(|| self.subchunk_cache());
 
         let inner = self.inner.clone();
         future_into_py(py, async move {
@@ -298,7 +298,7 @@ impl PyAsyncArray {
     ) -> PyResult<Bound<'py, PyAny>> {
         let subchunk_cache = subchunk_cache
             .cloned()
-            .unwrap_or_else(|| PyAsyncShardCache::new(&self.inner));
+            .unwrap_or_else(|| self.subchunk_cache());
         let codec_options = codec_options
             .map(|opts| opts.into_inner())
             .unwrap_or_default();
@@ -407,11 +407,13 @@ impl PyAsyncArray {
         })
     }
 
+    /// Construct an empty shard index cache for this array.
     fn subchunk_cache(&self) -> PyAsyncShardCache {
-        PyAsyncShardCache::new(&self.inner)
+        PyAsyncShardCache::new(self.clone())
     }
 }
 
+/// A cache of the shard indexes of one array.
 #[pyclass(
     module = "zarrista",
     frozen,
@@ -420,40 +422,49 @@ impl PyAsyncArray {
 )]
 #[derive(Clone)]
 pub struct PyAsyncShardCache {
-    inner: Arc<AsyncArrayShardedReadableExtCache>,
+    cache: Arc<AsyncArrayShardedReadableExtCache>,
+    array: PyAsyncArray,
 }
 
 impl PyAsyncShardCache {
-    fn new<TStorage: ?Sized + AsyncReadableStorageTraits>(array: &Array<TStorage>) -> Self {
+    fn new(array: PyAsyncArray) -> Self {
         Self {
-            inner: Arc::new(AsyncArrayShardedReadableExtCache::new(array)),
+            cache: Arc::new(AsyncArrayShardedReadableExtCache::new(&array.inner)),
+            array,
         }
     }
 }
 
 #[pymethods]
 impl PyAsyncShardCache {
+    fn __repr__(&self) -> String {
+        format!("AsyncShardCache(array={})", self.array.__repr__())
+    }
+
+    /// Remove every shard index from the cache.
     fn clear<'py>(&self, py: Python<'py>) -> PyResult<Bound<'py, PyAny>> {
-        let inner = self.inner.clone();
+        let cache = self.cache.clone();
         future_into_py(py, async move {
-            inner.clear().await;
+            cache.clear().await;
             Ok(())
         })
     }
 
+    /// Return whether the cache holds no shard index.
     fn is_empty<'py>(&self, py: Python<'py>) -> PyResult<Bound<'py, PyAny>> {
-        let inner = self.inner.clone();
-        future_into_py(py, async move { Ok(inner.is_empty().await) })
+        let cache = self.cache.clone();
+        future_into_py(py, async move { Ok(cache.is_empty().await) })
     }
 
+    /// Return the number of shard indexes in the cache.
     fn size<'py>(&self, py: Python<'py>) -> PyResult<Bound<'py, PyAny>> {
-        let inner = self.inner.clone();
-        future_into_py(py, async move { Ok(inner.len().await) })
+        let cache = self.cache.clone();
+        future_into_py(py, async move { Ok(cache.len().await) })
     }
 }
 
 impl AsRef<AsyncArrayShardedReadableExtCache> for PyAsyncShardCache {
     fn as_ref(&self) -> &AsyncArrayShardedReadableExtCache {
-        &self.inner
+        &self.cache
     }
 }

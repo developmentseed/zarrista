@@ -7,7 +7,7 @@ use pyo3_bytes::PyBytes;
 use zarrs::array::{
     Array, ArrayShardedExt, ArrayShardedReadableExt, ArrayShardedReadableExtCache, ArraySubset,
 };
-use zarrs::storage::{ReadableStorageTraits, ReadableWritableListableStorageTraits};
+use zarrs::storage::ReadableWritableListableStorageTraits;
 
 use crate::array::selection::PySelection;
 use crate::array::shared::shared_array_methods;
@@ -207,7 +207,7 @@ impl PyArray {
         crate::py::detach(py, move || {
             let subchunk_cache = subchunk_cache
                 .cloned()
-                .unwrap_or_else(|| PyShardCache::new(&self.inner));
+                .unwrap_or_else(|| self.subchunk_cache());
             let Some(encoded) = self
                 .inner
                 .retrieve_encoded_subchunk(subchunk_cache.as_ref(), &subchunk_indices)?
@@ -245,7 +245,7 @@ impl PyArray {
         crate::py::detach(py, move || {
             let subchunk_cache = subchunk_cache
                 .cloned()
-                .unwrap_or_else(|| PyShardCache::new(&self.inner));
+                .unwrap_or_else(|| self.subchunk_cache());
             let codec_options = codec_options
                 .map(|opts| opts.into_inner())
                 .unwrap_or_default();
@@ -329,42 +329,53 @@ impl PyArray {
         })
     }
 
+    /// Construct an empty shard index cache for this array.
     fn subchunk_cache(&self) -> PyShardCache {
-        PyShardCache::new(&self.inner)
+        PyShardCache::new(self.clone())
     }
 }
 
+/// A cache of the shard indexes of one array.
 #[pyclass(module = "zarrista", frozen, name = "ShardCache", skip_from_py_object)]
 #[derive(Clone)]
 pub struct PyShardCache {
-    inner: Arc<ArrayShardedReadableExtCache>,
+    cache: Arc<ArrayShardedReadableExtCache>,
+    array: PyArray,
 }
 
 impl PyShardCache {
-    fn new<TStorage: ?Sized + ReadableStorageTraits>(array: &Array<TStorage>) -> Self {
+    fn new(array: PyArray) -> Self {
         Self {
-            inner: Arc::new(ArrayShardedReadableExtCache::new(array)),
+            cache: Arc::new(ArrayShardedReadableExtCache::new(&array.inner)),
+            array,
         }
     }
 }
 
 #[pymethods]
 impl PyShardCache {
-    fn clear(&self) {
-        self.inner.clear();
+    fn __repr__(&self) -> String {
+        format!("ShardCache(array={})", self.array.__repr__())
     }
 
-    fn is_empty(&self) -> bool {
-        self.inner.is_empty()
+    /// Remove every shard index from the cache.
+    fn clear(&self, py: Python) {
+        crate::py::detach(py, || self.cache.clear());
     }
 
-    fn size(&self) -> usize {
-        self.inner.len()
+    /// Return whether the cache holds no shard index.
+    fn is_empty(&self, py: Python) -> bool {
+        crate::py::detach(py, || self.cache.is_empty())
+    }
+
+    /// Return the number of shard indexes in the cache.
+    fn size(&self, py: Python) -> usize {
+        crate::py::detach(py, || self.cache.len())
     }
 }
 
 impl AsRef<ArrayShardedReadableExtCache> for PyShardCache {
     fn as_ref(&self) -> &ArrayShardedReadableExtCache {
-        &self.inner
+        &self.cache
     }
 }
