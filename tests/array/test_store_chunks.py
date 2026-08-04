@@ -8,6 +8,7 @@ selecting one chunk of a 4x4 array chunked 2x2 needs 2x2 elements of data, not
 
 import numpy as np
 import pytest
+from obstore.store import LocalStore
 
 from zarrista import Array, ArrayBuilder, ChunkGrid, DataType, FillValue
 from zarrista.store import MemoryStore
@@ -50,3 +51,18 @@ def test_data_shaped_like_the_chunk_grid_raises() -> None:
 
     with pytest.raises(ValueError, match=r"destination has shape \[4, 4\]"):
         array.store_chunks((slice(None), slice(None)), np.zeros((2, 2), dtype="int32"))
+
+
+async def test_async_writes_a_single_chunk_into_its_element_region(tmp_path) -> None:
+    store = LocalStore(str(tmp_path))
+    array = await ArrayBuilder(
+        ChunkGrid.regular([4, 4], [2, 2]),
+        DataType.from_string("int32"),
+        FillValue(b"\x00\x00\x00\x00"),
+    ).create_async(store, "/a")
+
+    await array.store_chunks((0, 1), np.ascontiguousarray(DATA[0:2, 2:4]))
+
+    expected = np.zeros((4, 4), dtype="int32")
+    expected[0:2, 2:4] = DATA[0:2, 2:4]
+    np.testing.assert_array_equal((await array[:, :]).to_numpy(), expected)

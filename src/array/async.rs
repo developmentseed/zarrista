@@ -375,6 +375,38 @@ impl PyAsyncArray {
         })
     }
 
+    #[pyo3(signature = (chunks, data, **codec_options))]
+    fn store_chunks<'py>(
+        &self,
+        py: Python<'py>,
+        chunks: PySelection,
+        data: PyDataInput,
+        codec_options: Option<PyCodecOptions>,
+    ) -> PyResult<Bound<'py, PyAny>> {
+        let inner = self.inner.clone();
+        let codec_options = codec_options
+            .map(|opts| opts.into_inner())
+            .unwrap_or_default();
+
+        let chunk_subset = self.chunk_grid_subset(&chunks)?;
+
+        future_into_py(py, async move {
+            // `chunk_subset` counts chunks, but `data` covers the elements that
+            // those chunks span, which is what `async_store_chunks_opt` validates.
+            let array_subset = inner
+                .chunks_subset(&chunk_subset)
+                .map_err(ZarristaError::from)?;
+            let subset_data = data.as_array_bytes(inner.data_type(), array_subset.shape())?;
+
+            inner
+                .async_store_chunks_opt(&chunk_subset, subset_data, &codec_options)
+                .await
+                .map_err(ZarristaError::from)?;
+
+            Ok(())
+        })
+    }
+
     fn store_encoded_chunk<'py>(
         &self,
         py: Python<'py>,
