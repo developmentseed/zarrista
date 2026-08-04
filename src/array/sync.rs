@@ -343,6 +343,8 @@ pub struct PyShardCache {
     array: PyArray,
 }
 
+crate::wasm_send_sync!(PyShardCache);
+
 impl PyShardCache {
     fn new(array: PyArray) -> Self {
         Self {
