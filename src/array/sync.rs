@@ -7,7 +7,7 @@ use pyo3_bytes::PyBytes;
 use zarrs::array::{
     Array, ArrayShardedExt, ArrayShardedReadableExt, ArrayShardedReadableExtCache, ArraySubset,
 };
-use zarrs::storage::ReadableWritableListableStorageTraits;
+use zarrs::storage::{ReadableStorageTraits, ReadableWritableListableStorageTraits};
 
 use crate::array::selection::PySelection;
 use crate::array::shared::shared_array_methods;
@@ -197,18 +197,20 @@ impl PyArray {
         })
     }
 
+    #[pyo3(signature = (subchunk_indices, *, subchunk_cache = None))]
     fn retrieve_encoded_subchunk(
         &self,
         py: Python,
         subchunk_indices: PyChunkIndices,
+        subchunk_cache: Option<&PyShardCache>,
     ) -> ZarristaResult<Option<PyEncodedChunk>> {
         crate::py::detach(py, move || {
-            // TODO: allow user to manage shard cache
-            let subchunk_cache = ArrayShardedReadableExtCache::new(&self.inner);
-
+            let subchunk_cache = subchunk_cache
+                .cloned()
+                .unwrap_or_else(|| PyShardCache::new(&self.inner));
             let Some(encoded) = self
                 .inner
-                .retrieve_encoded_subchunk(&subchunk_cache, &subchunk_indices)?
+                .retrieve_encoded_subchunk(subchunk_cache.as_ref(), &subchunk_indices)?
             else {
                 return Ok(None);
             };
@@ -232,23 +234,24 @@ impl PyArray {
         })
     }
 
-    #[pyo3(signature = (subchunk_indices, **codec_options))]
+    #[pyo3(signature = (subchunk_indices, *, subchunk_cache = None, **codec_options))]
     fn retrieve_subchunk(
         &self,
         py: Python,
         subchunk_indices: PyChunkIndices,
+        subchunk_cache: Option<&PyShardCache>,
         codec_options: Option<PyCodecOptions>,
     ) -> ZarristaResult<DecodedArray> {
         crate::py::detach(py, move || {
+            let subchunk_cache = subchunk_cache
+                .cloned()
+                .unwrap_or_else(|| PyShardCache::new(&self.inner));
             let codec_options = codec_options
                 .map(|opts| opts.into_inner())
                 .unwrap_or_default();
 
-            // TODO: allow user to manage shard cache
-            let subchunk_cache = ArrayShardedReadableExtCache::new(&self.inner);
-
             Ok(self.inner.retrieve_subchunk_opt(
-                &subchunk_cache,
+                subchunk_cache.as_ref(),
                 &subchunk_indices,
                 &codec_options,
             )?)
@@ -324,5 +327,45 @@ impl PyArray {
             self.inner.store_metadata()?;
             Ok(())
         })
+    }
+
+    fn subchunk_cache(&self) -> PyShardCache {
+        PyShardCache::new(&self.inner)
+    }
+}
+
+/// A Zarr array.
+#[pyclass(module = "zarrista", frozen, name = "ShardCache", skip_from_py_object)]
+#[derive(Clone)]
+pub struct PyShardCache {
+    inner: Arc<ArrayShardedReadableExtCache>,
+}
+
+impl PyShardCache {
+    fn new<TStorage: ?Sized + ReadableStorageTraits>(array: &Array<TStorage>) -> Self {
+        Self {
+            inner: Arc::new(ArrayShardedReadableExtCache::new(array)),
+        }
+    }
+}
+
+#[pymethods]
+impl PyShardCache {
+    fn clear(&self) {
+        self.inner.clear();
+    }
+
+    fn is_empty(&self) -> bool {
+        self.inner.is_empty()
+    }
+
+    fn size(&self) -> usize {
+        self.inner.len()
+    }
+}
+
+impl AsRef<ArrayShardedReadableExtCache> for PyShardCache {
+    fn as_ref(&self) -> &ArrayShardedReadableExtCache {
+        &self.inner
     }
 }
