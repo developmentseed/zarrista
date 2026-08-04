@@ -304,6 +304,29 @@ impl PyArray {
         })
     }
 
+    #[pyo3(signature = (chunks, data, **codec_options))]
+    fn store_chunks(
+        &self,
+        py: Python,
+        chunks: PySelection,
+        data: PyDataInput,
+        codec_options: Option<PyCodecOptions>,
+    ) -> ZarristaResult<()> {
+        crate::py::detach(py, move || {
+            let codec_options = codec_options
+                .map(|opts| opts.into_inner())
+                .unwrap_or_default();
+            let chunk_subset = self.chunk_grid_subset(&chunks)?;
+            // `chunk_subset` counts chunks, but `data` covers the elements that
+            // those chunks span, which is what `store_chunks_opt` validates.
+            let array_subset = self.inner.chunks_subset(&chunk_subset)?;
+            let subset_data = data.as_array_bytes(self.inner.data_type(), array_subset.shape())?;
+            self.inner
+                .store_chunks_opt(&chunk_subset, subset_data, &codec_options)?;
+            Ok(())
+        })
+    }
+
     fn store_encoded_chunk(
         &self,
         py: Python,
