@@ -9,7 +9,7 @@ use zarrs::array::{
     Array, ArrayShardedExt, ArraySubset, AsyncArrayShardedReadableExt,
     AsyncArrayShardedReadableExtCache,
 };
-use zarrs::storage::AsyncReadableWritableListableStorageTraits;
+use zarrs::storage::{AsyncReadableStorageTraits, AsyncReadableWritableListableStorageTraits};
 
 use crate::array::selection::PySelection;
 use crate::array::shared::shared_array_methods;
@@ -249,18 +249,21 @@ impl PyAsyncArray {
         })
     }
 
+    #[pyo3(signature = (subchunk_indices, *, subchunk_cache = None))]
     fn retrieve_encoded_subchunk<'py>(
         &self,
         py: Python<'py>,
         subchunk_indices: PyChunkIndices,
+        subchunk_cache: Option<&PyAsyncShardCache>,
     ) -> PyResult<Bound<'py, PyAny>> {
-        // TODO: allow user to manage shard cache
-        let subchunk_cache = AsyncArrayShardedReadableExtCache::new(&self.inner);
+        let subchunk_cache = subchunk_cache
+            .cloned()
+            .unwrap_or_else(|| PyAsyncShardCache::new(&self.inner));
 
         let inner = self.inner.clone();
         future_into_py(py, async move {
             let Some(encoded) = inner
-                .async_retrieve_encoded_subchunk(&subchunk_cache, &subchunk_indices)
+                .async_retrieve_encoded_subchunk(subchunk_cache.as_ref(), &subchunk_indices)
                 .await
                 .map_err(ZarristaError::from)?
             else {
@@ -285,25 +288,26 @@ impl PyAsyncArray {
         })
     }
 
-    #[pyo3(signature = (subchunk_indices, **codec_options))]
+    #[pyo3(signature = (subchunk_indices, *, subchunk_cache = None, **codec_options))]
     fn retrieve_subchunk<'py>(
         &self,
         py: Python<'py>,
         subchunk_indices: PyChunkIndices,
+        subchunk_cache: Option<&PyAsyncShardCache>,
         codec_options: Option<PyCodecOptions>,
     ) -> PyResult<Bound<'py, PyAny>> {
+        let subchunk_cache = subchunk_cache
+            .cloned()
+            .unwrap_or_else(|| PyAsyncShardCache::new(&self.inner));
         let codec_options = codec_options
             .map(|opts| opts.into_inner())
             .unwrap_or_default();
-
-        // TODO: allow user to manage shard cache
-        let subchunk_cache = AsyncArrayShardedReadableExtCache::new(&self.inner);
 
         let inner = self.inner.clone();
         future_into_py(py, async move {
             let decoded = inner
                 .async_retrieve_subchunk_opt::<DecodedArray>(
-                    &subchunk_cache,
+                    subchunk_cache.as_ref(),
                     &subchunk_indices,
                     &codec_options,
                 )
@@ -401,5 +405,51 @@ impl PyAsyncArray {
                 .map_err(ZarristaError::from)?;
             Ok(())
         })
+    }
+}
+
+#[pyclass(
+    module = "zarrista",
+    frozen,
+    name = "AsyncShardCache",
+    skip_from_py_object
+)]
+#[derive(Clone)]
+pub struct PyAsyncShardCache {
+    inner: Arc<AsyncArrayShardedReadableExtCache>,
+}
+
+impl PyAsyncShardCache {
+    fn new<TStorage: ?Sized + AsyncReadableStorageTraits>(array: &Array<TStorage>) -> Self {
+        Self {
+            inner: Arc::new(AsyncArrayShardedReadableExtCache::new(array)),
+        }
+    }
+}
+
+#[pymethods]
+impl PyAsyncShardCache {
+    fn clear<'py>(&self, py: Python<'py>) -> PyResult<Bound<'py, PyAny>> {
+        let inner = self.inner.clone();
+        future_into_py(py, async move {
+            inner.clear().await;
+            Ok(())
+        })
+    }
+
+    fn is_empty<'py>(&self, py: Python<'py>) -> PyResult<Bound<'py, PyAny>> {
+        let inner = self.inner.clone();
+        future_into_py(py, async move { Ok(inner.is_empty().await) })
+    }
+
+    fn size<'py>(&self, py: Python<'py>) -> PyResult<Bound<'py, PyAny>> {
+        let inner = self.inner.clone();
+        future_into_py(py, async move { Ok(inner.len().await) })
+    }
+}
+
+impl AsRef<AsyncArrayShardedReadableExtCache> for PyAsyncShardCache {
+    fn as_ref(&self) -> &AsyncArrayShardedReadableExtCache {
+        &self.inner
     }
 }

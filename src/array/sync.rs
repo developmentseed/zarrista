@@ -334,7 +334,6 @@ impl PyArray {
     }
 }
 
-/// A Zarr array.
 #[pyclass(module = "zarrista", frozen, name = "ShardCache", skip_from_py_object)]
 #[derive(Clone)]
 pub struct PyShardCache {
