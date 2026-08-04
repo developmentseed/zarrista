@@ -94,8 +94,8 @@ impl PyArray {
         signature = (store, path = PyNodePath::root()),
         text_signature = "(store, path='/')"
     )]
-    fn open(store: PySyncStorage, path: PyNodePath) -> ZarristaResult<Self> {
-        let inner = Array::open(store.inner(), path.as_str())?;
+    fn open(py: Python, store: PySyncStorage, path: PyNodePath) -> ZarristaResult<Self> {
+        let inner = crate::py::detach(py, || Array::open(store.inner(), path.as_str()))?;
         Ok(Self::new(Arc::new(inner), store))
     }
 
@@ -106,7 +106,7 @@ impl PyArray {
         chunk_indices: PyChunkIndices,
         codec_options: Option<PyCodecOptions>,
     ) -> ZarristaResult<bool> {
-        py.detach(move || {
+        crate::py::detach(py, move || {
             let codec_options = codec_options
                 .map(|opts| opts.into_inner())
                 .unwrap_or_default();
@@ -115,23 +115,25 @@ impl PyArray {
     }
 
     fn erase_chunk(&self, py: Python, chunk_indices: PyChunkIndices) -> ZarristaResult<()> {
-        py.detach(|| {
+        crate::py::detach(py, || {
             self.inner.erase_chunk(&chunk_indices)?;
             Ok(())
         })
     }
 
     fn erase_chunks(&self, py: Python, chunks: PySelection) -> ZarristaResult<()> {
-        py.detach(move || {
+        crate::py::detach(py, move || {
             let chunks = self.chunk_grid_subset(&chunks)?;
             self.inner.erase_chunks(&chunks)?;
             Ok(())
         })
     }
 
-    fn erase_metadata(&self) -> ZarristaResult<()> {
-        self.inner.erase_metadata()?;
-        Ok(())
+    fn erase_metadata(&self, py: Python) -> ZarristaResult<()> {
+        crate::py::detach(py, || {
+            self.inner.erase_metadata()?;
+            Ok(())
+        })
     }
 
     fn read_only(&self) -> Self {
@@ -152,7 +154,7 @@ impl PyArray {
         py: Python,
         selection: PySelection,
     ) -> ZarristaResult<DecodedArray> {
-        py.detach(move || {
+        crate::py::detach(py, move || {
             let array_subset = self.array_subset(&selection)?;
             Ok(self.inner.retrieve_array_subset(&array_subset)?)
         })
@@ -165,7 +167,7 @@ impl PyArray {
         chunk_indices: PyChunkIndices,
         codec_options: Option<PyCodecOptions>,
     ) -> ZarristaResult<DecodedArray> {
-        py.detach(move || {
+        crate::py::detach(py, move || {
             let codec_options = codec_options
                 .map(|opts| opts.into_inner())
                 .unwrap_or_default();
@@ -180,7 +182,7 @@ impl PyArray {
         py: Python,
         chunk_indices: PyChunkIndices,
     ) -> ZarristaResult<Option<PyEncodedChunk>> {
-        py.detach(move || {
+        crate::py::detach(py, move || {
             let encoded = self.inner.retrieve_encoded_chunk(&chunk_indices)?;
             let chunk_shape = self.inner.chunk_shape(&chunk_indices)?;
             Ok(encoded.map(|buf| {
@@ -200,7 +202,7 @@ impl PyArray {
         py: Python,
         subchunk_indices: PyChunkIndices,
     ) -> ZarristaResult<Option<PyEncodedChunk>> {
-        py.detach(move || {
+        crate::py::detach(py, move || {
             // TODO: allow user to manage shard cache
             let subchunk_cache = ArrayShardedReadableExtCache::new(&self.inner);
 
@@ -237,7 +239,7 @@ impl PyArray {
         subchunk_indices: PyChunkIndices,
         codec_options: Option<PyCodecOptions>,
     ) -> ZarristaResult<DecodedArray> {
-        py.detach(move || {
+        crate::py::detach(py, move || {
             let codec_options = codec_options
                 .map(|opts| opts.into_inner())
                 .unwrap_or_default();
@@ -266,7 +268,7 @@ impl PyArray {
         data: PyDataInput,
         codec_options: Option<PyCodecOptions>,
     ) -> ZarristaResult<()> {
-        py.detach(move || {
+        crate::py::detach(py, move || {
             let codec_options = codec_options
                 .map(|opts| opts.into_inner())
                 .unwrap_or_default();
@@ -286,7 +288,7 @@ impl PyArray {
         decoded_chunk: &PyArrayBytes,
         codec_options: Option<PyCodecOptions>,
     ) -> ZarristaResult<()> {
-        py.detach(move || {
+        crate::py::detach(py, move || {
             let codec_options = codec_options
                 .map(|opts| opts.into_inner())
                 .unwrap_or_default();
@@ -305,7 +307,7 @@ impl PyArray {
         chunk_indices: PyChunkIndices,
         encoded_chunk: PyBytes,
     ) -> ZarristaResult<()> {
-        py.detach(move || {
+        crate::py::detach(py, move || {
             // Safety:
             // The responsibility is on the caller to ensure the chunk is encoded correctly
             unsafe {
@@ -318,7 +320,7 @@ impl PyArray {
 
     /// Write the array metadata to the store.
     fn store_metadata(&self, py: Python) -> ZarristaResult<()> {
-        py.detach(|| {
+        crate::py::detach(py, || {
             self.inner.store_metadata()?;
             Ok(())
         })

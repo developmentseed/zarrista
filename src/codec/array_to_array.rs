@@ -96,7 +96,7 @@ impl PyArrayToArrayCodec {
         data_type: &PyDataType,
         fill_value: &PyFillValue,
     ) -> ZarristaResult<PyArrayBytes> {
-        py.detach(|| {
+        crate::py::detach(py, || {
             let encoded = self.0.encode(
                 bytes.as_array_bytes()?,
                 &shape,
@@ -116,7 +116,7 @@ impl PyArrayToArrayCodec {
         data_type: &PyDataType,
         fill_value: &PyFillValue,
     ) -> ZarristaResult<PyArrayBytes> {
-        py.detach(|| {
+        crate::py::detach(py, || {
             let decoded = self.0.decode(
                 bytes.as_array_bytes()?,
                 &shape,

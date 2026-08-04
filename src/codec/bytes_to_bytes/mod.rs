@@ -65,7 +65,7 @@ impl PyBytesToBytesCodec {
     }
 
     fn encode(&self, py: Python, decoded_value: PyBytes) -> ZarristaResult<PyBytes> {
-        py.detach(|| {
+        crate::py::detach(py, || {
             let encoded = self.0.encode(
                 Cow::Borrowed(decoded_value.as_ref()),
                 &CodecOptions::default(),
