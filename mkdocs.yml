@@ -32,6 +32,7 @@ nav:
       - api/dtype.md
       - api/encoded-chunk.md
       - api/exceptions.md
+      - api/shard-cache.md
   - Blog:
       - blog/index.md
 

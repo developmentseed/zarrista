@@ -249,18 +249,21 @@ impl PyAsyncArray {
         })
     }
 
+    #[pyo3(signature = (subchunk_indices, *, subchunk_cache = None))]
     fn retrieve_encoded_subchunk<'py>(
         &self,
         py: Python<'py>,
         subchunk_indices: PyChunkIndices,
+        subchunk_cache: Option<&PyAsyncShardCache>,
     ) -> PyResult<Bound<'py, PyAny>> {
-        // TODO: allow user to manage shard cache
-        let subchunk_cache = AsyncArrayShardedReadableExtCache::new(&self.inner);
+        let subchunk_cache = subchunk_cache
+            .cloned()
+            .unwrap_or_else(|| self.subchunk_cache());
 
         let inner = self.inner.clone();
         future_into_py(py, async move {
             let Some(encoded) = inner
-                .async_retrieve_encoded_subchunk(&subchunk_cache, &subchunk_indices)
+                .async_retrieve_encoded_subchunk(subchunk_cache.as_ref(), &subchunk_indices)
                 .await
                 .map_err(ZarristaError::from)?
             else {
@@ -285,25 +288,26 @@ impl PyAsyncArray {
         })
     }
 
-    #[pyo3(signature = (subchunk_indices, **codec_options))]
+    #[pyo3(signature = (subchunk_indices, *, subchunk_cache = None, **codec_options))]
     fn retrieve_subchunk<'py>(
         &self,
         py: Python<'py>,
         subchunk_indices: PyChunkIndices,
+        subchunk_cache: Option<&PyAsyncShardCache>,
         codec_options: Option<PyCodecOptions>,
     ) -> PyResult<Bound<'py, PyAny>> {
+        let subchunk_cache = subchunk_cache
+            .cloned()
+            .unwrap_or_else(|| self.subchunk_cache());
         let codec_options = codec_options
             .map(|opts| opts.into_inner())
             .unwrap_or_default();
-
-        // TODO: allow user to manage shard cache
-        let subchunk_cache = AsyncArrayShardedReadableExtCache::new(&self.inner);
 
         let inner = self.inner.clone();
         future_into_py(py, async move {
             let decoded = inner
                 .async_retrieve_subchunk_opt::<DecodedArray>(
-                    &subchunk_cache,
+                    subchunk_cache.as_ref(),
                     &subchunk_indices,
                     &codec_options,
                 )
@@ -401,5 +405,66 @@ impl PyAsyncArray {
                 .map_err(ZarristaError::from)?;
             Ok(())
         })
+    }
+
+    /// Create an empty shard index cache for this array.
+    fn subchunk_cache(&self) -> PyAsyncShardCache {
+        PyAsyncShardCache::new(self.clone())
+    }
+}
+
+/// A cache of the shard indexes of one array.
+#[pyclass(
+    module = "zarrista",
+    frozen,
+    name = "AsyncShardCache",
+    skip_from_py_object
+)]
+#[derive(Clone)]
+pub struct PyAsyncShardCache {
+    cache: Arc<AsyncArrayShardedReadableExtCache>,
+    array: PyAsyncArray,
+}
+
+impl PyAsyncShardCache {
+    fn new(array: PyAsyncArray) -> Self {
+        Self {
+            cache: Arc::new(AsyncArrayShardedReadableExtCache::new(&array.inner)),
+            array,
+        }
+    }
+}
+
+#[pymethods]
+impl PyAsyncShardCache {
+    fn __repr__(&self) -> String {
+        format!("AsyncShardCache(array={})", self.array.__repr__())
+    }
+
+    /// Remove every shard index from the cache.
+    fn clear<'py>(&self, py: Python<'py>) -> PyResult<Bound<'py, PyAny>> {
+        let cache = self.cache.clone();
+        future_into_py(py, async move {
+            cache.clear().await;
+            Ok(())
+        })
+    }
+
+    /// Return whether the cache holds no shard index.
+    fn is_empty<'py>(&self, py: Python<'py>) -> PyResult<Bound<'py, PyAny>> {
+        let cache = self.cache.clone();
+        future_into_py(py, async move { Ok(cache.is_empty().await) })
+    }
+
+    /// Return the number of shard indexes in the cache.
+    fn size<'py>(&self, py: Python<'py>) -> PyResult<Bound<'py, PyAny>> {
+        let cache = self.cache.clone();
+        future_into_py(py, async move { Ok(cache.len().await) })
+    }
+}
+
+impl AsRef<AsyncArrayShardedReadableExtCache> for PyAsyncShardCache {
+    fn as_ref(&self) -> &AsyncArrayShardedReadableExtCache {
+        &self.cache
     }
 }

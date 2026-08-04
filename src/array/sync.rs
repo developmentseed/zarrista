@@ -197,18 +197,20 @@ impl PyArray {
         })
     }
 
+    #[pyo3(signature = (subchunk_indices, *, subchunk_cache = None))]
     fn retrieve_encoded_subchunk(
         &self,
         py: Python,
         subchunk_indices: PyChunkIndices,
+        subchunk_cache: Option<&PyShardCache>,
     ) -> ZarristaResult<Option<PyEncodedChunk>> {
         crate::py::detach(py, move || {
-            // TODO: allow user to manage shard cache
-            let subchunk_cache = ArrayShardedReadableExtCache::new(&self.inner);
-
+            let subchunk_cache = subchunk_cache
+                .cloned()
+                .unwrap_or_else(|| self.subchunk_cache());
             let Some(encoded) = self
                 .inner
-                .retrieve_encoded_subchunk(&subchunk_cache, &subchunk_indices)?
+                .retrieve_encoded_subchunk(subchunk_cache.as_ref(), &subchunk_indices)?
             else {
                 return Ok(None);
             };
@@ -232,23 +234,24 @@ impl PyArray {
         })
     }
 
-    #[pyo3(signature = (subchunk_indices, **codec_options))]
+    #[pyo3(signature = (subchunk_indices, *, subchunk_cache = None, **codec_options))]
     fn retrieve_subchunk(
         &self,
         py: Python,
         subchunk_indices: PyChunkIndices,
+        subchunk_cache: Option<&PyShardCache>,
         codec_options: Option<PyCodecOptions>,
     ) -> ZarristaResult<DecodedArray> {
         crate::py::detach(py, move || {
+            let subchunk_cache = subchunk_cache
+                .cloned()
+                .unwrap_or_else(|| self.subchunk_cache());
             let codec_options = codec_options
                 .map(|opts| opts.into_inner())
                 .unwrap_or_default();
 
-            // TODO: allow user to manage shard cache
-            let subchunk_cache = ArrayShardedReadableExtCache::new(&self.inner);
-
             Ok(self.inner.retrieve_subchunk_opt(
-                &subchunk_cache,
+                subchunk_cache.as_ref(),
                 &subchunk_indices,
                 &codec_options,
             )?)
@@ -324,5 +327,57 @@ impl PyArray {
             self.inner.store_metadata()?;
             Ok(())
         })
+    }
+
+    /// Create an empty shard index cache for this array.
+    fn subchunk_cache(&self) -> PyShardCache {
+        PyShardCache::new(self.clone())
+    }
+}
+
+/// A cache of the shard indexes of one array.
+#[pyclass(module = "zarrista", frozen, name = "ShardCache", skip_from_py_object)]
+#[derive(Clone)]
+pub struct PyShardCache {
+    cache: Arc<ArrayShardedReadableExtCache>,
+    array: PyArray,
+}
+
+crate::wasm_send_sync!(PyShardCache);
+
+impl PyShardCache {
+    fn new(array: PyArray) -> Self {
+        Self {
+            cache: Arc::new(ArrayShardedReadableExtCache::new(&array.inner)),
+            array,
+        }
+    }
+}
+
+#[pymethods]
+impl PyShardCache {
+    fn __repr__(&self) -> String {
+        format!("ShardCache(array={})", self.array.__repr__())
+    }
+
+    /// Remove every shard index from the cache.
+    fn clear(&self, py: Python) {
+        crate::py::detach(py, || self.cache.clear());
+    }
+
+    /// Return whether the cache holds no shard index.
+    fn is_empty(&self, py: Python) -> bool {
+        crate::py::detach(py, || self.cache.is_empty())
+    }
+
+    /// Return the number of shard indexes in the cache.
+    fn size(&self, py: Python) -> usize {
+        crate::py::detach(py, || self.cache.len())
+    }
+}
+
+impl AsRef<ArrayShardedReadableExtCache> for PyShardCache {
+    fn as_ref(&self) -> &ArrayShardedReadableExtCache {
+        &self.cache
     }
 }
