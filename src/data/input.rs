@@ -73,7 +73,14 @@ impl FromPyObject<'_, '_> for PyDataInput {
 
         // Anything else that exposes bytes. There is no type information here,
         // so the caller has opted out of the data type and shape checks.
-        Ok(Self::Bytes(obj.extract::<PyBytes>()?))
+        if let Ok(buf) = obj.extract::<PyBytes>() {
+            return Ok(Self::Bytes(buf));
+        }
+
+        let type_name = obj.get_type().name()?;
+        Err(PyTypeError::new_err(format!(
+            "Expected one of `PyArrayBytes`, a DLPack tensor, or a buffer, but got {type_name}."
+        )))
     }
 }
 
