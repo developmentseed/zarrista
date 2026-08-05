@@ -107,8 +107,10 @@ class Tensor:
 class VariableArray:
     """Variable-length decoded data (e.g. strings or bytes).
 
-    The class exposes the Arrow PyCapsule interface. Therefore variable-length
-    string or bytes data moves without a copy.
+    The class exposes the Arrow PyCapsule interface: you can access the contained data
+    in any Python library that speaks Arrow without a copy.
+
+    Use `to_numpy` (or `np.asarray`) to get a NumPy array.
     """
 
     @property
@@ -117,6 +119,44 @@ class VariableArray:
     @property
     def dtype(self) -> DataType:
         """The Zarr data type."""
+    def to_numpy(self) -> NDArray[Any]:
+        """Copy Zarr data to a NumPy array.
+
+        Currently all variable-length data types must be copied into NumPy buffers. No
+        zero-copy data sharing is possible.
+
+        Returns:
+            A NumPy array with the same shape as this array, of the
+            `numpy.dtypes.StringDType` data type.
+
+        Raises:
+            NotImplementedError: If the data type is not `string`.
+            UnicodeDecodeError: If the decoded bytes are not valid UTF-8.
+
+        Examples:
+            >>> array[:].to_numpy()
+            array(['a', 'bb', 'ccc'], dtype=StringDType())
+        """
+    def __array__(
+        self,
+        dtype: DTypeLike | None = None,
+        copy: bool | None = None,
+    ) -> NDArray[Any]:
+        """Return a NumPy array, for `np.asarray` and `np.array`.
+
+        Args:
+            dtype: The data type of the result.
+            copy: Whether to copy the data. This method always copies, so `False` is an
+                error.
+
+        Returns:
+            A NumPy array with the same shape as this array.
+
+        Raises:
+            NotImplementedError: If the data type is not `string`.
+            UnicodeDecodeError: If the decoded bytes are not valid UTF-8.
+            ValueError: If `copy` is `False`. This method cannot avoid a copy.
+        """
     def __arrow_c_schema__(self) -> CapsuleType:
         """Export the Arrow schema as a PyCapsule (Arrow C Data Interface).
 

@@ -4,12 +4,14 @@ use arrow_array::{ArrayRef, LargeBinaryArray, LargeStringArray};
 use arrow_buffer::{Buffer, OffsetBuffer, ScalarBuffer};
 use arrow_schema::Field;
 use bytes::Bytes;
-use pyo3::exceptions::PyTypeError;
+use pyo3::exceptions::{PyNotImplementedError, PyTypeError, PyUnicodeDecodeError, PyValueError};
+use pyo3::intern;
 use pyo3::prelude::*;
-use pyo3::types::{PyCapsule, PyTuple};
+use pyo3::types::{PyCapsule, PyList, PyString, PyTuple};
 use pyo3_arrow::error::PyArrowResult;
 use pyo3_arrow::ffi::{to_array_pycapsules, to_schema_pycapsule};
 use zarrs::array::DataType;
+use zarrs::array::data_type::{BytesDataType, StringDataType};
 
 use crate::dtype::PyDataType;
 
@@ -38,8 +40,6 @@ impl PyVariableArray {
     /// zero-copy from the `bytes::Bytes`; only the small offsets array is copied
     /// (zarrs `usize` → Arrow `i64`).
     fn to_arrow_array(&self) -> PyArrowResult<ArrayRef> {
-        use zarrs::array::data_type::*;
-
         let values = Buffer::from(self.bytes.clone());
         let offsets = self
             .offsets
@@ -66,8 +66,6 @@ impl PyVariableArray {
     }
 
     fn arrow_data_type(&self) -> PyResult<arrow_schema::DataType> {
-        use zarrs::array::data_type::*;
-
         if self.data_type.is::<StringDataType>() {
             Ok(arrow_schema::DataType::LargeUtf8)
         } else if self.data_type.is::<BytesDataType>() {
@@ -88,20 +86,6 @@ impl PyVariableArray {
 
 #[pymethods]
 impl PyVariableArray {
-    #[getter]
-    fn shape(&self) -> &[u64] {
-        &self.shape
-    }
-
-    #[getter]
-    fn dtype(&self) -> PyDataType {
-        self.data_type.clone().into()
-    }
-
-    fn __arrow_c_schema__<'py>(&self, py: Python<'py>) -> PyArrowResult<Bound<'py, PyCapsule>> {
-        to_schema_pycapsule(py, &self.arrow_field()?)
-    }
-
     #[pyo3(signature = (requested_schema=None))]
     fn __arrow_c_array__<'py>(
         &self,
@@ -111,6 +95,52 @@ impl PyVariableArray {
         let array = self.to_arrow_array()?;
         let field = Arc::new(self.arrow_field()?);
         to_array_pycapsules(py, field, array.as_ref(), requested_schema)
+    }
+
+    fn __arrow_c_schema__<'py>(&self, py: Python<'py>) -> PyArrowResult<Bound<'py, PyCapsule>> {
+        to_schema_pycapsule(py, &self.arrow_field()?)
+    }
+
+    #[getter]
+    fn dtype(&self) -> PyDataType {
+        self.data_type.clone().into()
+    }
+
+    #[getter]
+    fn shape(&self) -> &[u64] {
+        &self.shape
+    }
+
+    #[pyo3(signature = (dtype=None, copy=None))]
+    fn __array__<'py>(
+        &self,
+        py: Python<'py>,
+        dtype: Option<Bound<'py, PyAny>>,
+        copy: Option<bool>,
+    ) -> PyResult<Bound<'py, PyAny>> {
+        // Currently all variable-length data types must be copied into numpy buffers
+        if copy == Some(false) {
+            return Err(PyValueError::new_err(
+                "cannot return a zero-copy array from variable-length data",
+            ));
+        }
+
+        let array = self.to_numpy(py)?;
+        match dtype {
+            Some(dtype) => array.call_method1(intern!(py, "astype"), (dtype,)),
+            None => Ok(array),
+        }
+    }
+
+    fn to_numpy<'py>(&self, py: Python<'py>) -> PyResult<Bound<'py, PyAny>> {
+        if self.data_type.is::<StringDataType>() {
+            string_to_numpy(py, &self.bytes, &self.offsets, &self.shape)
+        } else {
+            Err(PyNotImplementedError::new_err(format!(
+                "NumPy export of variable-length data type {} is not supported",
+                self.data_type
+            )))
+        }
     }
 }
 
@@ -160,4 +190,32 @@ impl PyMaskedVariableArray {
     fn dtype(&self) -> PyDataType {
         self.data_type.clone().into()
     }
+}
+
+/// Decode zarr bytes to a NumPy array with dtype `StringDType`
+fn string_to_numpy<'py>(
+    py: Python<'py>,
+    bytes: &Bytes,
+    offsets: &[usize],
+    shape: &[u64],
+) -> PyResult<Bound<'py, PyAny>> {
+    let mut elements = Vec::with_capacity(offsets.len().saturating_sub(1));
+    for window in offsets.windows(2) {
+        let element = &bytes[window[0]..window[1]];
+        let s = std::str::from_utf8(element)
+            .map_err(|err| PyUnicodeDecodeError::new_err_from_utf8(py, element, err))?;
+        elements.push(PyString::new(py, s));
+    }
+
+    let numpy = py.import(intern!(py, "numpy"))?;
+    let string_dtype = numpy
+        .getattr(intern!(py, "dtypes"))?
+        .getattr(intern!(py, "StringDType"))?
+        .call0()?;
+
+    let flat = numpy.call_method1(
+        intern!(py, "array"),
+        (PyList::new(py, elements)?, string_dtype),
+    )?;
+    flat.call_method1(intern!(py, "reshape"), (shape,))
 }
