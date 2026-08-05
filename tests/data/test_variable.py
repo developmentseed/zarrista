@@ -68,13 +68,33 @@ def test_array_protocol_rejects_zero_copy(tmp_path: Path):
         np.array(array, copy=False)
 
 
-def test_to_numpy_rejects_bytes_dtype(tmp_path: Path):
-    # NumPy has no variable-width binary data type.
-    values = np.array([b"a", b"bb"], dtype=object)
-    array = _variable_array(tmp_path / "b.zarr", values, "bytes")
+def test_to_numpy_gives_object_dtype_for_bytes(tmp_path: Path):
+    # NumPy has no variable-width binary data type, so each element stays a
+    # Python `bytes` object.
+    values = [b"a", b"bb", b"ccc"]
+    array = _variable_array(
+        tmp_path / "b.zarr",
+        np.array(values, dtype=object),
+        "bytes",
+    )
 
-    with pytest.raises(NotImplementedError, match="not supported"):
-        array.to_numpy()
+    result = array.to_numpy()
+
+    assert result.dtype == np.dtype(object)
+    assert result.tolist() == values
+
+
+def test_to_numpy_keeps_embedded_nul_in_bytes(tmp_path: Path):
+    # An `object` array holds the bytes verbatim. A fixed-width `S<n>` array
+    # would silently strip the trailing NUL.
+    values = [b"a\x00\x00", b"bb"]
+    array = _variable_array(
+        tmp_path / "b.zarr",
+        np.array(values, dtype=object),
+        "bytes",
+    )
+
+    assert array.to_numpy().tolist() == values
 
 
 def test_to_numpy_rejects_invalid_utf8(tmp_path: Path):
