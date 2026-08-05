@@ -7,7 +7,7 @@ use bytes::Bytes;
 use pyo3::exceptions::{PyNotImplementedError, PyTypeError, PyUnicodeDecodeError, PyValueError};
 use pyo3::intern;
 use pyo3::prelude::*;
-use pyo3::types::{PyCapsule, PyList, PyString, PyTuple};
+use pyo3::types::{PyBytes, PyCapsule, PyList, PyString, PyTuple};
 use pyo3_arrow::error::PyArrowResult;
 use pyo3_arrow::ffi::{to_array_pycapsules, to_schema_pycapsule};
 use zarrs::array::DataType;
@@ -135,6 +135,8 @@ impl PyVariableArray {
     fn to_numpy<'py>(&self, py: Python<'py>) -> PyResult<Bound<'py, PyAny>> {
         if self.data_type.is::<StringDataType>() {
             string_to_numpy(py, &self.bytes, &self.offsets, &self.shape)
+        } else if self.data_type.is::<BytesDataType>() {
+            bytes_to_numpy(py, &self.bytes, &self.offsets, &self.shape)
         } else {
             Err(PyNotImplementedError::new_err(format!(
                 "NumPy export of variable-length data type {} is not supported",
@@ -216,6 +218,31 @@ fn string_to_numpy<'py>(
     let flat = numpy.call_method1(
         intern!(py, "array"),
         (PyList::new(py, elements)?, string_dtype),
+    )?;
+    flat.call_method1(intern!(py, "reshape"), (shape,))
+}
+
+/// Decode zarr bytes to a NumPy array with dtype `object`
+fn bytes_to_numpy<'py>(
+    py: Python<'py>,
+    bytes: &Bytes,
+    offsets: &[usize],
+    shape: &[u64],
+) -> PyResult<Bound<'py, PyAny>> {
+    let mut elements = Vec::with_capacity(offsets.len().saturating_sub(1));
+    for window in offsets.windows(2) {
+        elements.push(PyBytes::new(py, &bytes[window[0]..window[1]]));
+    }
+
+    let numpy = py.import(intern!(py, "numpy"))?;
+    let object_dtype = numpy
+        .getattr(intern!(py, "dtypes"))?
+        .getattr(intern!(py, "ObjectDType"))?
+        .call0()?;
+
+    let flat = numpy.call_method1(
+        intern!(py, "array"),
+        (PyList::new(py, elements)?, object_dtype),
     )?;
     flat.call_method1(intern!(py, "reshape"), (shape,))
 }

@@ -125,13 +125,15 @@ class VariableArray:
         Currently all variable-length data types must be copied into NumPy buffers. No
         zero-copy data sharing is possible.
 
+        The `string` data type gives `numpy.dtypes.StringDType`. The `bytes` dtype gives
+        an `object` dtype array, containing Python `bytes` objects.
+
         Returns:
-            A NumPy array with the same shape as this array, of the
-            `numpy.dtypes.StringDType` data type.
+            A NumPy array with the same shape as this array.
 
         Raises:
-            NotImplementedError: If the data type is not `string`.
-            UnicodeDecodeError: If the decoded bytes are not valid UTF-8.
+            UnicodeDecodeError: If the decoded bytes are not valid UTF-8. This
+                applies to the `string` data type only.
 
         Examples:
             >>> array[:].to_numpy()
@@ -153,8 +155,8 @@ class VariableArray:
             A NumPy array with the same shape as this array.
 
         Raises:
-            NotImplementedError: If the data type is not `string`.
-            UnicodeDecodeError: If the decoded bytes are not valid UTF-8.
+            UnicodeDecodeError: If the decoded bytes are not valid UTF-8. This
+                applies to the `string` data type only.
             ValueError: If `copy` is `False`. This method cannot avoid a copy.
         """
     def __arrow_c_schema__(self) -> CapsuleType:
