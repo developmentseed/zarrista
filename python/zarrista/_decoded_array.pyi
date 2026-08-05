@@ -122,7 +122,8 @@ class VariableArray:
     def to_numpy(self) -> NDArray[Any]:
         """Copy Zarr data to a NumPy array.
 
-        Currently all variable-length data types must be copied into NumPy buffers.
+        Currently all variable-length data types must be copied into NumPy buffers. No
+        zero-copy data sharing is possible.
 
         Returns:
             A NumPy array with the same shape as this array, of the
