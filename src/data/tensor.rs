@@ -1,4 +1,6 @@
+use std::borrow::Cow;
 use std::ffi::c_int;
+use std::num::NonZeroU32;
 use std::sync::Arc;
 
 use bytes::Bytes;
@@ -6,6 +8,7 @@ use pyo3::exceptions::{PyNotImplementedError, PyValueError};
 use pyo3::ffi;
 use pyo3::prelude::*;
 use pyo3_bytes::PyBytes;
+use zarrs::array::data_type::{NumpyDateTime64DataType, NumpyTimeDelta64DataType, NumpyTimeUnit};
 use zarrs::array::{ArrayError, DataType, DataTypeSize};
 
 use crate::data::buffer_protocol::PyTensorBuffer;
@@ -92,14 +95,9 @@ impl PyTensor {
     ///
     /// Zero-copy view (`np.frombuffer`) — numpy tolerates an unaligned buffer.
     fn to_numpy<'py>(&self, py: Python<'py>) -> PyResult<Bound<'py, PyAny>> {
-        let name = self.data_type.name_v3().ok_or_else(|| {
-            PyNotImplementedError::new_err(format!(
-                "data type {} has no zarr v3 name / numpy mapping",
-                self.data_type
-            ))
-        })?;
+        let name = numpy_dtype_name(&self.data_type)?;
         let np = py.import("numpy")?;
-        let flat = np.call_method1("frombuffer", (self.buffer(), numpy_dtype_name(&name)))?;
+        let flat = np.call_method1("frombuffer", (self.buffer(), name.as_ref()))?;
         flat.call_method1("reshape", (&*self.shape,))
     }
 
@@ -158,9 +156,15 @@ impl PyTensor {
     unsafe fn __releasebuffer__(&self, _view: *mut ffi::Py_buffer) {}
 }
 
-/// The NumPy data type name for a Zarr v3 data type name.
+/// The NumPy data type name for a Zarr data type.
 ///
-/// Zarr names complex data types in two ways, and the number counts something
+/// Two families need a rename.
+///
+/// **Temporal.** Zarr keeps the unit and the scale factor in the configuration,
+/// while NumPy puts them in the name: `numpy.datetime64` with unit `s` and scale
+/// factor 10 is `datetime64[10s]`.
+///
+/// **Complex.** Zarr names these two ways, and the number counts something
 /// different in each. `complex64` counts the bits of the whole value, which is
 /// also what NumPy counts. `complex_float32` names the component type instead.
 /// Both describe a pair of 32-bit floats.
@@ -169,14 +173,59 @@ impl PyTensor {
 /// | -------------------------------- | --------- | ---------- | ------------ |
 /// | `complex64` / `complex_float32`  | `float32` | 64         | `complex64`  |
 /// | `complex128` / `complex_float64` | `float64` | 128        | `complex128` |
-///
-/// Every other name passes through unchanged.
-fn numpy_dtype_name(zarr_name: &str) -> &str {
-    match zarr_name {
-        "complex_float32" => "complex64",
-        "complex_float64" => "complex128",
-        name => name,
+fn numpy_dtype_name(data_type: &DataType) -> PyResult<Cow<'static, str>> {
+    // Cast temporal data types to their NumPy names
+    if let Some(dt) = data_type.downcast_ref::<NumpyDateTime64DataType>() {
+        return Ok(numpy_temporal_name("datetime64", dt.unit, dt.scale_factor).into());
     }
+    if let Some(dt) = data_type.downcast_ref::<NumpyTimeDelta64DataType>() {
+        return Ok(numpy_temporal_name("timedelta64", dt.unit, dt.scale_factor).into());
+    }
+
+    let name = data_type.name_v3().ok_or_else(|| {
+        PyNotImplementedError::new_err(format!(
+            "data type {data_type} has no zarr v3 name / numpy mapping"
+        ))
+    })?;
+    Ok(match name.as_ref() {
+        "complex_float32" => Cow::Borrowed("complex64"),
+        "complex_float64" => Cow::Borrowed("complex128"),
+        _ => name,
+    })
+}
+
+/// A NumPy temporal data type name, such as `datetime64[10s]`.
+///
+/// NumPy reads a scale factor of 1 as no scale factor, so `datetime64[1s]` and
+/// `datetime64[s]` give the same data type. Therefore this always writes the
+/// scale factor.
+fn numpy_temporal_name(kind: &str, unit: NumpyTimeUnit, scale_factor: NonZeroU32) -> String {
+    // The generic unit has no code. NumPy spells it as the bare name.
+    let Some(code) = numpy_time_unit_code(unit) else {
+        return kind.to_string();
+    };
+    format!("{kind}[{scale_factor}{code}]")
+}
+
+/// The NumPy code for a temporal unit, or `None` for the generic unit.
+fn numpy_time_unit_code(unit: NumpyTimeUnit) -> Option<&'static str> {
+    let s = match unit {
+        NumpyTimeUnit::Generic => return None,
+        NumpyTimeUnit::Year => "Y",
+        NumpyTimeUnit::Month => "M",
+        NumpyTimeUnit::Week => "W",
+        NumpyTimeUnit::Day => "D",
+        NumpyTimeUnit::Hour => "h",
+        NumpyTimeUnit::Minute => "m",
+        NumpyTimeUnit::Second => "s",
+        NumpyTimeUnit::Millisecond => "ms",
+        NumpyTimeUnit::Microsecond => "us",
+        NumpyTimeUnit::Nanosecond => "ns",
+        NumpyTimeUnit::Picosecond => "ps",
+        NumpyTimeUnit::Femtosecond => "fs",
+        NumpyTimeUnit::Attosecond => "as",
+    };
+    Some(s)
 }
 
 /// Fixed-width data with a validity mask. Skeleton.
