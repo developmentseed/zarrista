@@ -88,20 +88,6 @@ impl PyVariableArray {
 
 #[pymethods]
 impl PyVariableArray {
-    #[getter]
-    fn shape(&self) -> &[u64] {
-        &self.shape
-    }
-
-    #[getter]
-    fn dtype(&self) -> PyDataType {
-        self.data_type.clone().into()
-    }
-
-    fn __arrow_c_schema__<'py>(&self, py: Python<'py>) -> PyArrowResult<Bound<'py, PyCapsule>> {
-        to_schema_pycapsule(py, &self.arrow_field()?)
-    }
-
     #[pyo3(signature = (requested_schema=None))]
     fn __arrow_c_array__<'py>(
         &self,
@@ -111,6 +97,20 @@ impl PyVariableArray {
         let array = self.to_arrow_array()?;
         let field = Arc::new(self.arrow_field()?);
         to_array_pycapsules(py, field, array.as_ref(), requested_schema)
+    }
+
+    fn __arrow_c_schema__<'py>(&self, py: Python<'py>) -> PyArrowResult<Bound<'py, PyCapsule>> {
+        to_schema_pycapsule(py, &self.arrow_field()?)
+    }
+
+    #[getter]
+    fn dtype(&self) -> PyDataType {
+        self.data_type.clone().into()
+    }
+
+    #[getter]
+    fn shape(&self) -> &[u64] {
+        &self.shape
     }
 }
 
