@@ -4,7 +4,7 @@ use arrow_array::{ArrayRef, LargeBinaryArray, LargeStringArray};
 use arrow_buffer::{Buffer, OffsetBuffer, ScalarBuffer};
 use arrow_schema::Field;
 use bytes::Bytes;
-use pyo3::exceptions::PyTypeError;
+use pyo3::exceptions::{PyNotImplementedError, PyTypeError, PyUnicodeDecodeError, PyValueError};
 use pyo3::intern;
 use pyo3::prelude::*;
 use pyo3::types::{PyCapsule, PyList, PyString, PyTuple};
@@ -109,6 +109,27 @@ impl PyVariableArray {
     #[getter]
     fn shape(&self) -> &[u64] {
         &self.shape
+    }
+
+    #[pyo3(signature = (dtype=None, copy=None))]
+    fn __array__<'py>(
+        &self,
+        py: Python<'py>,
+        dtype: Option<Bound<'py, PyAny>>,
+        copy: Option<bool>,
+    ) -> PyResult<Bound<'py, PyAny>> {
+        // Currently all variable-length data types must be copied into numpy buffers
+        if copy == Some(false) {
+            return Err(PyValueError::new_err(
+                "cannot return a zero-copy array from variable-length data",
+            ));
+        }
+
+        let array = self.to_numpy(py)?;
+        match dtype {
+            Some(dtype) => array.call_method1(intern!(py, "astype"), (dtype,)),
+            None => Ok(array),
+        }
     }
 
     fn to_numpy<'py>(&self, py: Python<'py>) -> PyResult<Bound<'py, PyAny>> {
