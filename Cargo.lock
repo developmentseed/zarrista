@@ -2635,6 +2635,17 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "cf8baf1c55e62ffcace7a9f06f4bd9cd3f0c4beb022d3b367256b91b87513d98"
 
 [[package]]
+name = "microfloat"
+version = "0.1.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d1a458bd61ee9aaf2e541a8a2ba7f8446755db4892378bd6231aeb65dad385ce"
+dependencies = [
+ "bytemuck",
+ "getrandom 0.3.4",
+ "libm",
+]
+
+[[package]]
 name = "mime"
 version = "0.3.17"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -5181,6 +5192,7 @@ dependencies = [
  "libz-sys",
  "log",
  "lru",
+ "microfloat",
  "moka",
  "ndarray",
  "num",

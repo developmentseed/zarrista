@@ -62,7 +62,12 @@ rayon = "1.12.0"
 serde_json = "1"
 thiserror = "2.0.18"
 tokio-rayon = { version = "2.1", optional = true }
-zarrs = { version = "0.23", features = ["bitround", "ndarray", "sharding"] }
+zarrs = { version = "0.23", features = [
+    "bitround",
+    "microfloat",
+    "ndarray",
+    "sharding",
+] }
 zarrs_icechunk = { version = "0.5", optional = true }
 zarrs_object_store = { version = "0.6.2", optional = true }
 
