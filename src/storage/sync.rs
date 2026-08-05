@@ -87,6 +87,15 @@ impl PyFilesystemStore {
     }
 }
 
+impl PartialEq for PyFilesystemStore {
+    fn eq(&self, other: &Self) -> bool {
+        // We consider two zarrs `FilesystemStore`s equal if they point to the same root directory
+        let self_root = self.storage.prefix_to_fs_path(&StorePrefix::root());
+        let other_root = other.storage.prefix_to_fs_path(&StorePrefix::root());
+        self_root == other_root && self.path == other.path
+    }
+}
+
 /// An in-memory store, primarily useful for testing.
 #[pyclass(module = "zarrista", frozen, name = "MemoryStore", skip_from_py_object)]
 #[derive(Clone)]
