@@ -115,7 +115,7 @@ impl PyVariableArray {
         if self.data_type.is::<StringDataType>() {
             string_to_numpy(py, &self.bytes, &self.offsets, &self.shape)
         } else {
-            Err(PyTypeError::new_err(format!(
+            Err(PyNotImplementedError::new_err(format!(
                 "NumPy export of variable-length data type {} is not supported",
                 self.data_type
             )))
