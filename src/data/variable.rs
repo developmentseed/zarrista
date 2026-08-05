@@ -5,11 +5,13 @@ use arrow_buffer::{Buffer, OffsetBuffer, ScalarBuffer};
 use arrow_schema::Field;
 use bytes::Bytes;
 use pyo3::exceptions::PyTypeError;
+use pyo3::intern;
 use pyo3::prelude::*;
-use pyo3::types::{PyCapsule, PyTuple};
+use pyo3::types::{PyCapsule, PyList, PyString, PyTuple};
 use pyo3_arrow::error::PyArrowResult;
 use pyo3_arrow::ffi::{to_array_pycapsules, to_schema_pycapsule};
 use zarrs::array::DataType;
+use zarrs::array::data_type::{BytesDataType, StringDataType};
 
 use crate::dtype::PyDataType;
 
@@ -38,8 +40,6 @@ impl PyVariableArray {
     /// zero-copy from the `bytes::Bytes`; only the small offsets array is copied
     /// (zarrs `usize` → Arrow `i64`).
     fn to_arrow_array(&self) -> PyArrowResult<ArrayRef> {
-        use zarrs::array::data_type::*;
-
         let values = Buffer::from(self.bytes.clone());
         let offsets = self
             .offsets
@@ -66,8 +66,6 @@ impl PyVariableArray {
     }
 
     fn arrow_data_type(&self) -> PyResult<arrow_schema::DataType> {
-        use zarrs::array::data_type::*;
-
         if self.data_type.is::<StringDataType>() {
             Ok(arrow_schema::DataType::LargeUtf8)
         } else if self.data_type.is::<BytesDataType>() {
@@ -111,6 +109,17 @@ impl PyVariableArray {
     #[getter]
     fn shape(&self) -> &[u64] {
         &self.shape
+    }
+
+    fn to_numpy<'py>(&self, py: Python<'py>) -> PyResult<Bound<'py, PyAny>> {
+        if self.data_type.is::<StringDataType>() {
+            string_to_numpy(py, &self.bytes, &self.offsets, &self.shape)
+        } else {
+            Err(PyTypeError::new_err(format!(
+                "NumPy export of variable-length data type {} is not supported",
+                self.data_type
+            )))
+        }
     }
 }
 
@@ -160,4 +169,30 @@ impl PyMaskedVariableArray {
     fn dtype(&self) -> PyDataType {
         self.data_type.clone().into()
     }
+}
+
+fn string_to_numpy<'a>(
+    py: Python<'a>,
+    bytes: &Bytes,
+    offsets: &[usize],
+    shape: &[u64],
+) -> PyResult<Bound<'a, PyAny>> {
+    let mut py_bytes = Vec::with_capacity(offsets.len() - 1);
+    offsets.windows(2).try_for_each(|[start, end]| {
+        let s = std::str::from_utf8(&bytes[*start..*end])
+            .map_err(|e| PyTypeError::new_err(e.to_string()))?;
+        py_bytes.push(PyString::new(py, s));
+        Ok(())
+    })?;
+
+    let py_list = PyList::new(py, py_bytes)?;
+    let numpy_mod = py.import(intern!(py, "numpy"))?;
+
+    let kwargs = PyDict::new(py);
+    kwargs.set_item("dtype", numpy_mod.getattr(intern!(py, "object_"))?)?;
+    numpy_mod.call_method(
+        intern!(py, "array"),
+        PyTuple::new(py, vec![py_list])?,
+        Some(&kwargs),
+    )
 }
