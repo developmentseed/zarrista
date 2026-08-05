@@ -37,6 +37,7 @@ dev = [
     "icechunk<2 ; python_version < '3.12'",
     "ipykernel>=7.3.0",
     "maturin>=1.12",
+    "ml-dtypes>=0.5",
     "numpy>=2.4.6",
     "obstore>=0.10.1",
     "pydoclint>=0.9",
