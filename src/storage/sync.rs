@@ -90,8 +90,18 @@ impl PyFilesystemStore {
 impl PartialEq for PyFilesystemStore {
     fn eq(&self, other: &Self) -> bool {
         // We consider two zarrs `FilesystemStore`s equal if they point to the same root directory
-        let self_root = self.storage.prefix_to_fs_path(&StorePrefix::root());
-        let other_root = other.storage.prefix_to_fs_path(&StorePrefix::root());
+        // We canonicalize paths to ensure that different representations of the same path (e.g.,
+        // relative vs absolute) are treated as equal.
+        let self_root = self
+            .storage
+            .prefix_to_fs_path(&StorePrefix::root())
+            .canonicalize()
+            .unwrap_or_else(|_| self.path.clone());
+        let other_root = other
+            .storage
+            .prefix_to_fs_path(&StorePrefix::root())
+            .canonicalize()
+            .unwrap_or_else(|_| other.path.clone());
         self_root == other_root && self.path == other.path
     }
 }
