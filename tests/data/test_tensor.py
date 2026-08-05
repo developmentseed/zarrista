@@ -4,6 +4,7 @@ A fixed-width `Tensor` is itself a PEP 3118 N-dimensional, typed, read-only
 buffer. Fixtures are written with zarr-python and read back with zarrista.
 """
 
+import json
 import sys
 from pathlib import Path
 
@@ -153,3 +154,50 @@ def test_array_copy_false_differing_dtype_raises(tmp_path: Path):
     tensor = _tensor(tmp_path / "f.zarr", data)
     with pytest.raises(ValueError, match="zero-copy"):
         tensor.__array__(np.dtype("float64"), copy=False)
+
+
+def _hand_written_tensor(path: Path, data_type: str, data: NDArray) -> Tensor:
+    """Write a fixture directly. zarr-python cannot write these data types."""
+    path.mkdir(parents=True)
+    (path / "zarr.json").write_text(
+        json.dumps(
+            {
+                "zarr_format": 3,
+                "node_type": "array",
+                "shape": [data.size],
+                "data_type": data_type,
+                "chunk_grid": {
+                    "name": "regular",
+                    "configuration": {"chunk_shape": [data.size]},
+                },
+                "chunk_key_encoding": {
+                    "name": "default",
+                    "configuration": {"separator": "/"},
+                },
+                "fill_value": [0, 0],
+                "codecs": [{"name": "bytes", "configuration": {"endian": "little"}}],
+            },
+        ),
+    )
+    (path / "c").mkdir()
+    (path / "c" / "0").write_bytes(data.tobytes())
+    tensor = Array.open(FilesystemStore(path))[:]
+    assert isinstance(tensor, Tensor)
+    return tensor
+
+
+@pytest.mark.parametrize(
+    ("data_type", "numpy_name"),
+    [("complex_float32", "complex64"), ("complex_float64", "complex128")],
+)
+def test_to_numpy_renames_complex_aliases(tmp_path: Path, data_type, numpy_name):
+    # The number doubles: Zarr's `complex_float32` names the component type,
+    # while NumPy's `complex64` counts the bits of the whole value. Both are a
+    # pair of 32-bit floats.
+    data = np.array([1 + 2j, -3 - 4j], dtype=numpy_name)
+    tensor = _hand_written_tensor(tmp_path / f"{data_type}.zarr", data_type, data)
+
+    result = tensor.to_numpy()
+
+    assert result.dtype == np.dtype(numpy_name)
+    np.testing.assert_array_equal(result, data)

@@ -92,7 +92,6 @@ impl PyTensor {
     ///
     /// Zero-copy view (`np.frombuffer`) — numpy tolerates an unaligned buffer.
     fn to_numpy<'py>(&self, py: Python<'py>) -> PyResult<Bound<'py, PyAny>> {
-        // TODO: will the name_v3 always be understood by numpy?
         let name = self.data_type.name_v3().ok_or_else(|| {
             PyNotImplementedError::new_err(format!(
                 "data type {} has no zarr v3 name / numpy mapping",
@@ -100,7 +99,7 @@ impl PyTensor {
             ))
         })?;
         let np = py.import("numpy")?;
-        let flat = np.call_method1("frombuffer", (self.buffer(), name.into_owned()))?;
+        let flat = np.call_method1("frombuffer", (self.buffer(), numpy_dtype_name(&name)))?;
         flat.call_method1("reshape", (&*self.shape,))
     }
 
@@ -157,6 +156,27 @@ impl PyTensor {
     /// Free the `format` string and the `shape`/`strides` arrays allocated by
     /// `__getbuffer__`. The `obj` reference is released by `PyBuffer_Release`.
     unsafe fn __releasebuffer__(&self, _view: *mut ffi::Py_buffer) {}
+}
+
+/// The NumPy data type name for a Zarr v3 data type name.
+///
+/// Zarr names complex data types in two ways, and the number counts something
+/// different in each. `complex64` counts the bits of the whole value, which is
+/// also what NumPy counts. `complex_float32` names the component type instead.
+/// Both describe a pair of 32-bit floats.
+///
+/// | Zarr name                        | Component | Total bits | NumPy name   |
+/// | -------------------------------- | --------- | ---------- | ------------ |
+/// | `complex64` / `complex_float32`  | `float32` | 64         | `complex64`  |
+/// | `complex128` / `complex_float64` | `float64` | 128        | `complex128` |
+///
+/// Every other name passes through unchanged.
+fn numpy_dtype_name(zarr_name: &str) -> &str {
+    match zarr_name {
+        "complex_float32" => "complex64",
+        "complex_float64" => "complex128",
+        name => name,
+    }
 }
 
 /// Fixed-width data with a validity mask. Skeleton.
