@@ -171,28 +171,30 @@ impl PyMaskedVariableArray {
     }
 }
 
-fn string_to_numpy<'a>(
-    py: Python<'a>,
+/// Decode zarr bytes to a NumPy array with dtype `StringDType`
+fn string_to_numpy<'py>(
+    py: Python<'py>,
     bytes: &Bytes,
     offsets: &[usize],
     shape: &[u64],
-) -> PyResult<Bound<'a, PyAny>> {
-    let mut py_bytes = Vec::with_capacity(offsets.len() - 1);
-    offsets.windows(2).try_for_each(|[start, end]| {
-        let s = std::str::from_utf8(&bytes[*start..*end])
-            .map_err(|e| PyTypeError::new_err(e.to_string()))?;
-        py_bytes.push(PyString::new(py, s));
-        Ok(())
-    })?;
+) -> PyResult<Bound<'py, PyAny>> {
+    let mut elements = Vec::with_capacity(offsets.len().saturating_sub(1));
+    for window in offsets.windows(2) {
+        let element = &bytes[window[0]..window[1]];
+        let s = std::str::from_utf8(element)
+            .map_err(|err| PyUnicodeDecodeError::new_err_from_utf8(py, element, err))?;
+        elements.push(PyString::new(py, s));
+    }
 
-    let py_list = PyList::new(py, py_bytes)?;
-    let numpy_mod = py.import(intern!(py, "numpy"))?;
+    let numpy = py.import(intern!(py, "numpy"))?;
+    let string_dtype = numpy
+        .getattr(intern!(py, "dtypes"))?
+        .getattr(intern!(py, "StringDType"))?
+        .call0()?;
 
-    let kwargs = PyDict::new(py);
-    kwargs.set_item("dtype", numpy_mod.getattr(intern!(py, "object_"))?)?;
-    numpy_mod.call_method(
+    let flat = numpy.call_method1(
         intern!(py, "array"),
-        PyTuple::new(py, vec![py_list])?,
-        Some(&kwargs),
-    )
+        (PyList::new(py, elements)?, string_dtype),
+    )?;
+    flat.call_method1(intern!(py, "reshape"), (shape,))
 }
