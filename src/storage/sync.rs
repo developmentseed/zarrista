@@ -59,6 +59,7 @@ impl From<PySyncStorage> for Arc<dyn ReadableWritableListableStorageTraits> {
 #[pyclass(
     module = "zarrista",
     frozen,
+    eq,
     name = "FilesystemStore",
     skip_from_py_object
 )]
@@ -70,11 +71,24 @@ pub struct PyFilesystemStore {
 
 crate::wasm_send_sync!(PyFilesystemStore);
 
+impl PyFilesystemStore {
+    fn root(&self) -> PathBuf {
+        self.storage.prefix_to_fs_path(&StorePrefix::root())
+    }
+}
+
 #[pymethods]
 impl PyFilesystemStore {
     /// Open a filesystem store rooted at `path`.
     #[new]
     fn new(path: PathBuf) -> ZarristaResult<Self> {
+        // TODO: not sure we should always canonicalize here; it changes the repr, for example
+
+        // Canonicalize the path to allow effective equality checking later
+        let path = path
+            .canonicalize()
+            .or_else(|_| std::path::absolute(&path))
+            .unwrap_or(path);
         let store = FilesystemStore::new(&path)?;
         Ok(Self {
             storage: Arc::new(store),
@@ -90,6 +104,7 @@ impl PyFilesystemStore {
 impl PartialEq for PyFilesystemStore {
     fn eq(&self, other: &Self) -> bool {
         // We consider two zarrs `FilesystemStore`s equal if they point to the same root directory
+        //
         // We canonicalize paths to ensure that different representations of the same path (e.g.,
         // relative vs absolute) are treated as equal.
         let self_root = self
@@ -105,6 +120,8 @@ impl PartialEq for PyFilesystemStore {
         self_root == other_root && self.path == other.path
     }
 }
+
+impl Eq for PyFilesystemStore {}
 
 /// An in-memory store, primarily useful for testing.
 #[pyclass(module = "zarrista", frozen, name = "MemoryStore", skip_from_py_object)]
