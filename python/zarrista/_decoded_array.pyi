@@ -107,12 +107,10 @@ class Tensor:
 class VariableArray:
     """Variable-length decoded data (e.g. strings or bytes).
 
-    The class exposes the Arrow PyCapsule interface. Therefore variable-length
-    string or bytes data moves without a copy.
+    The class exposes the Arrow PyCapsule interface: you can access the contained data
+    in any Python library that speaks Arrow without a copy.
 
-    Use `to_numpy` (or `np.asarray`/`np.array`) to get a NumPy array of the
-    `string` data type. NumPy has no variable-width binary data type, so the
-    `bytes` data type has no NumPy form. Use the Arrow interface for it.
+    Use `to_numpy` (or `np.asarray`) to get a NumPy array.
     """
 
     @property
