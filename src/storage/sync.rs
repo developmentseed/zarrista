@@ -21,6 +21,7 @@ use crate::storage::PyStoreKey;
 pub enum PySyncStorage {
     Filesystem(PyFilesystemStore),
     MemoryStore(PyMemoryStore),
+    ZipStore(PyZipStore),
 }
 
 impl PySyncStorage {
@@ -28,6 +29,7 @@ impl PySyncStorage {
         match self {
             Self::Filesystem(store) => store.storage.clone(),
             Self::MemoryStore(store) => store.0.clone(),
+            Self::ZipStore(store) => store.0.clone(),
         }
     }
 }
@@ -42,8 +44,11 @@ impl FromPyObject<'_, '_> for PySyncStorage {
         if let Ok(s) = obj.cast::<PyMemoryStore>() {
             return Ok(Self::MemoryStore(s.get().clone()));
         }
+        if let Ok(s) = obj.cast::<PyZipStore>() {
+            return Ok(Self::ZipStore(s.get().clone()));
+        }
         Err(PyTypeError::new_err(
-            "expected a FilesystemStore or MemoryStore",
+            "expected a FilesystemStore, MemoryStore, or ZipStore",
         ))
     }
 }
@@ -53,51 +58,7 @@ impl From<PySyncStorage> for Arc<dyn ReadableWritableListableStorageTraits> {
         match s {
             PySyncStorage::Filesystem(store) => store.storage,
             PySyncStorage::MemoryStore(store) => store.0,
-        }
-    }
-}
-
-impl ReadableStorageTraits for PySyncStorage {
-    fn get_partial_many<'a>(
-        &'a self,
-        key: &StoreKey,
-        byte_ranges: ByteRangeIterator<'a>,
-    ) -> Result<MaybeBytesIterator<'a>, StorageError> {
-        match self {
-            Self::Filesystem(inner) => inner.storage.get_partial_many(key, byte_ranges),
-            Self::MemoryStore(inner) => inner.0.get_partial_many(key, byte_ranges),
-        }
-    }
-
-    fn size_key(&self, key: &StoreKey) -> Result<Option<u64>, StorageError> {
-        match self {
-            Self::Filesystem(inner) => inner.storage.size_key(key),
-            Self::MemoryStore(inner) => inner.0.size_key(key),
-        }
-    }
-
-    fn get(&self, key: &StoreKey) -> Result<MaybeBytes, StorageError> {
-        match self {
-            Self::Filesystem(inner) => inner.storage.get(key),
-            Self::MemoryStore(inner) => inner.0.get(key),
-        }
-    }
-
-    fn get_partial(
-        &self,
-        key: &StoreKey,
-        byte_range: ByteRange,
-    ) -> Result<MaybeBytes, StorageError> {
-        match self {
-            Self::Filesystem(inner) => inner.storage.get_partial(key, byte_range),
-            Self::MemoryStore(inner) => inner.0.get_partial(key, byte_range),
-        }
-    }
-
-    fn supports_get_partial(&self) -> bool {
-        match self {
-            Self::Filesystem(inner) => inner.storage.supports_get_partial(),
-            Self::MemoryStore(inner) => inner.0.supports_get_partial(),
+            PySyncStorage::ZipStore(store) => store.0,
         }
     }
 }
