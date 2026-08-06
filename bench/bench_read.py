@@ -219,6 +219,14 @@ def main(args: argparse.Namespace) -> None:
         np.testing.assert_array_equal(out, data)
         results.append(("zarr-python", times))
 
+        out, times = run_zarr(
+            root,
+            args.iterations,
+            {"codec_pipeline.path": "zarrs.ZarrsCodecPipeline"},
+        )
+        np.testing.assert_array_equal(out, data)
+        results.append(("zarr-python+zarrs", times))
+
         header = [
             (
                 f"array: shape={shape} dtype={args.dtype} chunks={chunks} "
