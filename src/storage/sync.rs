@@ -11,8 +11,10 @@ use zarrs::storage::{
     ReadableListableStorageTraits, ReadableStorageTraits, ReadableWritableListableStorageTraits,
     StorageError, StoreKey, StoreKeys, StoreKeysPrefixes, StorePrefix, WritableStorageTraits,
 };
+use zarrs_zip::ZipStorageAdapter;
 
 use crate::error::ZarristaResult;
+use crate::storage::PyStoreKey;
 
 /// A zarrista sync store object adapted to the maximal `zarrs` storage trait.
 #[derive(Clone, IntoPyObject)]
@@ -51,6 +53,51 @@ impl From<PySyncStorage> for Arc<dyn ReadableWritableListableStorageTraits> {
         match s {
             PySyncStorage::Filesystem(store) => store.storage,
             PySyncStorage::MemoryStore(store) => store.0,
+        }
+    }
+}
+
+impl ReadableStorageTraits for PySyncStorage {
+    fn get_partial_many<'a>(
+        &'a self,
+        key: &StoreKey,
+        byte_ranges: ByteRangeIterator<'a>,
+    ) -> Result<MaybeBytesIterator<'a>, StorageError> {
+        match self {
+            Self::Filesystem(inner) => inner.storage.get_partial_many(key, byte_ranges),
+            Self::MemoryStore(inner) => inner.0.get_partial_many(key, byte_ranges),
+        }
+    }
+
+    fn size_key(&self, key: &StoreKey) -> Result<Option<u64>, StorageError> {
+        match self {
+            Self::Filesystem(inner) => inner.storage.size_key(key),
+            Self::MemoryStore(inner) => inner.0.size_key(key),
+        }
+    }
+
+    fn get(&self, key: &StoreKey) -> Result<MaybeBytes, StorageError> {
+        match self {
+            Self::Filesystem(inner) => inner.storage.get(key),
+            Self::MemoryStore(inner) => inner.0.get(key),
+        }
+    }
+
+    fn get_partial(
+        &self,
+        key: &StoreKey,
+        byte_range: ByteRange,
+    ) -> Result<MaybeBytes, StorageError> {
+        match self {
+            Self::Filesystem(inner) => inner.storage.get_partial(key, byte_range),
+            Self::MemoryStore(inner) => inner.0.get_partial(key, byte_range),
+        }
+    }
+
+    fn supports_get_partial(&self) -> bool {
+        match self {
+            Self::Filesystem(inner) => inner.storage.supports_get_partial(),
+            Self::MemoryStore(inner) => inner.0.supports_get_partial(),
         }
     }
 }
@@ -103,6 +150,25 @@ impl PyMemoryStore {
 
     fn __repr__(&self) -> String {
         "MemoryStore()".to_string()
+    }
+}
+
+/// An in-memory store, primarily useful for testing.
+#[pyclass(module = "zarrista", frozen, name = "ZipStore", skip_from_py_object)]
+#[derive(Clone)]
+pub struct PyZipStore(Arc<ZipStorageAdapter<PySyncStorage>>);
+
+#[pymethods]
+impl PyZipStore {
+    #[new]
+    #[pyo3(signature = (store, key, path = None))]
+    fn new(store: PySyncStorage, key: PyStoreKey, path: Option<PathBuf>) -> ZarristaResult<Self> {
+        let zip_store = if let Some(path) = path {
+            ZipStorageAdapter::new_with_path(Arc::new(store), key.into(), path)?
+        } else {
+            ZipStorageAdapter::new(Arc::new(store), key.into())?
+        };
+        Ok(Self(Arc::new(zip_store)))
     }
 }
 

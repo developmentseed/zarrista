@@ -70,6 +70,7 @@ zarrs = { version = "0.23", features = [
 ] }
 zarrs_icechunk = { version = "0.5", optional = true }
 zarrs_object_store = { version = "0.6.2", optional = true }
+zarrs_zip = "0.5"
 
 [dev-dependencies]
 # `auto-initialize` lets `cargo test` start a Python interpreter for `Python::attach`.
