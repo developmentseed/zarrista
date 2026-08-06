@@ -49,6 +49,7 @@ dev = [
 # Dependencies for the read benchmarks in `bench/`. Kept out of `dev` because
 # `zarrs` is a second Rust extension that only the benchmarks need.
 bench = [
+    "click>=8",
     "numpy>=2.4.6",
     "zarr>=3.1",
     # The Rust codec pipeline plugin for zarr-python. It is a separate project
