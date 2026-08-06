@@ -46,6 +46,15 @@ dev = [
     "ruff>=0.16",
     "zarr>=3",
 ]
+# Dependencies for the read benchmarks in `bench/`. Kept out of `dev` because
+# `zarrs` is a second Rust extension that only the benchmarks need.
+bench = [
+    "numpy>=2.4.6",
+    "zarr>=3.1",
+    # The Rust codec pipeline plugin for zarr-python. It is a separate project
+    # from zarrista, and the benchmark compares against it.
+    "zarrs>=0.2.3",
+]
 docs = [
     # Workaround for https://github.com/mkdocs/mkdocs/issues/4032
     "click<8.5",
@@ -96,6 +105,11 @@ known-first-party = ["zarrista"]
 [tool.ruff.lint.per-file-ignores]
 "*.pyi" = [
     "A002", # Function argument `bytes` is shadowing a Python builtin
+]
+"bench/*" = [
+    "INP001",  # implicit namespace package (bench is a script dir, not a package)
+    "PLC0415", # import not at top-level (see the import-order note in bench_read.py)
+    "T201",    # print (the benchmark reports its results on stdout)
 ]
 "tests/*" = [
     "ANN001",  # annotation in function argument
