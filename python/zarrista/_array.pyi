@@ -332,8 +332,8 @@ class Array:
             An empty cache for this array.
         """
     @property
-    def store(self) -> SyncStore:
-        """Retrieve the store backing this array."""
+    def storage(self) -> SyncStore:
+        """The store that backs this array."""
     def store_array_subset(
         self,
         selection: Selection,
@@ -976,8 +976,8 @@ class AsyncArray:
             An empty cache for this array.
         """
     @property
-    def store(self) -> AsyncStore:
-        """Retrieve the store backing this array."""
+    def storage(self) -> AsyncStore:
+        """The store that backs this array."""
     async def store_array_subset(
         self,
         selection: Selection,

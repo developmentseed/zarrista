@@ -259,7 +259,7 @@ impl PyArray {
     }
 
     #[getter]
-    fn store(&self) -> PySyncStorage {
+    fn storage(&self) -> PySyncStorage {
         self.store.clone()
     }
 

@@ -34,7 +34,9 @@ impl PyGroup {
         Self { inner, store }
     }
 
-    fn storage(&self) -> Arc<dyn ReadableWritableListableStorageTraits> {
+    /// The `zarrs` storage behind the group, as opposed to the Python store wrapper
+    /// that the `storage` getter returns.
+    fn inner_storage(&self) -> Arc<dyn ReadableWritableListableStorageTraits> {
         self.inner.storage()
     }
 }
@@ -94,7 +96,7 @@ impl PyGroup {
                 .traverse()?
                 .into_iter()
                 .map(|(path, metadata)| {
-                    let storage = self.storage();
+                    let storage = self.inner_storage();
                     match metadata {
                         NodeMetadata::Array(array_metadata) => {
                             let array =
@@ -181,7 +183,7 @@ impl PyGroup {
     }
 
     #[getter]
-    fn store(&self) -> PySyncStorage {
+    fn storage(&self) -> PySyncStorage {
         self.store.clone()
     }
 

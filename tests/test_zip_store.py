@@ -62,9 +62,9 @@ def test_repr(zipped: Path):
     assert repr(ZipStore(FilesystemStore(zipped), "a.zip")) == "ZipStore(a.zip)"
 
 
-def test_array_store_round_trips(zipped: Path):
+def test_array_storage_round_trips(zipped: Path):
     store = ZipStore(FilesystemStore(zipped), "a.zip")
-    assert isinstance(Array.open(store).store, ZipStore)
+    assert isinstance(Array.open(store).storage, ZipStore)
 
 
 def test_writes_are_rejected(zipped: Path):

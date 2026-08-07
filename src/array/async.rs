@@ -318,7 +318,7 @@ impl PyAsyncArray {
     }
 
     #[getter]
-    fn store(&self) -> PyAsyncStorage {
+    fn storage(&self) -> PyAsyncStorage {
         self.store.clone()
     }
 
