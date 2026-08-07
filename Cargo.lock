@@ -5504,7 +5504,9 @@ version = "0.5.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f896c9460c970826088143e2ce259ce0cf96ae5323bca6aa0c3b97fefbafc2d6"
 dependencies = [
+ "async-trait",
  "derive_more",
+ "futures",
  "itertools 0.14.0",
  "rc-zip",
  "thiserror 2.0.19",

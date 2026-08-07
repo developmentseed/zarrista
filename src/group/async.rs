@@ -218,8 +218,8 @@ impl PyAsyncGroup {
     }
 
     #[getter]
-    fn store(&self) -> &PyAsyncStorage {
-        &self.store
+    fn store(&self) -> PyAsyncStorage {
+        self.store.clone()
     }
 
     /// Write the group metadata to the store.

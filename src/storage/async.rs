@@ -1,4 +1,5 @@
 use std::convert::Infallible;
+use std::path::PathBuf;
 use std::sync::Arc;
 
 use async_trait::async_trait;
@@ -6,6 +7,7 @@ use object_store::ObjectStore;
 use pyo3::exceptions::{PyTypeError, PyValueError};
 use pyo3::prelude::*;
 use pyo3::pybacked::PyBackedStr;
+use pyo3_async_runtimes::tokio::future_into_py;
 use pyo3_bytes::PyBytes;
 use pyo3_object_store::AnyObjectStore;
 use zarrs::storage::byte_range::ByteRangeIterator;
@@ -17,11 +19,16 @@ use zarrs::storage::{
 };
 use zarrs_icechunk::AsyncIcechunkStore;
 use zarrs_object_store::AsyncObjectStore;
+use zarrs_zip::ZipStorageAdapter;
 
-#[derive(Clone, IntoPyObject, IntoPyObjectRef)]
+use crate::error::ZarristaError;
+use crate::storage::PyStoreKey;
+
+#[derive(Clone, IntoPyObject)]
 pub enum PyAsyncStorage {
     ObjectStore(PyAsyncObjectStore),
     Icechunk(PyAsyncIcechunkStore),
+    ZipStore(PyAsyncZipStore),
 }
 
 impl PyAsyncStorage {
@@ -29,6 +36,7 @@ impl PyAsyncStorage {
         match self {
             Self::ObjectStore(store) => store.inner.clone(),
             Self::Icechunk(store) => store.inner.clone(),
+            Self::ZipStore(store) => store.storage.clone(),
         }
     }
 }
@@ -46,6 +54,10 @@ impl FromPyObject<'_, '_> for PyAsyncStorage {
 
         if let Ok(store) = obj.extract::<PyAsyncObjectStore>() {
             return Ok(Self::ObjectStore(store));
+        }
+
+        if let Ok(s) = obj.cast::<PyAsyncZipStore>() {
+            return Ok(Self::ZipStore(s.get().clone()));
         }
 
         Err(PyTypeError::new_err(
@@ -182,6 +194,57 @@ impl<'py> IntoPyObject<'py> for &PyAsyncIcechunkStore {
         Ok(self.pyobj.bind(py).clone())
     }
 }
+
+/// A read-only store backed by a zip file that is held in another store.
+#[pyclass(
+    module = "zarrista",
+    frozen,
+    name = "AsyncZipStore",
+    skip_from_py_object
+)]
+#[derive(Clone)]
+pub struct PyAsyncZipStore {
+    storage: Arc<AsyncReadOnlyStorageAdapter>,
+    key: StoreKey,
+}
+
+crate::wasm_send_sync!(PyAsyncZipStore);
+
+#[pymethods]
+impl PyAsyncZipStore {
+    /// Open the zip file that is stored at `key` in `store`.
+    #[staticmethod]
+    #[pyo3(
+        signature = (store, key, path = None),
+        text_signature = "(store, key, path=None)"
+    )]
+    fn open<'py>(
+        py: Python<'py>,
+        store: PyAsyncStorage,
+        key: PyStoreKey,
+        path: Option<PathBuf>,
+    ) -> PyResult<Bound<'py, PyAny>> {
+        let key = key.into_inner();
+
+        future_into_py(py, async move {
+            let adapter = if let Some(path) = path {
+                ZipStorageAdapter::new_with_path_async(store.inner(), key.clone(), path).await
+            } else {
+                ZipStorageAdapter::new_async(store.inner(), key.clone()).await
+            }
+            .map_err(ZarristaError::from)?;
+            Ok(Self {
+                storage: Arc::new(AsyncReadOnlyStorageAdapter::new(Arc::new(adapter))),
+                key,
+            })
+        })
+    }
+
+    fn __repr__(&self) -> String {
+        format!("AsyncZipStore({})", self.key.as_str())
+    }
+}
+
 /// An async storage adapter that reads and lists transparently but rejects all writes at runtime.
 pub struct AsyncReadOnlyStorageAdapter(Arc<dyn AsyncReadableListableStorageTraits>);
 

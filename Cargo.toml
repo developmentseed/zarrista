@@ -30,6 +30,7 @@ async = [
     "dep:pyo3-object_store",
     "dep:tokio-rayon",
     "zarrs/async",
+    "zarrs_zip/async",
     "dep:zarrs_icechunk",
     "dep:zarrs_object_store",
 ]
