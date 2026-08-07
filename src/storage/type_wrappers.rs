@@ -7,6 +7,7 @@ use std::path::PathBuf;
 
 use pyo3::exceptions::PyValueError;
 use pyo3::prelude::*;
+use pyo3::pybacked::PyBackedStr;
 use pyo3::types::PyString;
 use zarrs::storage::{StoreKey, StorePrefix};
 
@@ -69,30 +70,6 @@ impl From<StoreKey> for PyStoreKey {
     }
 }
 
-pub struct PyStorePrefix(StorePrefix);
-
-impl FromPyObject<'_, '_> for PyStorePrefix {
-    type Error = PyErr;
-
-    fn extract(obj: Borrowed<'_, '_, PyAny>) -> Result<Self, Self::Error> {
-        StorePrefix::new(obj.extract::<String>()?)
-            .map(PyStorePrefix)
-            .map_err(|e| PyValueError::new_err(e.to_string()))
-    }
-}
-
-impl From<PyStorePrefix> for StorePrefix {
-    fn from(py_prefix: PyStorePrefix) -> Self {
-        py_prefix.0
-    }
-}
-
-impl From<StorePrefix> for PyStorePrefix {
-    fn from(prefix: StorePrefix) -> Self {
-        Self(prefix)
-    }
-}
-
 /// The directory inside a zip file that a zip store uses as its root.
 ///
 /// The zip storage adapter removes this value from the start of each zip entry
@@ -103,19 +80,26 @@ impl From<StorePrefix> for PyStorePrefix {
 /// select the same directory.
 ///
 /// This is an entry-name prefix and not a filesystem path, so it extracts via `PyStorePrefix`.
-pub struct PyZipPath(String);
+pub struct PyZipPath(StorePrefix);
 
 impl FromPyObject<'_, '_> for PyZipPath {
     type Error = PyErr;
 
     fn extract(obj: Borrowed<'_, '_, PyAny>) -> Result<Self, Self::Error> {
-        let store_prefix = obj.extract::<PyStorePrefix>()?;
-        Ok(Self(store_prefix.0.to_string()))
+        let path = obj.extract::<PyBackedStr>()?;
+        let mut normalized = path.trim_start_matches('/').to_string();
+        if !normalized.is_empty() && !normalized.ends_with('/') {
+            normalized.push('/');
+        }
+        // Normalization satisfies `StorePrefix`'s invariant, so this cannot fail.
+        let prefix =
+            StorePrefix::new(normalized).map_err(|e| PyValueError::new_err(e.to_string()))?;
+        Ok(Self(prefix))
     }
 }
 
 impl From<PyZipPath> for PathBuf {
     fn from(path: PyZipPath) -> PathBuf {
-        PathBuf::from(path.0)
+        PathBuf::from(path.0.as_str())
     }
 }

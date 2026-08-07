@@ -50,12 +50,9 @@ class ZipStore:
     """A read-only store backed by a zip file that another store holds.
 
     The store reads the zip metadata when you open it, and then serves each Zarr
-    key from an entry in the zip file. Every write operation fails, because a
-    zip file cannot be modified in place.
+    key from an entry in the zip file.
 
-    The store reads entries that use the stored, deflate, deflate64, bzip2,
-    lzma, or zstd compression method. `zarr-python` writes a zip store with the
-    stored method by default.
+    This store is read only and does not support writing.
 
     Examples:
         Open a Zarr array that is held in a local zip file:
@@ -71,7 +68,8 @@ class ZipStore:
         self,
         store: SyncStore,
         key: str,
-        path: str | Path | None = None,
+        *,
+        path: str | None = None,
     ) -> None:
         """Open the zip file that is stored at `key` in `store`.
 
@@ -79,9 +77,9 @@ class ZipStore:
             store: The store that holds the zip file.
             key: The store key of the zip file, such as `archive.zip`.
             path: The directory inside the zip file to use as the root of this
-                store. End the value with `/`, because the store removes this
-                value from the start of each entry name. A value of `None` uses
-                the whole zip file.
+                store. A value of `None` uses the whole zip file. The store
+                accepts `nested`, `nested/`, and `/nested/` as the same
+                directory.
 
         Raises:
             StorageError: If `store` holds no value at `key`, or if that value
@@ -93,7 +91,8 @@ class ZipStore:
     def open(
         store: SyncStore,
         key: str,
-        path: str | Path | None = None,
+        *,
+        path: str | None = None,
     ) -> ZipStore:
         """Open the zip file that is stored at `key` in `store`.
 
@@ -103,9 +102,9 @@ class ZipStore:
             store: The store that holds the zip file.
             key: The store key of the zip file, such as `archive.zip`.
             path: The directory inside the zip file to use as the root of this
-                store. End the value with `/`, because the store removes this
-                value from the start of each entry name. A value of `None` uses
-                the whole zip file.
+                store. A value of `None` uses the whole zip file. The store
+                accepts `nested`, `nested/`, and `/nested/` as the same
+                directory.
 
         Returns:
             The store for the zip file at `key`.
@@ -122,13 +121,16 @@ class AsyncZipStore:
     This is the async form of [`ZipStore`][zarrista.store.ZipStore]. Use it with
     [`AsyncArray`][zarrista.AsyncArray] and
     [`AsyncGroup`][zarrista.AsyncGroup].
+
+    This store is read only and does not support writing.
     """
 
     @staticmethod
     async def open(
         store: AsyncStore,
         key: str,
-        path: str | Path | None = None,
+        *,
+        path: str | None = None,
     ) -> AsyncZipStore:
         """Open the zip file that is stored at `key` in `store`.
 
@@ -136,9 +138,9 @@ class AsyncZipStore:
             store: The async store that holds the zip file.
             key: The store key of the zip file, such as `archive.zip`.
             path: The directory inside the zip file to use as the root of this
-                store. End the value with `/`, because the store removes this
-                value from the start of each entry name. A value of `None` uses
-                the whole zip file.
+                store. A value of `None` uses the whole zip file. The store
+                accepts `nested`, `nested/`, and `/nested/` as the same
+                directory.
 
         Returns:
             The store for the zip file at `key`.
