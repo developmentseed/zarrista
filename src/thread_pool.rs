@@ -19,6 +19,10 @@ impl PyThreadPool {
             })?;
         Ok(Self(Arc::new(pool)))
     }
+
+    fn __repr__(&self) -> String {
+        format!("ThreadPool(num_threads={})", self.0.current_num_threads())
+    }
 }
 
 impl PyThreadPool {
