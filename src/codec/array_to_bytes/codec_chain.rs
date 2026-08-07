@@ -37,6 +37,15 @@ impl PyCodecChain {
     fn serializer(&self) -> PyArrayToBytesCodec {
         PyArrayToBytesCodec::new(self.0.array_to_bytes_codec().clone())
     }
+
+    fn __repr__(&self, py: Python) -> PyResult<String> {
+        let filters = self.filters().into_pyobject(py)?.repr()?;
+        let serializer = self.serializer().into_pyobject(py)?.repr()?;
+        let compressors = self.compressors().into_pyobject(py)?.repr()?;
+        Ok(format!(
+            "CodecChain(filters={filters}, serializer={serializer}, compressors={compressors})"
+        ))
+    }
 }
 
 impl From<PyCodecChain> for Arc<CodecChain> {
