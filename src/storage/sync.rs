@@ -3,6 +3,7 @@ use std::sync::Arc;
 
 use pyo3::exceptions::PyTypeError;
 use pyo3::prelude::*;
+use pyo3::types::PyString;
 use zarrs::filesystem::FilesystemStore;
 use zarrs::storage::byte_range::{ByteRange, ByteRangeIterator};
 use zarrs::storage::store::MemoryStore;
@@ -90,8 +91,9 @@ impl PyFilesystemStore {
         })
     }
 
-    fn __repr__(&self) -> String {
-        format!("FilesystemStore({})", self.path.display())
+    fn __repr__(&self, py: Python) -> PyResult<String> {
+        let path = PyString::new(py, &self.path.to_string_lossy()).repr()?;
+        Ok(format!("FilesystemStore(path={path})"))
     }
 }
 
@@ -120,6 +122,7 @@ impl PyMemoryStore {
 pub struct PyZipStore {
     storage: Arc<ReadOnlyStorageAdapter>,
     key: StoreKey,
+    path: Option<StorePrefix>,
 }
 
 crate::wasm_send_sync!(PyZipStore);
@@ -139,9 +142,11 @@ impl PyZipStore {
         path: Option<PyZipPath>,
     ) -> ZarristaResult<Self> {
         let key = key.into_inner();
+        let path = path.map(|p| p.into_inner());
+
         let adapter = crate::py::detach(py, || {
-            if let Some(path) = path {
-                ZipStorageAdapter::new_with_path(store.inner(), key.clone(), path)
+            if let Some(path) = &path {
+                ZipStorageAdapter::new_with_path(store.inner(), key.clone(), path.as_str())
             } else {
                 ZipStorageAdapter::new(store.inner(), key.clone())
             }
@@ -149,6 +154,7 @@ impl PyZipStore {
         Ok(Self {
             storage: Arc::new(ReadOnlyStorageAdapter::new(Arc::new(adapter))),
             key,
+            path,
         })
     }
 
@@ -169,8 +175,19 @@ impl PyZipStore {
         Self::new(py, store, key, path)
     }
 
-    fn __repr__(&self) -> String {
-        format!("ZipStore({})", self.key.as_str())
+    fn __repr__(&self, py: Python) -> PyResult<String> {
+        if let Some(path) = &self.path {
+            Ok(format!(
+                "ZipStore(key={}, path={})",
+                self.key.as_str().into_pyobject(py)?.repr()?,
+                path.as_str().into_pyobject(py)?.repr()?
+            ))
+        } else {
+            Ok(format!(
+                "ZipStore(key={})",
+                self.key.as_str().into_pyobject(py)?.repr()?
+            ))
+        }
     }
 }
 
