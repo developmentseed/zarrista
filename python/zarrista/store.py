@@ -2,7 +2,7 @@
 
 from typing import TYPE_CHECKING, TypeAlias
 
-from ._zarrista import FilesystemStore, MemoryStore
+from ._zarrista import AsyncZipStore, FilesystemStore, MemoryStore, ZipStore
 
 if TYPE_CHECKING:
     from icechunk import Session
@@ -17,11 +17,12 @@ This is a [`FilesystemStore`][zarrista.store.FilesystemStore], a
 """
 
 # Note: this is a string so that icechunk and obstore can be optional dependencies
-AsyncStore: TypeAlias = "ObjectStore | Session"
+AsyncStore: TypeAlias = "ObjectStore | Session | AsyncZipStore"
 """A store that the async API accepts.
 
-This is either an obstore [`ObjectStore`][obstore.store.ObjectStore] or an
-icechunk [`Session`][icechunk.Session]. An `ObjectStore` supports any
+This is an obstore [`ObjectStore`][obstore.store.ObjectStore], an icechunk
+[`Session`][icechunk.Session], or an
+[`AsyncZipStore`][zarrista.store.AsyncZipStore]. An `ObjectStore` supports any
 object-store backend, such as S3, GCS, or the local filesystem. A `Session`
 gives a transactional, versioned store.
 
@@ -34,6 +35,8 @@ data exists only in the Python process, and the reads cannot find it.
 
 
 __all__ = [
+    "AsyncZipStore",
     "FilesystemStore",
     "MemoryStore",
+    "ZipStore",
 ]
