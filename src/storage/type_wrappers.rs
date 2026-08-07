@@ -78,8 +78,6 @@ impl From<StoreKey> for PyStoreKey {
 /// gives an empty store, or store keys that keep a leading `/`. Therefore this
 /// extractor normalizes the value, and `nested`, `nested/`, and `/nested/` all
 /// select the same directory.
-///
-/// This is an entry-name prefix and not a filesystem path, so it extracts via `PyStorePrefix`.
 pub struct PyZipPath(StorePrefix);
 
 impl FromPyObject<'_, '_> for PyZipPath {
