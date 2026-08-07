@@ -15,7 +15,7 @@ class ShardCache:
     Each entry holds two 64-bit integers for every subchunk in the shard. A
     shard of 1024 subchunks therefore costs about 16 KiB.
 
-    Use [`Array.subchunk_cache`][zarrista.Array.subchunk_cache] to create a
+    Use [`Array.shard_cache`][zarrista.Array.shard_cache] to create a
     cache. A cache belongs to the array that created it, because it stores
     byte offsets into that array's shards. Do not use a cache with a different
     array. zarrista cannot detect this, and the read returns incorrect data.
@@ -34,9 +34,9 @@ class ShardCache:
         Read every subchunk of a shard, and read the shard index only once:
 
         ```py
-        cache = arr.subchunk_cache()
+        cache = arr.shard_cache()
         for i in range(arr.subchunk_grid_shape[0]):
-            sub = arr.retrieve_subchunk([i, 0], subchunk_cache=cache)
+            sub = arr.retrieve_subchunk([i, 0], shard_cache=cache)
         ```
     """
 
@@ -67,7 +67,7 @@ class AsyncShardCache:
     [`ShardCache`][zarrista.ShardCache]. The methods are coroutines, because the
     cache uses an asynchronous lock.
 
-    Use [`AsyncArray.subchunk_cache`][zarrista.AsyncArray.subchunk_cache] to
+    Use [`AsyncArray.shard_cache`][zarrista.AsyncArray.shard_cache] to
     create a cache. Read
     [`ShardCache`][zarrista.ShardCache] for what the cache holds and for the
     rules that apply to it.
@@ -76,9 +76,9 @@ class AsyncShardCache:
         Read every subchunk of a shard, and read the shard index only once:
 
         ```py
-        cache = arr.subchunk_cache()
+        cache = arr.shard_cache()
         for i in range(arr.subchunk_grid_shape[0]):
-            sub = await arr.retrieve_subchunk([i, 0], subchunk_cache=cache)
+            sub = await arr.retrieve_subchunk([i, 0], shard_cache=cache)
         ```
     """
 
