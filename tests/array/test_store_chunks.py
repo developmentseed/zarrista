@@ -45,6 +45,25 @@ def test_writes_a_single_chunk_into_its_element_region() -> None:
     np.testing.assert_array_equal(array[:, :].to_numpy(), expected)
 
 
+def test_partial_selection_spans_the_remaining_dimensions() -> None:
+    """A selection shorter than the array's rank selects every chunk after it.
+
+    For a 3D array chunked 2x2x2, `0` selects the 1x2x2 chunks at position 0 of
+    the first dimension. Those span 2x4x4 elements, not the 2x2x2 of one chunk.
+    """
+    array = ArrayBuilder(
+        ChunkGrid.regular([4, 4, 4], [2, 2, 2]),
+        DataType.from_string("int32"),
+        FillValue(b"\x00\x00\x00\x00"),
+    ).create(MemoryStore(), "/a")
+
+    array.store_chunks(0, np.ones((2, 4, 4), dtype="int32"))
+
+    expected = np.zeros((4, 4, 4), dtype="int32")
+    expected[0:2] = 1
+    np.testing.assert_array_equal(array[:, :, :].to_numpy(), expected)
+
+
 def test_data_shaped_like_the_chunk_grid_raises() -> None:
     """The destination shape is in elements, so 2x2 chunks want 4x4 elements."""
     array = _array()

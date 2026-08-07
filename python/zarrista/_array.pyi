@@ -397,10 +397,15 @@ class Array:
     ) -> None:
         """Encode `data` and write it to the chunks selected by `chunks`.
 
-        `chunks` selects in **chunk-grid** coordinates, not element coordinates,
-        so chunk index 0 covers the whole first chunk. `data` holds the elements
-        that the selected chunks span. For a 4x4 array chunked 2x2, one chunk
-        therefore takes 2x2 elements of `data`.
+        `chunks` selects in **chunk-grid** coordinates, not element coordinates.
+        The selection works like numpy basic indexing, but each index counts
+        chunks. One index therefore gives a position along one dimension. A full
+        chunk position is a tuple that holds one index for each dimension. A
+        selection that gives fewer indices than the array has dimensions selects
+        every chunk along the dimensions that remain.
+
+        `data` holds the elements that the selected chunks span, not the chunks
+        themselves.
 
         The method writes whole chunks, so it never reads a chunk before it
         writes. Use
@@ -426,6 +431,30 @@ class Array:
                 dimensions.
             ArrayError: If the array is read-only, or if the size of `data` does
                 not match the selected chunks.
+
+        Examples:
+            Each example uses an array of shape `(4, 4, 4)` with chunks of shape
+            `(2, 2, 2)`. The chunk grid therefore has shape `(2, 2, 2)`.
+
+            Write one chunk. The tuple gives one position in the chunk grid, and
+            that chunk holds 2x2x2 elements:
+
+            ```py
+            arr.store_chunks((0, 0, 0), np.ones((2, 2, 2), dtype="int32"))
+            ```
+
+            Write every chunk at position 0 along the first dimension. This
+            selects 1x2x2 chunks, which together hold 2x4x4 elements:
+
+            ```py
+            arr.store_chunks(0, np.ones((2, 4, 4), dtype="int32"))
+            ```
+
+            Write every chunk in the array:
+
+            ```py
+            arr.store_chunks(..., np.ones((4, 4, 4), dtype="int32"))
+            ```
         """
     def store_encoded_chunk(
         self,
@@ -1041,10 +1070,15 @@ class AsyncArray:
     ) -> None:
         """Encode `data` and write it to the chunks selected by `chunks`.
 
-        `chunks` selects in **chunk-grid** coordinates, not element coordinates,
-        so chunk index 0 covers the whole first chunk. `data` holds the elements
-        that the selected chunks span. For a 4x4 array chunked 2x2, one chunk
-        therefore takes 2x2 elements of `data`.
+        `chunks` selects in **chunk-grid** coordinates, not element coordinates.
+        The selection works like numpy basic indexing, but each index counts
+        chunks. One index therefore gives a position along one dimension. A full
+        chunk position is a tuple that holds one index for each dimension. A
+        selection that gives fewer indices than the array has dimensions selects
+        every chunk along the dimensions that remain.
+
+        `data` holds the elements that the selected chunks span, not the chunks
+        themselves.
 
         The method writes whole chunks, so it never reads a chunk before it
         writes. Use
@@ -1070,6 +1104,30 @@ class AsyncArray:
                 dimensions.
             ArrayError: If the array is read-only, or if the size of `data` does
                 not match the selected chunks.
+
+        Examples:
+            Each example uses an array of shape `(4, 4, 4)` with chunks of shape
+            `(2, 2, 2)`. The chunk grid therefore has shape `(2, 2, 2)`.
+
+            Write one chunk. The tuple gives one position in the chunk grid, and
+            that chunk holds 2x2x2 elements:
+
+            ```py
+            await arr.store_chunks((0, 0, 0), np.ones((2, 2, 2), dtype="int32"))
+            ```
+
+            Write every chunk at position 0 along the first dimension. This
+            selects 1x2x2 chunks, which together hold 2x4x4 elements:
+
+            ```py
+            await arr.store_chunks(0, np.ones((2, 4, 4), dtype="int32"))
+            ```
+
+            Write every chunk in the array:
+
+            ```py
+            await arr.store_chunks(..., np.ones((4, 4, 4), dtype="int32"))
+            ```
         """
     async def store_encoded_chunk(
         self,
