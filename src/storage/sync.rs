@@ -29,7 +29,7 @@ impl PySyncStorage {
         match self {
             Self::Filesystem(store) => store.storage.clone(),
             Self::MemoryStore(store) => store.0.clone(),
-            Self::ZipStore(store) => store.0.clone(),
+            Self::ZipStore(store) => store.storage.clone(),
         }
     }
 }
@@ -58,7 +58,7 @@ impl From<PySyncStorage> for Arc<dyn ReadableWritableListableStorageTraits> {
         match s {
             PySyncStorage::Filesystem(store) => store.storage,
             PySyncStorage::MemoryStore(store) => store.0,
-            PySyncStorage::ZipStore(store) => store.0,
+            PySyncStorage::ZipStore(store) => store.storage,
         }
     }
 }
@@ -114,22 +114,63 @@ impl PyMemoryStore {
     }
 }
 
-/// An in-memory store, primarily useful for testing.
+/// A read-only store backed by a zip file that is held in another store.
 #[pyclass(module = "zarrista", frozen, name = "ZipStore", skip_from_py_object)]
 #[derive(Clone)]
-pub struct PyZipStore(Arc<ZipStorageAdapter<PySyncStorage>>);
+pub struct PyZipStore {
+    storage: Arc<ReadOnlyStorageAdapter>,
+    key: StoreKey,
+}
+
+crate::wasm_send_sync!(PyZipStore);
 
 #[pymethods]
 impl PyZipStore {
+    /// Open the zip file that is stored at `key` in `store`.
     #[new]
-    #[pyo3(signature = (store, key, path = None))]
-    fn new(store: PySyncStorage, key: PyStoreKey, path: Option<PathBuf>) -> ZarristaResult<Self> {
-        let zip_store = if let Some(path) = path {
-            ZipStorageAdapter::new_with_path(Arc::new(store), key.into(), path)?
-        } else {
-            ZipStorageAdapter::new(Arc::new(store), key.into())?
-        };
-        Ok(Self(Arc::new(zip_store)))
+    #[pyo3(
+        signature = (store, key, path = None),
+        text_signature = "(store, key, path=None)"
+    )]
+    fn new(
+        py: Python,
+        store: PySyncStorage,
+        key: PyStoreKey,
+        path: Option<PathBuf>,
+    ) -> ZarristaResult<Self> {
+        let key = key.into_inner();
+        let adapter = crate::py::detach(py, || {
+            if let Some(path) = path {
+                ZipStorageAdapter::new_with_path(store.inner(), key.clone(), path)
+            } else {
+                ZipStorageAdapter::new(store.inner(), key.clone())
+            }
+        })?;
+        Ok(Self {
+            storage: Arc::new(ReadOnlyStorageAdapter::new(Arc::new(adapter))),
+            key,
+        })
+    }
+
+    /// Open the zip file that is stored at `key` in `store`.
+    ///
+    /// This is an alias for `ZipStore.__init__`
+    #[staticmethod]
+    #[pyo3(
+        signature = (store, key, path = None),
+        text_signature = "(store, key, path=None)"
+    )]
+    fn open(
+        py: Python,
+        store: PySyncStorage,
+        key: PyStoreKey,
+        path: Option<PathBuf>,
+    ) -> ZarristaResult<Self> {
+        Self::new(py, store, key, path)
+    }
+
+    fn __repr__(&self) -> String {
+        format!("ZipStore({})", self.key.as_str())
     }
 }
 

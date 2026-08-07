@@ -14,6 +14,12 @@ use zarrs::storage::StoreKey;
 /// See <https://zarr-specs.readthedocs.io/en/latest/v3/core/index.html#abstract-store-interface>.
 pub struct PyStoreKey(StoreKey);
 
+impl PyStoreKey {
+    pub fn into_inner(self) -> StoreKey {
+        self.0
+    }
+}
+
 impl FromPyObject<'_, '_> for PyStoreKey {
     type Error = PyErr;
 
