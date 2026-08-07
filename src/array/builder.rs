@@ -115,6 +115,19 @@ impl PyArrayBuilder {
         Ok(self.0.build_metadata()?.into())
     }
 
+    fn __repr__(&self, py: Python) -> PyResult<String> {
+        // The zarrs builder has no public accessors, so the metadata it would build is the only
+        // description of it. That build can fail, and a repr must not raise, so a builder that
+        // cannot describe itself shows no arguments.
+        let Ok(metadata) = self.0.build_metadata() else {
+            return Ok("ArrayBuilder()".to_string());
+        };
+        let metadata = PyArrayMetadataV3::from(metadata)
+            .into_pyobject(py)?
+            .repr()?;
+        Ok(format!("ArrayBuilder(metadata={metadata})"))
+    }
+
     /// Set the data type of the array to be built.
     fn data_type(&self, data_type: PyDataType) -> Self {
         self.with(|builder| {

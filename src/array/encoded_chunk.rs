@@ -15,6 +15,7 @@ use crate::codec::{PyCodecChain, PyCodecOptions};
 use crate::data::DecodedArray;
 use crate::dtype::PyDataType;
 use crate::error::ZarristaResult;
+use crate::repr::shape_and_dtype;
 #[cfg(feature = "async")]
 use crate::thread_pool::PyThreadPool;
 
@@ -143,5 +144,16 @@ impl PyEncodedChunk {
     #[getter]
     fn shape(&self) -> Vec<NonZeroU64> {
         self.shape.clone()
+    }
+
+    /// Shows the encoded size, because that is what distinguishes this from the
+    /// decoded chunk that has the same shape and data type.
+    fn __repr__(&self, py: Python) -> PyResult<String> {
+        let shape: Vec<u64> = self.shape.iter().map(|edge| edge.get()).collect();
+        let shape_and_dtype = shape_and_dtype(py, &shape, &self.data_type())?;
+        Ok(format!(
+            "EncodedChunk({shape_and_dtype}, nbytes={})",
+            self.bytes.len()
+        ))
     }
 }

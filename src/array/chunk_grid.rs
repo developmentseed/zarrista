@@ -1,3 +1,4 @@
+use std::borrow::Cow;
 use std::sync::Arc;
 
 use pyo3::prelude::*;
@@ -11,6 +12,7 @@ use zarrs::array::chunk_grid::{
 use crate::array::{PyArrayShape, PyChunkShape};
 use crate::error::ZarristaResult;
 use crate::metadata::PyMetadataV3;
+use crate::repr::named_config_repr;
 
 #[derive(Debug, Clone)]
 #[pyclass(module = "zarrista", frozen, name = "ChunkGrid", from_py_object)]
@@ -79,6 +81,16 @@ impl PyChunkGrid {
     #[getter]
     fn grid_shape(&self) -> &[u64] {
         self.0.grid_shape()
+    }
+
+    fn __repr__(&self, py: Python) -> PyResult<String> {
+        let metadata = self.0.metadata();
+        named_config_repr(
+            py,
+            "ChunkGrid",
+            Some(Cow::Borrowed(metadata.name())),
+            metadata.configuration().cloned().map(Into::into),
+        )
     }
 }
 

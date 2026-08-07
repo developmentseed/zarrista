@@ -10,6 +10,7 @@ use std::borrow::Cow;
 
 use pyo3::exceptions::PyValueError;
 use pyo3::prelude::*;
+use pyo3::types::PyString;
 use pyo3_bytes::PyBytes;
 use zarrs::array::{ArrayBytes, ArrayBytesOffsets, ArrayBytesOptional, ArrayBytesVariableLength};
 
@@ -55,16 +56,17 @@ impl PyArrayBytes {
         self.0.validity_mask().cloned()
     }
 
-    fn __repr__(&self) -> String {
-        let kind = match &self.0 {
+    fn __repr__(&self, py: Python) -> PyResult<String> {
+        let layout = match &self.0 {
             ArrayBytesOwned::Fixed(_) => "fixed",
             ArrayBytesOwned::Variable { .. } => "variable",
             ArrayBytesOwned::Optional { .. } => "optional",
         };
-        format!(
-            "ArrayBytes(<{kind}>, {} bytes)",
+        let layout = PyString::new(py, layout).repr()?;
+        Ok(format!(
+            "ArrayBytes(layout={layout}, nbytes={})",
             self.0.element_bytes().as_slice().len()
-        )
+        ))
     }
 }
 
