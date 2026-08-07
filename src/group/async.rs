@@ -234,7 +234,8 @@ impl PyAsyncGroup {
         })
     }
 
-    fn __repr__(&self) -> String {
-        format!("AsyncGroup(path={:?})", self.inner.path().as_str())
+    fn __repr__(&self, py: Python) -> PyResult<String> {
+        let path = PyNodePath::from(self.inner.path().clone());
+        Ok(format!("AsyncGroup(path={})", path.repr(py)?))
     }
 }

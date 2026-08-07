@@ -195,7 +195,8 @@ impl PyGroup {
         })
     }
 
-    fn __repr__(&self) -> String {
-        format!("Group(path={:?})", self.inner.path().as_str())
+    fn __repr__(&self, py: Python) -> PyResult<String> {
+        let path = PyNodePath::from(self.inner.path().clone());
+        Ok(format!("Group(path={})", path.repr(py)?))
     }
 }
