@@ -30,7 +30,7 @@ use crate::data::{PyMaskedTensor, PyMaskedVariableArray, PyTensor, PyVariableArr
 use crate::dtype::PyDataType;
 use crate::exceptions::register_exceptions_module;
 use crate::group::PyGroup;
-use crate::storage::{PyFilesystemStore, PyMemoryStore};
+use crate::storage::{PyFilesystemStore, PyMemoryStore, PyZipStore};
 use crate::thread_pool::PyThreadPool;
 
 /// The compiled core of zarrista, imported as `zarrista._zarrista`.
@@ -61,6 +61,7 @@ fn _zarrista(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<PyTensor>()?;
     m.add_class::<PyThreadPool>()?;
     m.add_class::<PyVariableArray>()?;
+    m.add_class::<PyZipStore>()?;
 
     register_codec_module(m)?;
     register_exceptions_module(m)?;
