@@ -59,7 +59,7 @@ def test_open_matches_constructor(zipped: Path):
 
 
 def test_repr(zipped: Path):
-    assert repr(ZipStore(FilesystemStore(zipped), "a.zip")) == "ZipStore(a.zip)"
+    assert repr(ZipStore(FilesystemStore(zipped), "a.zip")) == "ZipStore(key='a.zip')"
 
 
 def test_array_storage_round_trips(zipped: Path):
