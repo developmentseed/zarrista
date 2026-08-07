@@ -318,8 +318,8 @@ impl PyAsyncArray {
     }
 
     #[getter]
-    fn store(&self) -> &PyAsyncStorage {
-        &self.store
+    fn store(&self) -> PyAsyncStorage {
+        self.store.clone()
     }
 
     #[pyo3(signature = (selection, data, **codec_options))]

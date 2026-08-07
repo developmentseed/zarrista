@@ -32,7 +32,7 @@ def test_filesystem_store_opens_and_reads(array_path: Path):
 
 
 def test_open_rejects_non_store(array_path: Path):
-    with pytest.raises(TypeError, match="FilesystemStore or MemoryStore"):
+    with pytest.raises(TypeError, match="FilesystemStore, MemoryStore, or ZipStore"):
         Array.open(object())
-    with pytest.raises(TypeError, match="FilesystemStore or MemoryStore"):
+    with pytest.raises(TypeError, match="FilesystemStore, MemoryStore, or ZipStore"):
         Group.open(object())

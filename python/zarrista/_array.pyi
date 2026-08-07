@@ -14,7 +14,7 @@ from ._dtype import DataType
 from ._encoded_chunk import EncodedChunk
 from ._fill_value import FillValue
 from ._shard_cache import AsyncShardCache, ShardCache
-from ._store import AsyncStore, FilesystemStore, MemoryStore
+from ._store import AsyncStore, SyncStore
 
 _AxisSelector: TypeAlias = int | slice | EllipsisType
 Selection: TypeAlias = _AxisSelector | tuple[_AxisSelector, ...]
@@ -59,7 +59,7 @@ class Array:
     """A Zarr array."""
 
     @staticmethod
-    def open(store: FilesystemStore | MemoryStore, path: str = "/") -> Array:
+    def open(store: SyncStore, path: str = "/") -> Array:
         """Open the array stored at `path` in `store`.
 
         Args:
@@ -76,7 +76,7 @@ class Array:
     @staticmethod
     def from_metadata(
         metadata: ZarrV3ArrayMetadataJSON,
-        store: FilesystemStore | MemoryStore,
+        store: SyncStore,
         path: str = "/",
     ) -> Array:
         """Use the provided metadata to open a new array at `path` in `store`.
@@ -332,7 +332,7 @@ class Array:
             An empty cache for this array.
         """
     @property
-    def store(self) -> FilesystemStore | MemoryStore:
+    def store(self) -> SyncStore:
         """Retrieve the store backing this array."""
     def store_array_subset(
         self,

@@ -19,6 +19,8 @@ mod thread_pool;
 mod wasm;
 
 use pyo3::prelude::*;
+// In cargo.toml only to add decompression support to zarrs_zip
+use rc_zip as _;
 
 use crate::array::{
     PyArray, PyArrayBuilder, PyChunkGrid, PyChunkKeyEncoding, PyEncodedChunk, PyFillValue,
@@ -30,7 +32,7 @@ use crate::data::{PyMaskedTensor, PyMaskedVariableArray, PyTensor, PyVariableArr
 use crate::dtype::PyDataType;
 use crate::exceptions::register_exceptions_module;
 use crate::group::PyGroup;
-use crate::storage::{PyFilesystemStore, PyMemoryStore};
+use crate::storage::{PyFilesystemStore, PyMemoryStore, PyZipStore};
 use crate::thread_pool::PyThreadPool;
 
 /// The compiled core of zarrista, imported as `zarrista._zarrista`.
@@ -47,6 +49,8 @@ fn _zarrista(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<crate::group::PyAsyncGroup>()?;
     #[cfg(feature = "async")]
     m.add_class::<crate::array::PyAsyncShardCache>()?;
+    #[cfg(feature = "async")]
+    m.add_class::<crate::storage::PyAsyncZipStore>()?;
     m.add_class::<PyChunkGrid>()?;
     m.add_class::<PyChunkKeyEncoding>()?;
     m.add_class::<PyDataType>()?;
@@ -61,6 +65,7 @@ fn _zarrista(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<PyTensor>()?;
     m.add_class::<PyThreadPool>()?;
     m.add_class::<PyVariableArray>()?;
+    m.add_class::<PyZipStore>()?;
 
     register_codec_module(m)?;
     register_exceptions_module(m)?;

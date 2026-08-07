@@ -9,7 +9,7 @@ from ._encoded_chunk import EncodedChunk
 from ._fill_value import FillValue
 from ._group import AsyncGroup, Group
 from ._shard_cache import AsyncShardCache, ShardCache
-from ._store import FilesystemStore, MemoryStore
+from ._store import AsyncZipStore, FilesystemStore, MemoryStore, ZipStore
 from ._thread_pool import ThreadPool
 
 __version__: str
@@ -21,6 +21,7 @@ __all__ = [
     "AsyncArray",
     "AsyncGroup",
     "AsyncShardCache",
+    "AsyncZipStore",
     "ChunkGrid",
     "ChunkKeyEncoding",
     "DataType",
@@ -35,5 +36,6 @@ __all__ = [
     "Tensor",
     "ThreadPool",
     "VariableArray",
+    "ZipStore",
     "__version__",
 ]

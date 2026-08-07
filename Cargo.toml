@@ -30,6 +30,7 @@ async = [
     "dep:pyo3-object_store",
     "dep:tokio-rayon",
     "zarrs/async",
+    "zarrs_zip/async",
     "dep:zarrs_icechunk",
     "dep:zarrs_object_store",
 ]
@@ -59,6 +60,14 @@ pyo3-bytes = "0.7.1"
 pyo3-object_store = { version = "0.11.0", default-features = false, optional = true }
 pythonize = "0.29"
 rayon = "1.12.0"
+# Add decompression support to zarrs_zip
+rc-zip = { version = "5", features = [
+    "bzip2",
+    "deflate",
+    "deflate64",
+    "lzma",
+    "zstd",
+] }
 serde_json = "1"
 thiserror = "2.0.18"
 tokio-rayon = { version = "2.1", optional = true }
@@ -70,6 +79,7 @@ zarrs = { version = "0.23", features = [
 ] }
 zarrs_icechunk = { version = "0.5", optional = true }
 zarrs_object_store = { version = "0.6.2", optional = true }
+zarrs_zip = "0.5"
 
 [dev-dependencies]
 # `auto-initialize` lets `cargo test` start a Python interpreter for `Python::attach`.

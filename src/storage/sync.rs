@@ -11,14 +11,17 @@ use zarrs::storage::{
     ReadableListableStorageTraits, ReadableStorageTraits, ReadableWritableListableStorageTraits,
     StorageError, StoreKey, StoreKeys, StoreKeysPrefixes, StorePrefix, WritableStorageTraits,
 };
+use zarrs_zip::ZipStorageAdapter;
 
 use crate::error::ZarristaResult;
+use crate::storage::{PyStoreKey, PyZipPath};
 
 /// A zarrista sync store object adapted to the maximal `zarrs` storage trait.
 #[derive(Clone, IntoPyObject)]
 pub enum PySyncStorage {
     Filesystem(PyFilesystemStore),
     MemoryStore(PyMemoryStore),
+    ZipStore(PyZipStore),
 }
 
 impl PySyncStorage {
@@ -26,6 +29,7 @@ impl PySyncStorage {
         match self {
             Self::Filesystem(store) => store.storage.clone(),
             Self::MemoryStore(store) => store.0.clone(),
+            Self::ZipStore(store) => store.storage.clone(),
         }
     }
 }
@@ -40,8 +44,11 @@ impl FromPyObject<'_, '_> for PySyncStorage {
         if let Ok(s) = obj.cast::<PyMemoryStore>() {
             return Ok(Self::MemoryStore(s.get().clone()));
         }
+        if let Ok(s) = obj.cast::<PyZipStore>() {
+            return Ok(Self::ZipStore(s.get().clone()));
+        }
         Err(PyTypeError::new_err(
-            "expected a FilesystemStore or MemoryStore",
+            "expected a FilesystemStore, MemoryStore, or ZipStore",
         ))
     }
 }
@@ -51,6 +58,7 @@ impl From<PySyncStorage> for Arc<dyn ReadableWritableListableStorageTraits> {
         match s {
             PySyncStorage::Filesystem(store) => store.storage,
             PySyncStorage::MemoryStore(store) => store.0,
+            PySyncStorage::ZipStore(store) => store.storage,
         }
     }
 }
@@ -103,6 +111,66 @@ impl PyMemoryStore {
 
     fn __repr__(&self) -> String {
         "MemoryStore()".to_string()
+    }
+}
+
+/// A read-only store backed by a zip file that is held in another store.
+#[pyclass(module = "zarrista", frozen, name = "ZipStore", skip_from_py_object)]
+#[derive(Clone)]
+pub struct PyZipStore {
+    storage: Arc<ReadOnlyStorageAdapter>,
+    key: StoreKey,
+}
+
+crate::wasm_send_sync!(PyZipStore);
+
+#[pymethods]
+impl PyZipStore {
+    /// Open the zip file that is stored at `key` in `store`.
+    #[new]
+    #[pyo3(
+        signature = (store, key, *, path = None),
+        text_signature = "(store, key, *, path=None)"
+    )]
+    fn new(
+        py: Python,
+        store: PySyncStorage,
+        key: PyStoreKey,
+        path: Option<PyZipPath>,
+    ) -> ZarristaResult<Self> {
+        let key = key.into_inner();
+        let adapter = crate::py::detach(py, || {
+            if let Some(path) = path {
+                ZipStorageAdapter::new_with_path(store.inner(), key.clone(), path)
+            } else {
+                ZipStorageAdapter::new(store.inner(), key.clone())
+            }
+        })?;
+        Ok(Self {
+            storage: Arc::new(ReadOnlyStorageAdapter::new(Arc::new(adapter))),
+            key,
+        })
+    }
+
+    /// Open the zip file that is stored at `key` in `store`.
+    ///
+    /// This is an alias for `ZipStore.__init__`
+    #[staticmethod]
+    #[pyo3(
+        signature = (store, key, *, path = None),
+        text_signature = "(store, key, *, path=None)"
+    )]
+    fn open(
+        py: Python,
+        store: PySyncStorage,
+        key: PyStoreKey,
+        path: Option<PyZipPath>,
+    ) -> ZarristaResult<Self> {
+        Self::new(py, store, key, path)
+    }
+
+    fn __repr__(&self) -> String {
+        format!("ZipStore({})", self.key.as_str())
     }
 }
 
