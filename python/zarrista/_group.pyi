@@ -127,7 +127,7 @@ class AsyncGroup:
     """A Zarr group backed by an async store."""
 
     @staticmethod
-    async def open_async(store: AsyncStore, path: str = "/") -> AsyncGroup:
+    async def open(store: AsyncStore, path: str = "/") -> AsyncGroup:
         """Open the group stored at `path` in `store`.
 
         Args:
@@ -212,7 +212,7 @@ class AsyncGroup:
 
         This succeeds if the metadata does not exist.
         """
-    async def open_child_async(self, name: str) -> AsyncArray | AsyncGroup:
+    async def child(self, name: str) -> AsyncArray | AsyncGroup:
         """Open a direct child array or group by name.
 
         Args:

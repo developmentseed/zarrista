@@ -109,5 +109,5 @@ async def test_async_with_chunk_grid(tmp_path: Path) -> None:
     await regridded.store_metadata()
 
     assert array.chunk_grid.metadata == ChunkGrid.regular([4, 4], [2, 2]).metadata
-    reopened = await AsyncArray.open_async(LocalStore(str(tmp_path)), "/a")
+    reopened = await AsyncArray.open(LocalStore(str(tmp_path)), "/a")
     assert reopened.chunk_grid.metadata == ChunkGrid.regular([4, 4], [4, 4]).metadata

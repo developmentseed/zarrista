@@ -107,7 +107,7 @@ def test_store_and_erase_metadata(hierarchy: Path):
 
 
 async def test_async_traverse(hierarchy: Path):
-    group = await AsyncGroup.open_async(LocalStore(str(hierarchy)))
+    group = await AsyncGroup.open(LocalStore(str(hierarchy)))
     by_path = {node.path: node for node in await group.traverse()}
     assert sorted(by_path) == ["/a0", "/g1", "/g1/inner"]
     assert isinstance(by_path["/a0"], AsyncArray)
@@ -116,7 +116,7 @@ async def test_async_traverse(hierarchy: Path):
 
 
 async def test_async_child_arrays_and_groups(hierarchy: Path):
-    group = await AsyncGroup.open_async(LocalStore(str(hierarchy)))
+    group = await AsyncGroup.open(LocalStore(str(hierarchy)))
 
     arrays = await group.child_arrays()
     assert [a.path for a in arrays] == ["/a0"]
@@ -128,27 +128,27 @@ async def test_async_child_arrays_and_groups(hierarchy: Path):
 
 
 async def test_async_child_paths(hierarchy: Path):
-    group = await AsyncGroup.open_async(LocalStore(str(hierarchy)))
+    group = await AsyncGroup.open(LocalStore(str(hierarchy)))
     assert sorted(await group.child_paths()) == ["/a0", "/g1"]
     assert await group.child_array_paths() == ["/a0"]
     assert await group.child_group_paths() == ["/g1"]
 
 
 async def test_async_open_child(hierarchy: Path):
-    group = await AsyncGroup.open_async(LocalStore(str(hierarchy)))
+    group = await AsyncGroup.open(LocalStore(str(hierarchy)))
 
-    array = await group.open_child_async("a0")
+    array = await group.child("a0")
     assert isinstance(array, AsyncArray)
     assert array.path == "/a0"
 
-    subgroup = await group.open_child_async("g1")
+    subgroup = await group.child("g1")
     assert isinstance(subgroup, AsyncGroup)
     assert subgroup.path == "/g1"
 
     with pytest.raises(KeyError):
-        await group.open_child_async("missing")
+        await group.child("missing")
 
 
 async def test_async_metadata_is_v3(hierarchy: Path):
-    group = await AsyncGroup.open_async(LocalStore(str(hierarchy)))
+    group = await AsyncGroup.open(LocalStore(str(hierarchy)))
     assert group.metadata["zarr_format"] == 3

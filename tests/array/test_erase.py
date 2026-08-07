@@ -197,7 +197,7 @@ async def _async_chunked_array(tmp_path: Path) -> AsyncArray:
         fill_value=0,
     )
     z[:] = FULL
-    return await AsyncArray.open_async(LocalStore(str(path)))
+    return await AsyncArray.open(LocalStore(str(path)))
 
 
 async def _read_all(array: AsyncArray) -> NDArray[np.int32]:

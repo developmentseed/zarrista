@@ -55,7 +55,7 @@ async def test_open_array_from_session(
 ):
     session, data = icechunk_session
 
-    arr = await AsyncArray.open_async(session, "/embeddings")
+    arr = await AsyncArray.open(session, "/embeddings")
     result = (await arr[0:2, :, 5:7]).to_numpy()
 
     np.testing.assert_array_equal(result, data[0:2, :, 5:7])
@@ -67,10 +67,10 @@ async def test_open_group_from_session(
 ):
     session, data = icechunk_session
 
-    group = await AsyncGroup.open_async(session)
+    group = await AsyncGroup.open(session)
     assert await group.array_keys() == ["embeddings"]
 
-    arr = await group.open_child_async("embeddings")
+    arr = await group.child("embeddings")
     result = (await arr[...]).to_numpy()
 
     np.testing.assert_array_equal(result, data)
@@ -78,7 +78,7 @@ async def test_open_group_from_session(
 
 async def test_non_session_object_rejected():
     with pytest.raises(TypeError):
-        await AsyncArray.open_async(object(), "/embeddings")
+        await AsyncArray.open(object(), "/embeddings")
 
 
 @requires_icechunk_2
@@ -95,4 +95,4 @@ async def test_old_icechunk_version_rejected(
     monkeypatch.setattr(icechunk, "__version__", "1.1.21")
 
     with pytest.raises(ValueError, match="requires icechunk >= 2"):
-        await AsyncArray.open_async(session, "/embeddings")
+        await AsyncArray.open(session, "/embeddings")

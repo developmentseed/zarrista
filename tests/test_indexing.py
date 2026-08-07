@@ -157,7 +157,7 @@ async def test_async_getitem_matches_numpy(int32_array: tuple[Path, NDArray[np.i
     """The async path (obstore + `await arr[...]`) returns the same region."""
     path, data = int32_array
 
-    arr = await AsyncArray.open_async(LocalStore(str(path)))
+    arr = await AsyncArray.open(LocalStore(str(path)))
     result = (await arr[0:2, :, 5:7]).to_numpy()
 
     np.testing.assert_array_equal(result, data[0:2, :, 5:7])
