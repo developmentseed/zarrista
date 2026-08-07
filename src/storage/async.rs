@@ -205,6 +205,7 @@ impl<'py> IntoPyObject<'py> for &PyAsyncIcechunkStore {
 pub struct PyAsyncZipStore {
     storage: Arc<AsyncReadOnlyStorageAdapter>,
     key: StoreKey,
+    /// The directory inside the zip file, or `None` for the whole file.
     path: Option<StorePrefix>,
 }
 
@@ -225,7 +226,10 @@ impl PyAsyncZipStore {
         path: Option<PyZipPath>,
     ) -> PyResult<Bound<'py, PyAny>> {
         let key = key.into_inner();
-        let path = path.map(|p| p.into_inner());
+        // Convert `path=""` to `None`
+        let path = path
+            .map(|p| p.into_inner())
+            .filter(|p| !p.as_str().is_empty());
 
         future_into_py(py, async move {
             let adapter = if let Some(path) = &path {

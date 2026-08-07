@@ -122,6 +122,7 @@ impl PyMemoryStore {
 pub struct PyZipStore {
     storage: Arc<ReadOnlyStorageAdapter>,
     key: StoreKey,
+    /// The directory inside the zip file, or `None` for the whole file.
     path: Option<StorePrefix>,
 }
 
@@ -142,7 +143,10 @@ impl PyZipStore {
         path: Option<PyZipPath>,
     ) -> ZarristaResult<Self> {
         let key = key.into_inner();
-        let path = path.map(|p| p.into_inner());
+        // Convert `path=""` to `None`
+        let path = path
+            .map(|p| p.into_inner())
+            .filter(|p| !p.as_str().is_empty());
 
         let adapter = crate::py::detach(py, || {
             if let Some(path) = &path {
