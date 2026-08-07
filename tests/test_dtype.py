@@ -45,4 +45,5 @@ def test_eq_non_dtype_is_false():
 
 
 def test_repr():
-    assert repr(DataType.from_string("float32")) == "DataType(float32 / <f4)"
+    """The repr shows the Zarr v3 name, not the numpy descr."""
+    assert repr(DataType.from_string("float32")) == "DataType('float32')"

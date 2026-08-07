@@ -75,7 +75,7 @@ def test_tensor_repr(tmp_path: Path) -> None:
 
     tensor = Array.open(FilesystemStore(tmp_path))[:, :]
 
-    assert repr(tensor) == "Tensor(shape=[4, 4], dtype='int32')"
+    assert repr(tensor) == "Tensor(shape=(4, 4), dtype='int32')"
 
 
 def test_variable_array_repr(tmp_path: Path) -> None:
@@ -85,4 +85,5 @@ def test_variable_array_repr(tmp_path: Path) -> None:
 
     variable = Array.open(FilesystemStore(tmp_path))[:]
 
-    assert repr(variable) == "VariableArray(shape=[3], dtype='string')"
+    assert repr(variable) == "VariableArray(shape=(3,), dtype='string')"
+
