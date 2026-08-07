@@ -16,6 +16,7 @@ use zarrs::array::{BytesToBytesCodecTraits, Codec, CodecOptions};
 
 use crate::error::ZarristaResult;
 use crate::metadata::{PyConfiguration, PyMetadataV3};
+use crate::repr::named_config_repr;
 
 #[derive(Debug, Clone)]
 #[pyclass(
@@ -40,8 +41,8 @@ impl PyBytesToBytesCodec {
 
 #[pymethods]
 impl PyBytesToBytesCodec {
-    fn __repr__(&self) -> String {
-        format!("BytesToBytesCodec({:?})", self.0)
+    fn __repr__(&self, py: Python) -> PyResult<String> {
+        named_config_repr(py, "BytesToBytesCodec", self.0.name_v3(), self.config())
     }
 
     /// Build a codec from its Zarr v3 metadata,
