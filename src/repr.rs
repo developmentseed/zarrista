@@ -53,7 +53,7 @@ pub(crate) fn named_config_repr(
 ///
 /// The data type shows its Zarr v3 name. A data type that Zarr v3 does not name
 /// shows `None`, because no shorter description of it exists.
-fn shape_and_dtype(py: Python, shape: &[u64], dtype: &PyDataType) -> PyResult<String> {
+pub(crate) fn shape_and_dtype(py: Python, shape: &[u64], dtype: &PyDataType) -> PyResult<String> {
     let shape = PyTuple::new(py, shape)?.repr()?;
     let dtype = dtype.name().into_pyobject(py)?.repr()?;
     Ok(format!("shape={shape}, dtype={dtype}"))
