@@ -59,7 +59,24 @@ def test_open_matches_constructor(zipped: Path):
 
 
 def test_repr(zipped: Path):
-    assert repr(ZipStore(FilesystemStore(zipped), "a.zip")) == "ZipStore(a.zip)"
+    assert repr(ZipStore(FilesystemStore(zipped), "a.zip")) == "ZipStore(key='a.zip')"
+
+
+@pytest.mark.parametrize("path", [None, "", "/"])
+def test_repr_omits_a_path_that_selects_the_whole_zip(zipped: Path, path: str | None):
+    """`''` and `'/'` normalize to the root, which is what `None` already means."""
+    store = ZipStore(FilesystemStore(zipped), "a.zip", path=path)
+
+    assert repr(store) == "ZipStore(key='a.zip')"
+
+
+@pytest.mark.parametrize("path", ["nested", "nested/", "/nested/"])
+def test_repr_shows_the_normalized_path(tmp_path: Path, path: str):
+    """Every spelling of one directory reprs as the value the store matches on."""
+    root = _zip_zarr(tmp_path, "a.zip", prefix="nested/")
+    store = ZipStore(FilesystemStore(root), "a.zip", path=path)
+
+    assert repr(store) == "ZipStore(key='a.zip', path='nested/')"
 
 
 def test_array_storage_round_trips(zipped: Path):

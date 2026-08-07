@@ -205,6 +205,8 @@ impl<'py> IntoPyObject<'py> for &PyAsyncIcechunkStore {
 pub struct PyAsyncZipStore {
     storage: Arc<AsyncReadOnlyStorageAdapter>,
     key: StoreKey,
+    /// The directory inside the zip file, or `None` for the whole file.
+    path: Option<StorePrefix>,
 }
 
 crate::wasm_send_sync!(PyAsyncZipStore);
@@ -224,10 +226,15 @@ impl PyAsyncZipStore {
         path: Option<PyZipPath>,
     ) -> PyResult<Bound<'py, PyAny>> {
         let key = key.into_inner();
+        // Convert `path=""` to `None`
+        let path = path
+            .map(|p| p.into_inner())
+            .filter(|p| !p.as_str().is_empty());
 
         future_into_py(py, async move {
-            let adapter = if let Some(path) = path {
-                ZipStorageAdapter::new_with_path_async(store.inner(), key.clone(), path).await
+            let adapter = if let Some(path) = &path {
+                ZipStorageAdapter::new_with_path_async(store.inner(), key.clone(), path.as_str())
+                    .await
             } else {
                 ZipStorageAdapter::new_async(store.inner(), key.clone()).await
             }
@@ -235,12 +242,24 @@ impl PyAsyncZipStore {
             Ok(Self {
                 storage: Arc::new(AsyncReadOnlyStorageAdapter::new(Arc::new(adapter))),
                 key,
+                path,
             })
         })
     }
 
-    fn __repr__(&self) -> String {
-        format!("AsyncZipStore({})", self.key.as_str())
+    fn __repr__(&self, py: Python) -> PyResult<String> {
+        if let Some(path) = &self.path {
+            Ok(format!(
+                "AsyncZipStore(key={}, path={})",
+                self.key.as_str().into_pyobject(py)?.repr()?,
+                path.as_str().into_pyobject(py)?.repr()?
+            ))
+        } else {
+            Ok(format!(
+                "AsyncZipStore(key={})",
+                self.key.as_str().into_pyobject(py)?.repr()?
+            ))
+        }
     }
 }
 

@@ -16,8 +16,8 @@ import numpy as np
 import pytest
 import zarr
 
-from zarrista import Array, ChunkKeyEncoding, codec
-from zarrista.store import FilesystemStore
+from zarrista import Array, ChunkKeyEncoding, Group, codec
+from zarrista.store import FilesystemStore, MemoryStore
 
 # `Debug` output looks like `ZstdCodec { compression: 3 }`: a Rust type name in
 # UpperCamelCase, then a brace. Python's dict repr never matches this.
@@ -75,7 +75,7 @@ def test_tensor_repr(tmp_path: Path) -> None:
 
     tensor = Array.open(FilesystemStore(tmp_path))[:, :]
 
-    assert repr(tensor) == "Tensor(shape=[4, 4], dtype='int32')"
+    assert repr(tensor) == "Tensor(shape=(4, 4), dtype='int32')"
 
 
 def test_variable_array_repr(tmp_path: Path) -> None:
@@ -85,4 +85,45 @@ def test_variable_array_repr(tmp_path: Path) -> None:
 
     variable = Array.open(FilesystemStore(tmp_path))[:]
 
-    assert repr(variable) == "VariableArray(shape=[3], dtype='string')"
+    assert repr(variable) == "VariableArray(shape=(3,), dtype='string')"
+
+
+def test_array_and_group_repr(tmp_path: Path) -> None:
+    """The path comes first, because it tells two arrays of one store apart."""
+    zarr.open_group(store=str(tmp_path), mode="w")
+    array = zarr.create_array(
+        store=str(tmp_path),
+        name="temperature",
+        shape=(4, 4),
+        chunks=(2, 2),
+        dtype="float32",
+    )
+    array[:] = np.zeros((4, 4), dtype="float32")
+    store = FilesystemStore(tmp_path)
+
+    assert (
+        repr(Array.open(store, "/temperature"))
+        == "Array(path='/temperature', shape=(4, 4), dtype='float32')"
+    )
+    assert repr(Group.open(store)) == "Group(path='/')"
+
+
+def test_shard_cache_repr_nests_the_array(tmp_path: Path) -> None:
+    array = zarr.create_array(
+        store=str(tmp_path),
+        shape=(4, 4),
+        chunks=(2, 2),
+        dtype="int32",
+    )
+    array[:] = np.zeros((4, 4), dtype="int32")
+
+    cache = Array.open(FilesystemStore(tmp_path)).shard_cache()
+
+    assert (
+        repr(cache) == "ShardCache(array=Array(path='/', shape=(4, 4), dtype='int32'))"
+    )
+
+
+def test_store_repr_names_its_argument() -> None:
+    assert repr(FilesystemStore("/data")) == "FilesystemStore(path='/data')"
+    assert repr(MemoryStore()) == "MemoryStore()"

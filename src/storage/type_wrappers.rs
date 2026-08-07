@@ -80,6 +80,12 @@ impl From<StoreKey> for PyStoreKey {
 /// select the same directory.
 pub struct PyZipPath(StorePrefix);
 
+impl PyZipPath {
+    pub(crate) fn into_inner(self) -> StorePrefix {
+        self.0
+    }
+}
+
 impl FromPyObject<'_, '_> for PyZipPath {
     type Error = PyErr;
 

@@ -18,6 +18,7 @@ use crate::data::{DecodedArray, PyDataInput};
 use crate::error::ZarristaResult;
 use crate::metadata::PyArrayMetadata;
 use crate::node::PyNodePath;
+use crate::repr::array_repr;
 use crate::storage::{PySyncStorage, ReadOnlyStorageAdapter};
 
 /// A Zarr array.
@@ -63,12 +64,9 @@ impl PyArray {
         self.retrieve_array_subset(py, selection)
     }
 
-    fn __repr__(&self) -> String {
-        format!(
-            "Array(shape={:?}, dtype={:?})",
-            self.inner.shape(),
-            self.dtype().__repr__()
-        )
+    fn __repr__(&self, py: Python) -> PyResult<String> {
+        let path = PyNodePath::from(self.inner.path().clone());
+        array_repr(py, "Array", &path, self.inner.shape(), &self.dtype())
     }
 
     /// Use the provided metadata to open a new array at `path` in `store`.
@@ -375,8 +373,8 @@ impl PyShardCache {
 
 #[pymethods]
 impl PyShardCache {
-    fn __repr__(&self) -> String {
-        format!("ShardCache(array={})", self.array.__repr__())
+    fn __repr__(&self, py: Python) -> PyResult<String> {
+        Ok(format!("ShardCache(array={})", self.array.__repr__(py)?))
     }
 
     /// Remove every shard index from the cache.

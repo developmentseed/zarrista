@@ -66,8 +66,10 @@ impl PyDataType {
         }
     }
 
-    pub(crate) fn __repr__(&self) -> String {
-        format!("DataType({})", self.inner)
+    pub(crate) fn __repr__(&self, py: Python<'_>) -> PyResult<String> {
+        // Render the Zarr v3 name
+        let name = self.inner.name_v3().into_pyobject(py)?.repr()?;
+        Ok(format!("DataType({name})"))
     }
 }
 

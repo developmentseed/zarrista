@@ -18,6 +18,11 @@ impl PyNodePath {
     pub fn as_str(&self) -> &str {
         self.0.as_str()
     }
+
+    /// The path as Python renders it, for embedding in a `__repr__`.
+    pub(crate) fn repr(&self, py: Python<'_>) -> PyResult<String> {
+        Ok(PyString::new(py, self.as_str()).repr()?.to_string())
+    }
 }
 
 impl FromPyObject<'_, '_> for PyNodePath {
