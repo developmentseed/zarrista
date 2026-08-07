@@ -20,6 +20,7 @@ use crate::data::{DecodedArray, PyDataInput};
 use crate::error::{ZarristaError, ZarristaResult};
 use crate::metadata::PyArrayMetadata;
 use crate::node::PyNodePath;
+use crate::repr::array_repr;
 use crate::storage::{AsyncReadOnlyStorageAdapter, PyAsyncStorage};
 
 /// A Zarr array.
@@ -67,12 +68,9 @@ impl PyAsyncArray {
         self.retrieve_array_subset(py, selection)
     }
 
-    fn __repr__(&self) -> String {
-        format!(
-            "AsyncArray(shape={:?}, dtype={:?})",
-            self.inner.shape(),
-            self.dtype().__repr__()
-        )
+    fn __repr__(&self, py: Python) -> PyResult<String> {
+        let path = PyNodePath::from(self.inner.path().clone());
+        array_repr(py, "AsyncArray", &path, self.inner.shape(), &self.dtype())
     }
 
     /// Use the provided metadata to open a new array at `path` in `store`.
@@ -465,8 +463,11 @@ impl PyAsyncShardCache {
 
 #[pymethods]
 impl PyAsyncShardCache {
-    fn __repr__(&self) -> String {
-        format!("AsyncShardCache(array={})", self.array.__repr__())
+    fn __repr__(&self, py: Python) -> PyResult<String> {
+        Ok(format!(
+            "AsyncShardCache(array={})",
+            self.array.__repr__(py)?
+        ))
     }
 
     /// Remove every shard index from the cache.

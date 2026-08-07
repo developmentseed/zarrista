@@ -22,6 +22,7 @@ use pyo3::types::{PyList, PyString};
 
 use crate::dtype::PyDataType;
 use crate::metadata::PyConfiguration;
+use crate::node::PyNodePath;
 
 /// Build the repr of a type that Zarr v3 describes with a name and a configuration.
 ///
@@ -48,17 +49,39 @@ pub(crate) fn named_config_repr(
     Ok(format!("{class}({})", parts.join(", ")))
 }
 
-/// Build the repr of a decoded array, which reads `Class(shape=[4, 4], dtype='int32')`.
+/// Render `shape=[4, 4], dtype='int32'`, which every array-like repr ends with.
 ///
 /// The data type shows its Zarr v3 name. A data type that Zarr v3 does not name
 /// shows `None`, because no shorter description of it exists.
+fn shape_and_dtype(py: Python, shape: &[u64], dtype: &PyDataType) -> PyResult<String> {
+    let shape = PyList::new(py, shape)?.repr()?;
+    let dtype = dtype.name().into_pyobject(py)?.repr()?;
+    Ok(format!("shape={shape}, dtype={dtype}"))
+}
+
+/// Build the repr of a decoded array, which reads `Class(shape=[4, 4], dtype='int32')`.
 pub(crate) fn decoded_array_repr(
     py: Python,
     class: &str,
     shape: &[u64],
     dtype: &PyDataType,
 ) -> PyResult<String> {
-    let shape = PyList::new(py, shape)?.repr()?;
-    let dtype = dtype.name().into_pyobject(py)?.repr()?;
-    Ok(format!("{class}(shape={shape}, dtype={dtype})"))
+    Ok(format!("{class}({})", shape_and_dtype(py, shape, dtype)?))
+}
+
+/// Build the repr of an array, which reads `Class(path='/a', shape=[4, 4], dtype='int32')`.
+///
+/// The path comes first, because it is what tells two arrays of one store apart.
+pub(crate) fn array_repr(
+    py: Python,
+    class: &str,
+    path: &PyNodePath,
+    shape: &[u64],
+    dtype: &PyDataType,
+) -> PyResult<String> {
+    let path = path.repr(py)?;
+    Ok(format!(
+        "{class}(path={path}, {})",
+        shape_and_dtype(py, shape, dtype)?
+    ))
 }
