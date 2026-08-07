@@ -112,6 +112,7 @@ impl From<ZarristaError> for PyErr {
             ZarristaError::FilesystemStoreCreate(err) => {
                 exc::StorageError::new_err(err.to_string())
             }
+            ZarristaError::ZipStoreCreate(err) => exc::StorageError::new_err(err.to_string()),
             ZarristaError::Pythonize(err) => exc::SerializationError::new_err(err.to_string()),
             ZarristaError::SerdeJson(err) => exc::SerializationError::new_err(err.to_string()),
             ZarristaError::Codec(err) => exc::CodecError::new_err(err.to_string()),
