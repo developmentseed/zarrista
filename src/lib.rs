@@ -14,6 +14,7 @@ mod group;
 mod metadata;
 mod node;
 mod py;
+mod repr;
 mod storage;
 mod thread_pool;
 mod wasm;

@@ -28,8 +28,14 @@ impl PyChunkKeyEncoding {
 
 #[pymethods]
 impl PyChunkKeyEncoding {
-    fn __repr__(&self) -> String {
-        format!("ChunkKeyEncoding({:?})", self.0)
+    fn __repr__(&self, py: Python) -> PyResult<String> {
+        let metadata = self.0.metadata();
+        crate::repr::named_config_repr(
+            py,
+            "ChunkKeyEncoding",
+            Some(Cow::Borrowed(metadata.name())),
+            metadata.configuration().cloned().map(Into::into),
+        )
     }
 
     // TODO: not sure whether we want constructors as classmethods or as free functions.

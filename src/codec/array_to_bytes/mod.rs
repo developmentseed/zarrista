@@ -39,8 +39,8 @@ impl PyArrayToBytesCodec {
 
 #[pymethods]
 impl PyArrayToBytesCodec {
-    fn __repr__(&self) -> String {
-        format!("ArrayToBytesCodec({:?})", self.0)
+    fn __repr__(&self, py: Python) -> PyResult<String> {
+        crate::repr::named_config_repr(py, "ArrayToBytesCodec", self.0.name_v3(), self.config())
     }
 
     /// Build a codec from its Zarr v3 metadata,

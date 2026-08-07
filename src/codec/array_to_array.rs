@@ -49,8 +49,8 @@ impl PyArrayToArrayCodec {
 
 #[pymethods]
 impl PyArrayToArrayCodec {
-    fn __repr__(&self) -> String {
-        format!("ArrayToArrayCodec({:?})", self.0)
+    fn __repr__(&self, py: Python) -> PyResult<String> {
+        crate::repr::named_config_repr(py, "ArrayToArrayCodec", self.0.name_v3(), self.config())
     }
 
     /// Build a codec from its Zarr v3 metadata,
