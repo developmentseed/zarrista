@@ -8,7 +8,7 @@ use std::path::PathBuf;
 use pyo3::exceptions::PyValueError;
 use pyo3::prelude::*;
 use pyo3::types::PyString;
-use zarrs::storage::StoreKey;
+use zarrs::storage::{StoreKey, StorePrefix};
 
 /// A Zarr abstract store key.
 ///
@@ -69,20 +69,53 @@ impl From<StoreKey> for PyStoreKey {
     }
 }
 
+pub struct PyStorePrefix(StorePrefix);
+
+impl FromPyObject<'_, '_> for PyStorePrefix {
+    type Error = PyErr;
+
+    fn extract(obj: Borrowed<'_, '_, PyAny>) -> Result<Self, Self::Error> {
+        StorePrefix::new(obj.extract::<String>()?)
+            .map(PyStorePrefix)
+            .map_err(|e| PyValueError::new_err(e.to_string()))
+    }
+}
+
+impl From<PyStorePrefix> for StorePrefix {
+    fn from(py_prefix: PyStorePrefix) -> Self {
+        py_prefix.0
+    }
+}
+
+impl From<StorePrefix> for PyStorePrefix {
+    fn from(prefix: StorePrefix) -> Self {
+        Self(prefix)
+    }
+}
+
 /// The directory inside a zip file that a zip store uses as its root.
-pub struct PyZipPath(PathBuf);
+///
+/// The zip storage adapter removes this value from the start of each zip entry
+/// name. Entry names always use `/` and never start with `/`, so the value must
+/// end with `/` and must not start with `/`. A value that breaks either rule
+/// gives an empty store, or store keys that keep a leading `/`. Therefore this
+/// extractor normalizes the value, and `nested`, `nested/`, and `/nested/` all
+/// select the same directory.
+///
+/// This is an entry-name prefix and not a filesystem path, so it extracts via `PyStorePrefix`.
+pub struct PyZipPath(String);
 
 impl FromPyObject<'_, '_> for PyZipPath {
     type Error = PyErr;
 
     fn extract(obj: Borrowed<'_, '_, PyAny>) -> Result<Self, Self::Error> {
-        let path = obj.extract::<PathBuf>()?;
-        Ok(Self(path))
+        let store_prefix = obj.extract::<PyStorePrefix>()?;
+        Ok(Self(store_prefix.0.to_string()))
     }
 }
 
 impl From<PyZipPath> for PathBuf {
     fn from(path: PyZipPath) -> PathBuf {
-        path.0
+        PathBuf::from(path.0)
     }
 }
