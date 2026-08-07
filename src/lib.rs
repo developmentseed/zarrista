@@ -47,6 +47,8 @@ fn _zarrista(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<crate::group::PyAsyncGroup>()?;
     #[cfg(feature = "async")]
     m.add_class::<crate::array::PyAsyncShardCache>()?;
+    #[cfg(feature = "async")]
+    m.add_class::<crate::storage::PyAsyncZipStore>()?;
     m.add_class::<PyChunkGrid>()?;
     m.add_class::<PyChunkKeyEncoding>()?;
     m.add_class::<PyDataType>()?;
