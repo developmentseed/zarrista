@@ -19,6 +19,8 @@ mod thread_pool;
 mod wasm;
 
 use pyo3::prelude::*;
+// In cargo.toml only to add decompression support to zarrs_zip
+use rc_zip as _;
 
 use crate::array::{
     PyArray, PyArrayBuilder, PyChunkGrid, PyChunkKeyEncoding, PyEncodedChunk, PyFillValue,
