@@ -10,10 +10,14 @@ strings use `'`, and a boolean reads `False` rather than the JSON `false`.
 """
 
 import re
+from pathlib import Path
 
+import numpy as np
 import pytest
+import zarr
 
-from zarrista import ChunkKeyEncoding, codec
+from zarrista import Array, ChunkKeyEncoding, codec
+from zarrista.store import FilesystemStore
 
 # `Debug` output looks like `ZstdCodec { compression: 3 }`: a Rust type name in
 # UpperCamelCase, then a brace. Python's dict repr never matches this.
@@ -58,3 +62,27 @@ def test_repr_never_shows_rust_struct_syntax() -> None:
 def test_empty_configuration_is_omitted() -> None:
     """`crc32c` takes no options, so a `config=` entry would say nothing."""
     assert "config=" not in repr(codec.crc32c())
+
+
+def test_tensor_repr(tmp_path: Path) -> None:
+    array = zarr.create_array(
+        store=str(tmp_path),
+        shape=(4, 4),
+        chunks=(2, 2),
+        dtype="int32",
+    )
+    array[:] = np.zeros((4, 4), dtype="int32")
+
+    tensor = Array.open(FilesystemStore(tmp_path))[:, :]
+
+    assert repr(tensor) == "Tensor(shape=[4, 4], dtype='int32')"
+
+
+def test_variable_array_repr(tmp_path: Path) -> None:
+    """The data type shows its Zarr v3 name, not the numpy descr."""
+    array = zarr.create_array(store=str(tmp_path), shape=(3,), chunks=(3,), dtype=str)
+    array[:] = np.array(["a", "bb", "ccc"], dtype=object)
+
+    variable = Array.open(FilesystemStore(tmp_path))[:]
+
+    assert repr(variable) == "VariableArray(shape=[3], dtype='string')"

@@ -46,7 +46,7 @@ impl PyDataType {
     }
 
     #[getter]
-    fn name(&self) -> Option<Cow<'static, str>> {
+    pub(crate) fn name(&self) -> Option<Cow<'static, str>> {
         self.inner.name_v3()
     }
 

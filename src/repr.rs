@@ -18,8 +18,9 @@
 use std::borrow::Cow;
 
 use pyo3::prelude::*;
-use pyo3::types::PyString;
+use pyo3::types::{PyList, PyString};
 
+use crate::dtype::PyDataType;
 use crate::metadata::PyConfiguration;
 
 /// Build the repr of a type that Zarr v3 describes with a name and a configuration.
@@ -45,4 +46,19 @@ pub(crate) fn named_config_repr(
         }
     }
     Ok(format!("{class}({})", parts.join(", ")))
+}
+
+/// Build the repr of a decoded array, which reads `Class(shape=[4, 4], dtype='int32')`.
+///
+/// The data type shows its Zarr v3 name. A data type that Zarr v3 does not name
+/// shows `None`, because no shorter description of it exists.
+pub(crate) fn decoded_array_repr(
+    py: Python,
+    class: &str,
+    shape: &[u64],
+    dtype: &PyDataType,
+) -> PyResult<String> {
+    let shape = PyList::new(py, shape)?.repr()?;
+    let dtype = dtype.name().into_pyobject(py)?.repr()?;
+    Ok(format!("{class}(shape={shape}, dtype={dtype})"))
 }
