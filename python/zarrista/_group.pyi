@@ -108,8 +108,8 @@ class Group:
         This overwrites any metadata that exists at the group's path.
         """
     @property
-    def store(self) -> SyncStore:
-        """Retrieve the store backing this group."""
+    def storage(self) -> SyncStore:
+        """The store that backs this group."""
     def __getitem__(self, name: str) -> Array | Group:
         """Open a direct child array or group by name.
 
@@ -225,5 +225,5 @@ class AsyncGroup:
             KeyError: If the group has no direct child with that name.
         """
     @property
-    def store(self) -> AsyncStore:
-        """Retrieve the store backing this group."""
+    def storage(self) -> AsyncStore:
+        """The store that backs this group."""
