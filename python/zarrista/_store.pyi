@@ -4,11 +4,20 @@ from typing import TypeAlias
 from icechunk import Session
 from obstore.store import ObjectStore
 
-AsyncStore: TypeAlias = ObjectStore | Session
+SyncStore: TypeAlias = FilesystemStore | MemoryStore | ZipStore
+"""A store that the sync API accepts.
+
+This is a [`FilesystemStore`][zarrista.store.FilesystemStore], a
+[`MemoryStore`][zarrista.store.MemoryStore], or a
+[`ZipStore`][zarrista.store.ZipStore].
+"""
+
+AsyncStore: TypeAlias = ObjectStore | Session | AsyncZipStore
 """A store that the async API accepts.
 
-This is either an obstore [`ObjectStore`][obstore.store.ObjectStore] or an
-icechunk [`Session`][icechunk.Session]. An `ObjectStore` supports any
+This is an obstore [`ObjectStore`][obstore.store.ObjectStore], an icechunk
+[`Session`][icechunk.Session], or an
+[`AsyncZipStore`][zarrista.store.AsyncZipStore]. An `ObjectStore` supports any
 object-store backend, such as S3, GCS, or the local filesystem. A `Session`
 gives a transactional, versioned store.
 
@@ -36,3 +45,106 @@ class MemoryStore:
     """An in-memory store, primarily useful for testing."""
 
     def __init__(self) -> None: ...
+
+class ZipStore:
+    """A read-only store backed by a zip file that another store holds.
+
+    The store reads the zip metadata when you open it, and then serves each Zarr
+    key from an entry in the zip file. Every write operation fails, because a
+    zip file cannot be modified in place.
+
+    The store reads entries that use the stored, deflate, deflate64, bzip2,
+    lzma, or zstd compression method. `zarr-python` writes a zip store with the
+    stored method by default.
+
+    Examples:
+        Open a Zarr array that is held in a local zip file:
+
+        >>> from zarrista import Array
+        >>> from zarrista.store import FilesystemStore, ZipStore
+        >>> backing = FilesystemStore("/data")
+        >>> store = ZipStore(backing, "archive.zip")
+        >>> array = Array.open(store)
+    """
+
+    def __init__(
+        self,
+        store: SyncStore,
+        key: str,
+        path: str | Path | None = None,
+    ) -> None:
+        """Open the zip file that is stored at `key` in `store`.
+
+        Args:
+            store: The store that holds the zip file.
+            key: The store key of the zip file, such as `archive.zip`.
+            path: The directory inside the zip file to use as the root of this
+                store. End the value with `/`, because the store removes this
+                value from the start of each entry name. A value of `None` uses
+                the whole zip file.
+
+        Raises:
+            StorageError: If `store` holds no value at `key`, or if that value
+                is not a valid zip file.
+            ValueError: If `key` is not a valid store key.
+        """
+
+    @staticmethod
+    def open(
+        store: SyncStore,
+        key: str,
+        path: str | Path | None = None,
+    ) -> ZipStore:
+        """Open the zip file that is stored at `key` in `store`.
+
+        This is an alias for [`ZipStore`][zarrista.store.ZipStore].
+
+        Args:
+            store: The store that holds the zip file.
+            key: The store key of the zip file, such as `archive.zip`.
+            path: The directory inside the zip file to use as the root of this
+                store. End the value with `/`, because the store removes this
+                value from the start of each entry name. A value of `None` uses
+                the whole zip file.
+
+        Returns:
+            The store for the zip file at `key`.
+
+        Raises:
+            StorageError: If `store` holds no value at `key`, or if that value
+                is not a valid zip file.
+            ValueError: If `key` is not a valid store key.
+        """
+
+class AsyncZipStore:
+    """A read-only store backed by a zip file that another async store holds.
+
+    This is the async form of [`ZipStore`][zarrista.store.ZipStore]. Use it with
+    [`AsyncArray`][zarrista.AsyncArray] and
+    [`AsyncGroup`][zarrista.AsyncGroup].
+    """
+
+    @staticmethod
+    async def open(
+        store: AsyncStore,
+        key: str,
+        path: str | Path | None = None,
+    ) -> AsyncZipStore:
+        """Open the zip file that is stored at `key` in `store`.
+
+        Args:
+            store: The async store that holds the zip file.
+            key: The store key of the zip file, such as `archive.zip`.
+            path: The directory inside the zip file to use as the root of this
+                store. End the value with `/`, because the store removes this
+                value from the start of each entry name. A value of `None` uses
+                the whole zip file.
+
+        Returns:
+            The store for the zip file at `key`.
+
+        Raises:
+            StorageError: If `store` holds no value at `key`, or if that value
+                is not a valid zip file.
+            ValueError: If `key` is not a valid store key.
+        """
