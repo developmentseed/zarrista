@@ -13,6 +13,7 @@ use zarrs::array::{ArrayError, DataType, DataTypeSize};
 
 use crate::data::buffer_protocol::PyTensorBuffer;
 use crate::dtype::PyDataType;
+use crate::repr::decoded_array_repr;
 
 /// Fixed-width, dense decoded data.
 ///
@@ -79,6 +80,10 @@ impl PyTensor {
     #[getter]
     fn shape(&self) -> &[u64] {
         &self.shape
+    }
+
+    fn __repr__(&self, py: Python) -> PyResult<String> {
+        decoded_array_repr(py, "Tensor", self.shape(), &self.dtype())
     }
 
     #[getter]
@@ -250,6 +255,10 @@ impl PyMaskedTensor {
     #[getter]
     fn shape(&self) -> &[u64] {
         &self.data.shape
+    }
+
+    fn __repr__(&self, py: Python) -> PyResult<String> {
+        decoded_array_repr(py, "MaskedTensor", self.shape(), &self.dtype())
     }
 
     #[getter]

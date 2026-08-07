@@ -14,6 +14,7 @@ use zarrs::array::DataType;
 use zarrs::array::data_type::{BytesDataType, StringDataType};
 
 use crate::dtype::PyDataType;
+use crate::repr::decoded_array_repr;
 
 /// Variable-length data (string/bytes).
 #[pyclass(module = "zarrista", frozen, name = "VariableArray")]
@@ -111,6 +112,10 @@ impl PyVariableArray {
         &self.shape
     }
 
+    fn __repr__(&self, py: Python) -> PyResult<String> {
+        decoded_array_repr(py, "VariableArray", self.shape(), &self.dtype())
+    }
+
     #[pyo3(signature = (dtype=None, copy=None))]
     fn __array__<'py>(
         &self,
@@ -191,6 +196,10 @@ impl PyMaskedVariableArray {
     #[getter]
     fn dtype(&self) -> PyDataType {
         self.data_type.clone().into()
+    }
+
+    fn __repr__(&self, py: Python) -> PyResult<String> {
+        decoded_array_repr(py, "MaskedVariableArray", self.shape(), &self.dtype())
     }
 }
 
