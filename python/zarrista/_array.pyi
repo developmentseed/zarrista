@@ -252,7 +252,7 @@ class Array:
         self,
         subchunk_indices: list[int],
         *,
-        subchunk_cache: ShardCache | None = None,
+        shard_cache: ShardCache | None = None,
         **codec_options: Unpack[CodecOptions],
     ) -> DecodedArray:
         """Read and decode a single subchunk (inner chunk) of a sharded array.
@@ -263,12 +263,12 @@ class Array:
         whole shard.
 
         To read the subchunk, the method first reads the index of the shard that
-        contains it. Use the `subchunk_cache` parameter to cache the shard index.
+        contains it. Use the `shard_cache` parameter to cache the shard index.
 
         Args:
             subchunk_indices: The position of the subchunk in the subchunk grid.
-            subchunk_cache: A cache of shard indexes, created by
-                [`subchunk_cache`][zarrista.Array.subchunk_cache]. The cache must
+            shard_cache: A cache of shard indexes, created by
+                [`shard_cache`][zarrista.Array.shard_cache]. The cache must
                 come from this array. If this is `None`, the method uses a new
                 cache for this call only.
             **codec_options: The codec options, as
@@ -284,7 +284,7 @@ class Array:
         self,
         subchunk_indices: list[int],
         *,
-        subchunk_cache: ShardCache | None = None,
+        shard_cache: ShardCache | None = None,
     ) -> EncodedChunk | None:
         """Read the raw, still-encoded bytes of a subchunk of a sharded array.
 
@@ -301,12 +301,12 @@ class Array:
         the shard holds the bytes of one subchunk.
 
         To read the subchunk, the method first reads the index of the shard that
-        contains it. Use the `subchunk_cache` parameter to cache the shard index.
+        contains it. Use the `shard_cache` parameter to cache the shard index.
 
         Args:
             subchunk_indices: The position of the subchunk in the subchunk grid.
-            subchunk_cache: A cache of shard indexes, created by
-                [`subchunk_cache`][zarrista.Array.subchunk_cache]. The cache must
+            shard_cache: A cache of shard indexes, created by
+                [`shard_cache`][zarrista.Array.shard_cache]. The cache must
                 come from this array. If this is `None`, the method uses a new
                 cache for this call only.
 
@@ -317,7 +317,7 @@ class Array:
         Raises:
             ArrayError: If the array is not exclusively sharded.
         """
-    def subchunk_cache(self) -> ShardCache:
+    def shard_cache(self) -> ShardCache:
         """Create an empty cache of the shard indexes of this array.
 
         Pass the cache to [`retrieve_subchunk`][zarrista.Array.retrieve_subchunk]
@@ -894,7 +894,7 @@ class AsyncArray:
         self,
         subchunk_indices: list[int],
         *,
-        subchunk_cache: AsyncShardCache | None = None,
+        shard_cache: AsyncShardCache | None = None,
         **codec_options: Unpack[CodecOptions],
     ) -> DecodedArray:
         """Read and decode a single subchunk (inner chunk) of a sharded array.
@@ -905,12 +905,12 @@ class AsyncArray:
         whole shard.
 
         To read the subchunk, the method first reads the index of the shard that
-        contains it. Use the `subchunk_cache` parameter to cache the shard index.
+        contains it. Use the `shard_cache` parameter to cache the shard index.
 
         Args:
             subchunk_indices: The position of the subchunk in the subchunk grid.
-            subchunk_cache: A cache of shard indexes, created by
-                [`subchunk_cache`][zarrista.AsyncArray.subchunk_cache]. The cache
+            shard_cache: A cache of shard indexes, created by
+                [`shard_cache`][zarrista.AsyncArray.shard_cache]. The cache
                 must come from this array. If this is `None`, the method uses a
                 new cache for this call only.
             **codec_options: The codec options, as
@@ -926,7 +926,7 @@ class AsyncArray:
         self,
         subchunk_indices: list[int],
         *,
-        subchunk_cache: AsyncShardCache | None = None,
+        shard_cache: AsyncShardCache | None = None,
     ) -> EncodedChunk | None:
         """Read the raw, still-encoded bytes of a subchunk of a sharded array.
 
@@ -943,12 +943,12 @@ class AsyncArray:
         the shard holds the bytes of one subchunk.
 
         To read the subchunk, the method first reads the index of the shard that
-        contains it. Use the `subchunk_cache` parameter to cache the shard index.
+        contains it. Use the `shard_cache` parameter to cache the shard index.
 
         Args:
             subchunk_indices: The position of the subchunk in the subchunk grid.
-            subchunk_cache: A cache of shard indexes, created by
-                [`subchunk_cache`][zarrista.AsyncArray.subchunk_cache]. The cache
+            shard_cache: A cache of shard indexes, created by
+                [`shard_cache`][zarrista.AsyncArray.shard_cache]. The cache
                 must come from this array. If this is `None`, the method uses a
                 new cache for this call only.
 
@@ -959,7 +959,7 @@ class AsyncArray:
         Raises:
             ArrayError: If the array is not exclusively sharded.
         """
-    def subchunk_cache(self) -> AsyncShardCache:
+    def shard_cache(self) -> AsyncShardCache:
         """Create an empty cache of the shard indexes of this array.
 
         This method is not a coroutine. It does not read from the store.

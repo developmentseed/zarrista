@@ -197,20 +197,18 @@ impl PyArray {
         })
     }
 
-    #[pyo3(signature = (subchunk_indices, *, subchunk_cache = None))]
+    #[pyo3(signature = (subchunk_indices, *, shard_cache = None))]
     fn retrieve_encoded_subchunk(
         &self,
         py: Python,
         subchunk_indices: PyChunkIndices,
-        subchunk_cache: Option<&PyShardCache>,
+        shard_cache: Option<&PyShardCache>,
     ) -> ZarristaResult<Option<PyEncodedChunk>> {
         crate::py::detach(py, move || {
-            let subchunk_cache = subchunk_cache
-                .cloned()
-                .unwrap_or_else(|| self.subchunk_cache());
+            let shard_cache = shard_cache.cloned().unwrap_or_else(|| self.shard_cache());
             let Some(encoded) = self
                 .inner
-                .retrieve_encoded_subchunk(subchunk_cache.as_ref(), &subchunk_indices)?
+                .retrieve_encoded_subchunk(shard_cache.as_ref(), &subchunk_indices)?
             else {
                 return Ok(None);
             };
@@ -234,24 +232,22 @@ impl PyArray {
         })
     }
 
-    #[pyo3(signature = (subchunk_indices, *, subchunk_cache = None, **codec_options))]
+    #[pyo3(signature = (subchunk_indices, *, shard_cache = None, **codec_options))]
     fn retrieve_subchunk(
         &self,
         py: Python,
         subchunk_indices: PyChunkIndices,
-        subchunk_cache: Option<&PyShardCache>,
+        shard_cache: Option<&PyShardCache>,
         codec_options: Option<PyCodecOptions>,
     ) -> ZarristaResult<DecodedArray> {
         crate::py::detach(py, move || {
-            let subchunk_cache = subchunk_cache
-                .cloned()
-                .unwrap_or_else(|| self.subchunk_cache());
+            let shard_cache = shard_cache.cloned().unwrap_or_else(|| self.shard_cache());
             let codec_options = codec_options
                 .map(|opts| opts.into_inner())
                 .unwrap_or_default();
 
             Ok(self.inner.retrieve_subchunk_opt(
-                subchunk_cache.as_ref(),
+                shard_cache.as_ref(),
                 &subchunk_indices,
                 &codec_options,
             )?)
@@ -353,7 +349,7 @@ impl PyArray {
     }
 
     /// Create an empty shard index cache for this array.
-    fn subchunk_cache(&self) -> PyShardCache {
+    fn shard_cache(&self) -> PyShardCache {
         PyShardCache::new(self.clone())
     }
 }
