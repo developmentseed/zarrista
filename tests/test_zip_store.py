@@ -115,13 +115,13 @@ def test_invalid_key_is_rejected(zipped: Path):
 
 
 async def test_async_reads_through_zip(zipped: Path):
-    store = await AsyncZipStore.open(LocalStore(str(zipped)), "a.zip")
+    store = await AsyncZipStore.open_async(LocalStore(str(zipped)), "a.zip")
     array = await AsyncArray.open_async(store)
     np.testing.assert_array_equal((await array[:]).to_numpy(), EXPECTED)
 
 
 async def test_async_writes_are_rejected(zipped: Path):
-    store = await AsyncZipStore.open(LocalStore(str(zipped)), "a.zip")
+    store = await AsyncZipStore.open_async(LocalStore(str(zipped)), "a.zip")
     array = await AsyncArray.open_async(store)
     with pytest.raises(StorageError, match="read only store"):
         await array.store_metadata()

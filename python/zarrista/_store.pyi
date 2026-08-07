@@ -126,7 +126,7 @@ class AsyncZipStore:
     """
 
     @staticmethod
-    async def open(
+    async def open_async(
         store: AsyncStore,
         key: str,
         *,

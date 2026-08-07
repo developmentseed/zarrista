@@ -217,7 +217,7 @@ impl PyAsyncZipStore {
         signature = (store, key, *, path = None),
         text_signature = "(store, key, *, path=None)"
     )]
-    fn open<'py>(
+    fn open_async<'py>(
         py: Python<'py>,
         store: PyAsyncStorage,
         key: PyStoreKey,
