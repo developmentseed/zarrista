@@ -8,6 +8,14 @@ if TYPE_CHECKING:
     from icechunk import Session
     from obstore.store import ObjectStore
 
+SyncStore: TypeAlias = FilesystemStore | MemoryStore | ZipStore
+"""A store that the sync API accepts.
+
+This is a [`FilesystemStore`][zarrista.store.FilesystemStore], a
+[`MemoryStore`][zarrista.store.MemoryStore], or a
+[`ZipStore`][zarrista.store.ZipStore].
+"""
+
 # Note: this is a string so that icechunk and obstore can be optional dependencies
 AsyncStore: TypeAlias = "ObjectStore | Session"
 """A store that the async API accepts.

@@ -13,7 +13,7 @@ from ._chunk_key_encoding import ChunkKeyEncoding
 from ._chunks import ChunkGrid
 from ._dtype import DataType
 from ._fill_value import FillValue
-from ._store import AsyncStore, FilesystemStore, MemoryStore
+from ._store import AsyncStore, SyncStore
 
 class ArrayBuilder:
     """A chained, immutable builder for creating Zarr arrays.
@@ -197,7 +197,7 @@ class ArrayBuilder:
         Returns:
             A new builder with the subchunk shape set.
         """
-    def create(self, store: FilesystemStore | MemoryStore, path: str) -> Array:
+    def create(self, store: SyncStore, path: str) -> Array:
         """Build the array in `store` at `path` and return it.
 
         This **does** write to the store. It stores the array's metadata at

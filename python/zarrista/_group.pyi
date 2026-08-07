@@ -5,13 +5,13 @@ from zarr_metadata import (
 )
 
 from ._array import Array, AsyncArray
-from ._store import AsyncStore, FilesystemStore, MemoryStore
+from ._store import AsyncStore, SyncStore
 
 class Group:
     """A Zarr group."""
 
     @staticmethod
-    def open(store: FilesystemStore | MemoryStore, path: str = "/") -> Group:
+    def open(store: SyncStore, path: str = "/") -> Group:
         """Open the group stored at `path` in `store`.
 
         Args:
@@ -108,7 +108,7 @@ class Group:
         This overwrites any metadata that exists at the group's path.
         """
     @property
-    def store(self) -> FilesystemStore | MemoryStore:
+    def store(self) -> SyncStore:
         """Retrieve the store backing this group."""
     def __getitem__(self, name: str) -> Array | Group:
         """Open a direct child array or group by name.
