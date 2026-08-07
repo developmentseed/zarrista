@@ -17,6 +17,7 @@ use zarrs::group::GroupCreateError;
 use zarrs::node::{NodeCreateError, NodePathError};
 use zarrs::plugin::PluginCreateError;
 use zarrs::storage::StorageError;
+use zarrs_zip::ZipStorageAdapterCreateError;
 
 use crate::exceptions as exc;
 
@@ -60,6 +61,10 @@ pub enum ZarristaError {
     /// Failed to open a filesystem store.
     #[error(transparent)]
     FilesystemStoreCreate(#[from] FilesystemStoreCreateError),
+
+    /// Failed to open a zip store.
+    #[error(transparent)]
+    ZipStoreCreate(#[from] ZipStorageAdapterCreateError),
 
     /// Failed to convert a value to or from Python.
     #[error(transparent)]
