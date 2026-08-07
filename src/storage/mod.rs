@@ -7,4 +7,4 @@ mod type_wrappers;
 pub use r#async::{AsyncReadOnlyStorageAdapter, PyAsyncStorage, PyAsyncZipStore};
 pub(crate) use sync::PySyncStorage;
 pub use sync::{PyFilesystemStore, PyMemoryStore, PyZipStore, ReadOnlyStorageAdapter};
-pub use type_wrappers::PyStoreKey;
+pub use type_wrappers::{PyStoreKey, PyZipPath};

@@ -14,7 +14,7 @@ use zarrs::storage::{
 use zarrs_zip::ZipStorageAdapter;
 
 use crate::error::ZarristaResult;
-use crate::storage::PyStoreKey;
+use crate::storage::{PyStoreKey, PyZipPath};
 
 /// A zarrista sync store object adapted to the maximal `zarrs` storage trait.
 #[derive(Clone, IntoPyObject)]
@@ -129,14 +129,14 @@ impl PyZipStore {
     /// Open the zip file that is stored at `key` in `store`.
     #[new]
     #[pyo3(
-        signature = (store, key, path = None),
-        text_signature = "(store, key, path=None)"
+        signature = (store, key, *, path = None),
+        text_signature = "(store, key, *, path=None)"
     )]
     fn new(
         py: Python,
         store: PySyncStorage,
         key: PyStoreKey,
-        path: Option<PathBuf>,
+        path: Option<PyZipPath>,
     ) -> ZarristaResult<Self> {
         let key = key.into_inner();
         let adapter = crate::py::detach(py, || {
@@ -157,14 +157,14 @@ impl PyZipStore {
     /// This is an alias for `ZipStore.__init__`
     #[staticmethod]
     #[pyo3(
-        signature = (store, key, path = None),
-        text_signature = "(store, key, path=None)"
+        signature = (store, key, *, path = None),
+        text_signature = "(store, key, *, path=None)"
     )]
     fn open(
         py: Python,
         store: PySyncStorage,
         key: PyStoreKey,
-        path: Option<PathBuf>,
+        path: Option<PyZipPath>,
     ) -> ZarristaResult<Self> {
         Self::new(py, store, key, path)
     }

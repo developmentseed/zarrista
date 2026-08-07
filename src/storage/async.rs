@@ -22,7 +22,7 @@ use zarrs_object_store::AsyncObjectStore;
 use zarrs_zip::ZipStorageAdapter;
 
 use crate::error::ZarristaError;
-use crate::storage::PyStoreKey;
+use crate::storage::{PyStoreKey, PyZipPath};
 
 #[derive(Clone, IntoPyObject)]
 pub enum PyAsyncStorage {
@@ -215,14 +215,14 @@ impl PyAsyncZipStore {
     /// Open the zip file that is stored at `key` in `store`.
     #[staticmethod]
     #[pyo3(
-        signature = (store, key, path = None),
-        text_signature = "(store, key, path=None)"
+        signature = (store, key, *, path = None),
+        text_signature = "(store, key, *, path=None)"
     )]
     fn open<'py>(
         py: Python<'py>,
         store: PyAsyncStorage,
         key: PyStoreKey,
-        path: Option<PathBuf>,
+        path: Option<PyZipPath>,
     ) -> PyResult<Bound<'py, PyAny>> {
         let key = key.into_inner();
 

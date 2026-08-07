@@ -3,6 +3,7 @@
 //! These wrappers are **not** standalone Python classes; they only define serde
 
 use std::convert::Infallible;
+use std::path::PathBuf;
 
 use pyo3::exceptions::PyValueError;
 use pyo3::prelude::*;
@@ -65,5 +66,23 @@ impl From<PyStoreKey> for StoreKey {
 impl From<StoreKey> for PyStoreKey {
     fn from(key: StoreKey) -> Self {
         Self(key)
+    }
+}
+
+/// The directory inside a zip file that a zip store uses as its root.
+pub struct PyZipPath(PathBuf);
+
+impl FromPyObject<'_, '_> for PyZipPath {
+    type Error = PyErr;
+
+    fn extract(obj: Borrowed<'_, '_, PyAny>) -> Result<Self, Self::Error> {
+        let path = obj.extract::<PathBuf>()?;
+        Ok(Self(path))
+    }
+}
+
+impl From<PyZipPath> for PathBuf {
+    fn from(path: PyZipPath) -> PathBuf {
+        path.0
     }
 }
