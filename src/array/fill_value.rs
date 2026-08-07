@@ -32,6 +32,12 @@ impl PyFillValue {
         self.0.as_ne_bytes()
     }
 
+    fn __repr__(&self, py: Python) -> PyResult<String> {
+        // Use the Python bytes type, not our PyBytes adapter, to create the repr
+        let bytes = pyo3::types::PyBytes::new(py, self.0.as_ne_bytes()).repr()?;
+        Ok(format!("FillValue({bytes})"))
+    }
+
     fn equals_all(&self, other: PyBytes) -> bool {
         self.0.equals_all(other.as_ref())
     }
