@@ -9,6 +9,7 @@ use zarrs::array::{ChunkKeyEncoding, ChunkKeySeparator};
 
 use crate::error::ZarristaResult;
 use crate::metadata::PyMetadataV3;
+use crate::repr::named_config_repr;
 
 #[derive(Debug, Clone)]
 #[pyclass(module = "zarrista", frozen, name = "ChunkKeyEncoding", from_py_object)]
@@ -30,7 +31,7 @@ impl PyChunkKeyEncoding {
 impl PyChunkKeyEncoding {
     fn __repr__(&self, py: Python) -> PyResult<String> {
         let metadata = self.0.metadata();
-        crate::repr::named_config_repr(
+        named_config_repr(
             py,
             "ChunkKeyEncoding",
             Some(Cow::Borrowed(metadata.name())),

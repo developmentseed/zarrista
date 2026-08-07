@@ -15,6 +15,7 @@ use zarrs::array::{ArrayToBytesCodecTraits, Codec};
 
 use crate::error::ZarristaResult;
 use crate::metadata::{PyConfiguration, PyMetadataV3};
+use crate::repr::named_config_repr;
 
 #[derive(Debug, Clone)]
 #[pyclass(
@@ -40,7 +41,7 @@ impl PyArrayToBytesCodec {
 #[pymethods]
 impl PyArrayToBytesCodec {
     fn __repr__(&self, py: Python) -> PyResult<String> {
-        crate::repr::named_config_repr(py, "ArrayToBytesCodec", self.0.name_v3(), self.config())
+        named_config_repr(py, "ArrayToBytesCodec", self.0.name_v3(), self.config())
     }
 
     /// Build a codec from its Zarr v3 metadata,

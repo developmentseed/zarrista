@@ -4,6 +4,9 @@ These types wrap a zarrs struct. Formatting that struct with Rust's `Debug`
 would print its Rust type name and `{ field: value }` syntax, which are
 implementation details of the extension. Each repr is built from the Zarr v3
 name and configuration instead.
+
+Python renders every value, so the quoting and the literals are Python's own:
+strings use `'`, and a boolean reads `False` rather than the JSON `false`.
 """
 
 import re
@@ -20,18 +23,18 @@ RUST_DEBUG_STRUCT = re.compile(r"[A-Z]\w+ \{")
 @pytest.mark.parametrize(
     ("obj", "expected"),
     [
-        (codec.crc32c(), 'BytesToBytesCodec("crc32c")'),
+        (codec.crc32c(), "BytesToBytesCodec('crc32c')"),
         (
             codec.zstd(3, checksum=False),
-            "BytesToBytesCodec(\"zstd\", config={'level': 3, 'checksum': False})",
+            "BytesToBytesCodec('zstd', config={'level': 3, 'checksum': False})",
         ),
         (
             codec.transpose([1, 0]),
-            "ArrayToArrayCodec(\"transpose\", config={'order': [1, 0]})",
+            "ArrayToArrayCodec('transpose', config={'order': [1, 0]})",
         ),
         (
             ChunkKeyEncoding.default("/"),
-            "ChunkKeyEncoding(\"default\", config={'separator': '/'})",
+            "ChunkKeyEncoding('default', config={'separator': '/'})",
         ),
     ],
 )
