@@ -98,7 +98,7 @@ impl PyAsyncArray {
         signature = (store, path = PyNodePath::root()),
         text_signature = "(store, path='/')"
     )]
-    fn open_async<'py>(
+    fn open<'py>(
         py: Python<'py>,
         store: PyAsyncStorage,
         path: PyNodePath,

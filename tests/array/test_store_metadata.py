@@ -70,7 +70,7 @@ async def test_async_store_metadata_makes_array_openable(tmp_path: Path) -> None
     array = AsyncArray.from_metadata(_metadata(), store)
     await array.store_metadata()
 
-    reopened = await AsyncArray.open_async(LocalStore(str(tmp_path)))
+    reopened = await AsyncArray.open(LocalStore(str(tmp_path)))
     assert reopened.shape == [4, 4]
     assert reopened.dtype.name == "int16"
 

@@ -75,7 +75,7 @@ async def _async_writable_array(tmp_path) -> AsyncArray:
     path = tmp_path / "a.zarr"
     z = zarr.create_array(store=str(path), shape=(4, 4), chunks=(4, 4), dtype="int8")
     z[:] = np.arange(16, dtype="int8").reshape(4, 4)
-    return await AsyncArray.open_async(LocalStore(str(path)))
+    return await AsyncArray.open(LocalStore(str(path)))
 
 
 async def test_async_read_only_still_reads(tmp_path):

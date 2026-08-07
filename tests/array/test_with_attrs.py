@@ -58,4 +58,4 @@ async def test_async_with_attrs(tmp_path) -> None:
 
     assert updated.attrs == {"units": "km"}
     assert array.attrs == {"units": "m", "long_name": "height"}
-    assert (await AsyncArray.open_async(store, "/a")).attrs["units"] == "km"
+    assert (await AsyncArray.open(store, "/a")).attrs["units"] == "km"

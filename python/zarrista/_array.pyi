@@ -696,7 +696,7 @@ class AsyncArray:
     """A Zarr array backed by an async store."""
 
     @staticmethod
-    async def open_async(store: AsyncStore, path: str = "/") -> AsyncArray:
+    async def open(store: AsyncStore, path: str = "/") -> AsyncArray:
         """Open the array stored at `path` in `store`.
 
         Args:

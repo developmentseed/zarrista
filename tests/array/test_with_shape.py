@@ -111,5 +111,5 @@ async def test_async_with_shape_returns_new_array(tmp_path: Path) -> None:
     await resized.store_metadata()
 
     assert array.shape == [4, 4]
-    reopened = await AsyncArray.open_async(LocalStore(str(tmp_path)), "/a")
+    reopened = await AsyncArray.open(LocalStore(str(tmp_path)), "/a")
     assert reopened.shape == [8, 8]

@@ -43,7 +43,7 @@ impl PyAsyncGroup {
         signature = (store, path = PyNodePath::root()),
         text_signature = "(store, path='/')"
     )]
-    fn open_async<'py>(
+    fn open<'py>(
         py: Python<'py>,
         store: PyAsyncStorage,
         path: PyNodePath,
@@ -87,7 +87,7 @@ impl PyAsyncGroup {
     }
 
     /// Open a direct child array or group by name.
-    fn open_child_async<'py>(&self, py: Python<'py>, name: String) -> PyResult<Bound<'py, PyAny>> {
+    fn child<'py>(&self, py: Python<'py>, name: String) -> PyResult<Bound<'py, PyAny>> {
         let inner = self.inner.clone();
         let storage = self.store.clone();
         future_into_py(py, async move {
