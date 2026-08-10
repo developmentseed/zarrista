@@ -15,17 +15,22 @@ from ._zarrista import (
     DataType,
     EncodedChunk,
     FillValue,
+    FixedLengthTensor,
     Group,
-    MaskedTensor,
-    MaskedVariableArray,
+    OptionalFixedLengthTensor,
+    OptionalVariableLengthTensor,
     ShardCache,
-    Tensor,
     ThreadPool,
-    VariableArray,
+    VariableLengthTensor,
     __version__,
 )
 
-DecodedArray: TypeAlias = Tensor | VariableArray | MaskedTensor | MaskedVariableArray
+Tensor: TypeAlias = (
+    FixedLengthTensor
+    | VariableLengthTensor
+    | OptionalFixedLengthTensor
+    | OptionalVariableLengthTensor
+)
 """The result of a read: one of the four decoded array layouts.
 
 The layout depends on the byte layout of the data type. A data type is either
@@ -45,16 +50,16 @@ __all__ = [
     "ChunkGrid",
     "ChunkKeyEncoding",
     "DataType",
-    "DecodedArray",
     "EncodedChunk",
     "FillValue",
+    "FixedLengthTensor",
     "Group",
-    "MaskedTensor",
-    "MaskedVariableArray",
+    "OptionalFixedLengthTensor",
+    "OptionalVariableLengthTensor",
     "ShardCache",
     "Tensor",
     "ThreadPool",
-    "VariableArray",
+    "VariableLengthTensor",
     "__version__",
     "codec",
     "exceptions",

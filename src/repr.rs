@@ -60,7 +60,7 @@ pub(crate) fn shape_and_dtype(py: Python, shape: &[u64], dtype: &PyDataType) -> 
 }
 
 /// Build the repr of a decoded array, which reads `Class(shape=(4, 4), dtype='int32')`.
-pub(crate) fn decoded_array_repr(
+pub(crate) fn tensor_repr(
     py: Python,
     class: &str,
     shape: &[u64],

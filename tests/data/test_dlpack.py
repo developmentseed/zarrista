@@ -1,6 +1,6 @@
 """DLPack exchange in both directions.
 
-zarrista exports decoded data as a DLPack tensor (`Tensor.__dlpack__`), and
+zarrista exports decoded data as a DLPack tensor (`FixedLengthTensor.__dlpack__`), and
 imports array-like data through DLPack when writing. The import path is what
 lets `arr[...] = ndarray` check the data type and shape, because DLPack carries
 both; raw bytes carry neither.
@@ -19,7 +19,7 @@ from zarrista import (
     ChunkGrid,
     DataType,
     FillValue,
-    Tensor,
+    FixedLengthTensor,
 )
 from zarrista.store import MemoryStore
 
@@ -283,7 +283,7 @@ def test_export_round_trips_through_numpy(dtype: str):
     arr.store_array_subset(_all(), data)
 
     tensor = arr[:, :]
-    assert isinstance(tensor, Tensor)
+    assert isinstance(tensor, FixedLengthTensor)
 
     np.testing.assert_array_equal(np.from_dlpack(tensor), data)
 
@@ -296,14 +296,14 @@ def test_export_reports_a_cpu_device():
 
 
 @pytest.mark.xfail(
-    reason="`Tensor.__dlpack__` ignores `max_version` and always exports a "
+    reason="`FixedLengthTensor.__dlpack__` ignores `max_version` and always exports a "
     "legacy capsule, which the versioned importer cannot read. See "
     "developmentseed/zarrista#108 and the DLPack ownership design.",
     raises=AttributeError,
     strict=True,
 )
 def test_export_then_import_round_trips():
-    """A `Tensor` read from one array can be written straight into another."""
+    """A `FixedLengthTensor` read from one array goes straight into another."""
     source = _array()
     data = _data()
     source.store_array_subset(_all(), data)

@@ -1,4 +1,4 @@
-"""NumPy export from `VariableArray`.
+"""NumPy export from `VariableLengthTensor`.
 
 A variable-length array written with zarr-python is read back with zarrista and
 converted to NumPy. Only the `string` data type has a NumPy form.
@@ -10,11 +10,11 @@ import numpy as np
 import pytest
 import zarr
 
-from zarrista import Array, VariableArray
+from zarrista import Array, VariableLengthTensor
 from zarrista.store import FilesystemStore
 
 
-def _variable_array(path: Path, values: np.ndarray, dtype: str) -> VariableArray:
+def _variable_array(path: Path, values: np.ndarray, dtype: str) -> VariableLengthTensor:
     z = zarr.create_array(
         store=str(path),
         shape=values.shape,
@@ -23,7 +23,7 @@ def _variable_array(path: Path, values: np.ndarray, dtype: str) -> VariableArray
     )
     z[:] = values
     array = Array.open(FilesystemStore(path))[:]
-    assert isinstance(array, VariableArray)
+    assert isinstance(array, VariableLengthTensor)
     return array
 
 

@@ -13,7 +13,7 @@ import zarr
 from numpy.typing import NDArray
 from obstore.store import LocalStore
 
-from zarrista import Array, AsyncArray, Tensor
+from zarrista import Array, AsyncArray, FixedLengthTensor
 from zarrista.store import FilesystemStore
 
 
@@ -44,13 +44,14 @@ def test_slice_read_matches_numpy(int32_array: tuple[Path, NDArray[np.int32]]):
 
 
 def test_fixed_dtype_returns_tensor(int32_array: tuple[Path, NDArray[np.int32]]):
-    """A fixed-width dtype decodes to a `Tensor` carrying `shape`/`dtype`; its raw
-    `buffer()` reinterprets to the same array as `to_numpy()`."""
+    """A fixed-width dtype decodes to a `FixedLengthTensor` carrying
+    `shape`/`dtype`; its raw `buffer()` reinterprets to the same array as
+    `to_numpy()`."""
     path, data = int32_array
     arr = Array.open(FilesystemStore(path))
 
     tensor = arr.retrieve_array_subset((slice(0, 2), slice(None), slice(5, 7)))
-    assert isinstance(tensor, Tensor)
+    assert isinstance(tensor, FixedLengthTensor)
     assert tensor.shape == [2, 64, 2]
     assert tensor.dtype == arr.dtype
 
@@ -63,7 +64,8 @@ def test_fixed_dtype_returns_tensor(int32_array: tuple[Path, NDArray[np.int32]])
 
 
 def test_dlpack_roundtrips(int32_array: tuple[Path, NDArray[np.int32]]):
-    """A `Tensor` exports via DLPack; `np.from_dlpack` yields the same N-D array.
+    """A `FixedLengthTensor` exports via DLPack; `np.from_dlpack` gives the same
+    N-D array.
 
     Unlike the buffer-protocol path, DLPack carries the shape natively, so the
     result is already N-D (no reshape needed)."""
@@ -71,7 +73,7 @@ def test_dlpack_roundtrips(int32_array: tuple[Path, NDArray[np.int32]]):
     arr = Array.open(FilesystemStore(path))
 
     tensor = arr.retrieve_array_subset((slice(0, 2), slice(None), slice(5, 7)))
-    assert isinstance(tensor, Tensor)
+    assert isinstance(tensor, FixedLengthTensor)
 
     result = np.from_dlpack(tensor)
     expected = data[0:2, :, 5:7]

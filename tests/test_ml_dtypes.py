@@ -2,8 +2,8 @@
 
 zarrs decodes these through its `microfloat` feature. NumPy has no built-in
 equivalents, so `ml_dtypes` supplies them. Importing `ml_dtypes` registers the
-data type names with NumPy, which is what lets `Tensor.to_numpy` resolve a name
-such as `bfloat16`.
+data type names with NumPy, which is what lets `FixedLengthTensor.to_numpy`
+resolve a name such as `bfloat16`.
 
 zarr-python does not register these data types, so this module registers minimal
 `ZDType` shims to write the fixtures. The shims use `zarr.core.dtype`, which is
@@ -22,7 +22,7 @@ from zarr.core.dtype import data_type_registry
 from zarr.core.dtype.common import DataTypeValidationError, HasEndianness, HasItemSize
 from zarr.core.dtype.wrapper import ZDType
 
-from zarrista import Array, Tensor
+from zarrista import Array, FixedLengthTensor
 from zarrista.store import FilesystemStore
 
 # Every data type that zarrs and `ml_dtypes` both name identically, mapped to
@@ -133,13 +133,13 @@ for _name, _integral in ML_DTYPES.items():
     _register(_name, integral=_integral)
 
 
-def _tensor(path: Path, name: str) -> tuple[Tensor, np.ndarray]:
+def _tensor(path: Path, name: str) -> tuple[FixedLengthTensor, np.ndarray]:
     native = np.dtype(getattr(ml_dtypes, name))
     values = np.arange(1, 5).astype(native)
     z = zarr.create_array(store=str(path), shape=(4,), chunks=(2,), dtype=native)
     z[:] = values
     tensor = Array.open(FilesystemStore(path))[:]
-    assert isinstance(tensor, Tensor)
+    assert isinstance(tensor, FixedLengthTensor)
     return tensor, values
 
 

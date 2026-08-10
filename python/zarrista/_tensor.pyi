@@ -16,12 +16,13 @@ if sys.version_info >= (3, 13):
 else:
     from typing_extensions import CapsuleType
 
-class Tensor:
+class FixedLengthTensor:
     """Fixed-width, dense decoded array data.
 
-    `Tensor` implements the buffer protocol directly as an N-dimensional, typed,
-    read-only view. Therefore it works with `memoryview(tensor)` and
-    `np.asarray(tensor)` for any type that the buffer protocol supports.
+    `FixedLengthTensor` implements the buffer protocol directly as an
+    N-dimensional, typed, read-only view. Therefore it works with
+    `memoryview(tensor)` and `np.asarray(tensor)` for any type that the buffer
+    protocol supports.
 
     Use `to_numpy` to get a NumPy array view over the Rust memory. This is
     zero-copy whenever possible.
@@ -104,7 +105,7 @@ class Tensor:
             The pair `(1, 0)`, which is DLPack's identifier for the CPU.
         """
 
-class VariableArray:
+class VariableLengthTensor:
     """Variable-length decoded data (e.g. strings or bytes).
 
     The class exposes the Arrow PyCapsule interface: you can access the contained data
@@ -129,7 +130,7 @@ class VariableArray:
         an `object` dtype array, containing Python `bytes` objects.
 
         Returns:
-            A NumPy array with the same shape as this array.
+            A NumPy array with the same shape as this tensor.
 
         Raises:
             UnicodeDecodeError: If the decoded bytes are not valid UTF-8. This
@@ -152,7 +153,7 @@ class VariableArray:
                 error.
 
         Returns:
-            A NumPy array with the same shape as this array.
+            A NumPy array with the same shape as this tensor.
 
         Raises:
             UnicodeDecodeError: If the decoded bytes are not valid UTF-8. This
@@ -182,7 +183,7 @@ class VariableArray:
             TypeError: If `requested_schema` is neither `None` nor a capsule.
         """
 
-class MaskedTensor:
+class OptionalFixedLengthTensor:
     """Fixed-width decoded data with a validity mask.
 
     Use `to_numpy` (or `np.asarray`/`np.array`) to get a `numpy.ma.MaskedArray`
@@ -196,10 +197,10 @@ class MaskedTensor:
     def dtype(self) -> DataType:
         """The Zarr data type."""
     @property
-    def data(self) -> Tensor:
+    def data(self) -> FixedLengthTensor:
         """The values, without the mask applied."""
     @property
-    def mask(self) -> Tensor:
+    def mask(self) -> FixedLengthTensor:
         """The validity mask (`bool`, `True` = valid/present)."""
     def to_numpy(self) -> np.ma.MaskedArray:
         """Return a `numpy.ma.MaskedArray` view over Rust memory.
@@ -227,7 +228,7 @@ class MaskedTensor:
             A masked array with the same shape as this tensor.
         """
 
-class MaskedVariableArray:
+class OptionalVariableLengthTensor:
     """Variable-length decoded data with a validity mask.
 
     Not yet exposed to NumPy.
@@ -240,7 +241,12 @@ class MaskedVariableArray:
     def dtype(self) -> DataType:
         """The Zarr data type."""
 
-DecodedArray: TypeAlias = Tensor | VariableArray | MaskedTensor | MaskedVariableArray
+Tensor: TypeAlias = (
+    FixedLengthTensor
+    | VariableLengthTensor
+    | OptionalFixedLengthTensor
+    | OptionalVariableLengthTensor
+)
 """The result of a read: one of the four decoded array layouts.
 
 The layout depends on the byte layout of the data type. A data type is either

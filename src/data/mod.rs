@@ -10,10 +10,10 @@
 //! surface as four concrete Python classes so each exposes exactly the faces it
 //! can support:
 //!
-//! - [`PyTensor`] — fixed-width, dense. Buffer protocol + `to_numpy`.
-//! - [`PyVariableArray`] — variable-length (string/bytes). (skeleton)
-//! - [`PyMaskedTensor`] — fixed-width with a validity mask. (skeleton)
-//! - [`PyMaskedVariableArray`] — variable-length with a validity mask. (skeleton)
+//! - [`PyFixedLengthTensor`] — fixed-width, dense. Buffer protocol + `to_numpy`.
+//! - [`PyVariableLengthTensor`] — variable-length (string/bytes). (skeleton)
+//! - [`PyOptionalFixedLengthTensor`] — fixed-width with a validity mask. (skeleton)
+//! - [`PyOptionalVariableLengthTensor`] — variable-length with a validity mask. (skeleton)
 //!
 //! Buffers are **not** aligned: numpy's `frombuffer` tolerates unaligned data
 //! (it sets `aligned=False`), and any consumer that materializes an owned array
@@ -21,32 +21,34 @@
 
 mod buffer_protocol;
 mod dlpack;
+mod fixed;
 mod input;
-mod tensor;
 mod variable;
 
 use std::borrow::Cow;
 use std::sync::Arc;
 
 use bytes::Bytes;
+pub use fixed::{PyFixedLengthTensor, PyOptionalFixedLengthTensor};
 pub use input::PyDataInput;
 use pyo3::IntoPyObjectExt;
 use pyo3::prelude::*;
-pub use tensor::{PyMaskedTensor, PyTensor};
-pub use variable::{PyMaskedVariableArray, PyVariableArray};
+pub use variable::{PyOptionalVariableLengthTensor, PyVariableLengthTensor};
 use zarrs::array::{ArrayBytes, ArrayError, DataType, FromArrayBytes, data_type};
 
 /// Internal decoded result, produced by our [`FromArrayBytes`] impl. Carries the
 /// post-codec bytes (zero-copy), the data type, and the region shape (which
 /// zarrs hands us, so we never have to re-derive it).
-pub enum DecodedArray {
-    Tensor(PyTensor),
-    Variable(PyVariableArray),
-    MaskedTensor(PyMaskedTensor),
-    MaskedVariable(PyMaskedVariableArray),
+///
+/// The variants mirror the `ArrayBytes` layouts that produce them.
+pub enum Tensor {
+    Fixed(PyFixedLengthTensor),
+    Variable(PyVariableLengthTensor),
+    OptionalFixed(PyOptionalFixedLengthTensor),
+    OptionalVariable(PyOptionalVariableLengthTensor),
 }
 
-impl FromArrayBytes for DecodedArray {
+impl FromArrayBytes for Tensor {
     fn from_array_bytes(
         bytes: ArrayBytes<'static>,
         shape: &[u64],
@@ -55,12 +57,14 @@ impl FromArrayBytes for DecodedArray {
         let shape = Arc::from(shape);
         let data_type = data_type.clone();
         Ok(match bytes {
-            ArrayBytes::Fixed(bytes) => {
-                DecodedArray::Tensor(PyTensor::new(cow_to_bytes(bytes), data_type, shape)?)
-            }
+            ArrayBytes::Fixed(bytes) => Tensor::Fixed(PyFixedLengthTensor::new(
+                cow_to_bytes(bytes),
+                data_type,
+                shape,
+            )?),
             ArrayBytes::Variable(v) => {
                 let (buf, offsets) = v.into_parts();
-                DecodedArray::Variable(PyVariableArray::new(
+                Tensor::Variable(PyVariableLengthTensor::new(
                     cow_to_bytes(buf),
                     offsets.to_vec(),
                     data_type,
@@ -70,13 +74,19 @@ impl FromArrayBytes for DecodedArray {
             ArrayBytes::Optional(optional) => {
                 let (data, mask) = optional.into_parts();
                 match *data {
-                    ArrayBytes::Fixed(fixed) => DecodedArray::MaskedTensor(PyMaskedTensor::new(
-                        PyTensor::new(cow_to_bytes(fixed), data_type, shape.clone())?,
-                        PyTensor::new(cow_to_bytes(mask), data_type::bool(), shape)?,
-                    )),
+                    ArrayBytes::Fixed(fixed) => {
+                        Tensor::OptionalFixed(PyOptionalFixedLengthTensor::new(
+                            PyFixedLengthTensor::new(
+                                cow_to_bytes(fixed),
+                                data_type,
+                                shape.clone(),
+                            )?,
+                            PyFixedLengthTensor::new(cow_to_bytes(mask), data_type::bool(), shape)?,
+                        ))
+                    }
                     ArrayBytes::Variable(variable) => {
                         let (buf, offsets) = variable.into_parts();
-                        DecodedArray::MaskedVariable(PyMaskedVariableArray::new(
+                        Tensor::OptionalVariable(PyOptionalVariableLengthTensor::new(
                             cow_to_bytes(buf),
                             offsets.to_vec(),
                             cow_to_bytes(mask),
@@ -93,19 +103,17 @@ impl FromArrayBytes for DecodedArray {
     }
 }
 
-impl<'py> IntoPyObject<'py> for DecodedArray {
+impl<'py> IntoPyObject<'py> for Tensor {
     type Target = PyAny;
     type Output = Bound<'py, PyAny>;
     type Error = PyErr;
 
     fn into_pyobject(self, py: Python<'py>) -> Result<Self::Output, Self::Error> {
         match self {
-            DecodedArray::Tensor(py_tensor) => py_tensor.into_bound_py_any(py),
-            DecodedArray::Variable(py_variable_array) => py_variable_array.into_bound_py_any(py),
-            DecodedArray::MaskedTensor(py_masked_tensor) => py_masked_tensor.into_bound_py_any(py),
-            DecodedArray::MaskedVariable(py_masked_variable_array) => {
-                py_masked_variable_array.into_bound_py_any(py)
-            }
+            Tensor::Fixed(tensor) => tensor.into_bound_py_any(py),
+            Tensor::Variable(tensor) => tensor.into_bound_py_any(py),
+            Tensor::OptionalFixed(tensor) => tensor.into_bound_py_any(py),
+            Tensor::OptionalVariable(tensor) => tensor.into_bound_py_any(py),
         }
     }
 }

@@ -13,24 +13,29 @@ use zarrs::array::{ArrayError, DataType, DataTypeSize};
 
 use crate::data::buffer_protocol::PyTensorBuffer;
 use crate::dtype::PyDataType;
-use crate::repr::decoded_array_repr;
+use crate::repr::tensor_repr;
 
 /// Fixed-width, dense decoded data.
 ///
 /// We don't use the upstream `Tensor` type because its bytes are not reference counted, and thus
 /// don't play nicely with buffer protocol export
 #[derive(Clone)]
-#[pyclass(module = "zarrista", frozen, name = "Tensor", skip_from_py_object)]
-pub struct PyTensor {
+#[pyclass(
+    module = "zarrista",
+    frozen,
+    name = "FixedLengthTensor",
+    skip_from_py_object
+)]
+pub struct PyFixedLengthTensor {
     pub(super) bytes: Bytes,
     pub(super) data_type: DataType,
     pub(super) shape: Arc<[u64]>,
 }
 
-crate::wasm_send_sync!(PyTensor);
+crate::wasm_send_sync!(PyFixedLengthTensor);
 
-impl PyTensor {
-    /// Construct a new PyTensor from the given bytes, data type, and shape.
+impl PyFixedLengthTensor {
+    /// Construct a new PyFixedLengthTensor from the given bytes, data type, and shape.
     ///
     /// # Errors
     ///
@@ -39,7 +44,7 @@ impl PyTensor {
     pub fn new(bytes: Bytes, data_type: DataType, shape: Arc<[u64]>) -> Result<Self, ArrayError> {
         let DataTypeSize::Fixed(item_size) = data_type.size() else {
             return Err(ArrayError::Other(format!(
-                "Tensor requires a fixed-size data type, but {data_type} is variable-size"
+                "FixedLengthTensor requires a fixed-size data type, but {data_type} is variable-size"
             )));
         };
 
@@ -52,7 +57,7 @@ impl PyTensor {
             })
             .ok_or_else(|| {
                 ArrayError::Other(format!(
-                    "Tensor shape {shape:?} * item size {item_size} overflows usize"
+                    "FixedLengthTensor shape {shape:?} * item size {item_size} overflows usize"
                 ))
             })?;
 
@@ -76,14 +81,14 @@ impl PyTensor {
 }
 
 #[pymethods]
-impl PyTensor {
+impl PyFixedLengthTensor {
     #[getter]
     fn shape(&self) -> &[u64] {
         &self.shape
     }
 
     fn __repr__(&self, py: Python) -> PyResult<String> {
-        decoded_array_repr(py, "Tensor", self.shape(), &self.dtype())
+        tensor_repr(py, "FixedLengthTensor", self.shape(), &self.dtype())
     }
 
     #[getter]
@@ -234,35 +239,35 @@ fn numpy_time_unit_code(unit: NumpyTimeUnit) -> Option<&'static str> {
 }
 
 /// Fixed-width data with a validity mask. Skeleton.
-#[pyclass(module = "zarrista", frozen, name = "MaskedTensor")]
-pub struct PyMaskedTensor {
-    data: PyTensor,
+#[pyclass(module = "zarrista", frozen, name = "OptionalFixedLengthTensor")]
+pub struct PyOptionalFixedLengthTensor {
+    data: PyFixedLengthTensor,
     /// The mask is 1 byte per element where 0 = invalid/missing, non-zero = valid/present.
-    mask: PyTensor,
+    mask: PyFixedLengthTensor,
 }
 
-crate::wasm_send_sync!(PyMaskedTensor);
+crate::wasm_send_sync!(PyOptionalFixedLengthTensor);
 
-impl PyMaskedTensor {
-    /// Construct a new PyMaskedTensor from the given bytes, mask, data type, and shape.
-    pub fn new(data: PyTensor, mask: PyTensor) -> Self {
+impl PyOptionalFixedLengthTensor {
+    /// Construct a new PyOptionalFixedLengthTensor from the given bytes, mask, data type, and shape.
+    pub fn new(data: PyFixedLengthTensor, mask: PyFixedLengthTensor) -> Self {
         Self { data, mask }
     }
 }
 
 #[pymethods]
-impl PyMaskedTensor {
+impl PyOptionalFixedLengthTensor {
     #[getter]
     fn shape(&self) -> &[u64] {
         &self.data.shape
     }
 
     fn __repr__(&self, py: Python) -> PyResult<String> {
-        decoded_array_repr(py, "MaskedTensor", self.shape(), &self.dtype())
+        tensor_repr(py, "OptionalFixedLengthTensor", self.shape(), &self.dtype())
     }
 
     #[getter]
-    fn data(&self) -> PyTensor {
+    fn data(&self) -> PyFixedLengthTensor {
         self.data.clone()
     }
 
@@ -272,7 +277,7 @@ impl PyMaskedTensor {
     }
 
     #[getter]
-    fn mask(&self) -> PyTensor {
+    fn mask(&self) -> PyFixedLengthTensor {
         self.mask.clone()
     }
 
@@ -334,7 +339,7 @@ mod tests {
     #[test]
     fn new_accepts_matching_length() {
         // uint8 (1 byte) × shape [4] = 4 bytes.
-        let tensor = PyTensor::new(
+        let tensor = PyFixedLengthTensor::new(
             Bytes::from(vec![0u8; 4]),
             data_type::uint8(),
             Arc::from([4u64]),
@@ -345,7 +350,7 @@ mod tests {
     #[test]
     fn new_rejects_mismatched_length() {
         // float32 (4 bytes) × shape [2] needs 8 bytes; supply 7.
-        let result = PyTensor::new(
+        let result = PyFixedLengthTensor::new(
             Bytes::from(vec![0u8; 7]),
             data_type::float32(),
             Arc::from([2u64]),

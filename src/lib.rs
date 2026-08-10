@@ -29,7 +29,10 @@ use crate::array::{
 };
 use crate::array_bytes::PyArrayBytes;
 use crate::codec::register_codec_module;
-use crate::data::{PyMaskedTensor, PyMaskedVariableArray, PyTensor, PyVariableArray};
+use crate::data::{
+    PyFixedLengthTensor, PyOptionalFixedLengthTensor, PyOptionalVariableLengthTensor,
+    PyVariableLengthTensor,
+};
 use crate::dtype::PyDataType;
 use crate::exceptions::register_exceptions_module;
 use crate::group::PyGroup;
@@ -58,14 +61,14 @@ fn _zarrista(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<PyEncodedChunk>()?;
     m.add_class::<PyFilesystemStore>()?;
     m.add_class::<PyFillValue>()?;
+    m.add_class::<PyFixedLengthTensor>()?;
     m.add_class::<PyGroup>()?;
-    m.add_class::<PyMaskedTensor>()?;
-    m.add_class::<PyMaskedVariableArray>()?;
     m.add_class::<PyMemoryStore>()?;
+    m.add_class::<PyOptionalFixedLengthTensor>()?;
+    m.add_class::<PyOptionalVariableLengthTensor>()?;
     m.add_class::<PyShardCache>()?;
-    m.add_class::<PyTensor>()?;
     m.add_class::<PyThreadPool>()?;
-    m.add_class::<PyVariableArray>()?;
+    m.add_class::<PyVariableLengthTensor>()?;
     m.add_class::<PyZipStore>()?;
 
     register_codec_module(m)?;
