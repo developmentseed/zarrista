@@ -12,11 +12,11 @@ import pytest
 import zarr
 from numpy.typing import NDArray
 
-from zarrista import Array, Tensor
+from zarrista import Array, FixedLengthTensor
 from zarrista.store import FilesystemStore
 
 
-def _tensor(path: Path, values: NDArray) -> Tensor:
+def _tensor(path: Path, values: NDArray) -> FixedLengthTensor:
     z = zarr.create_array(
         store=str(path),
         shape=values.shape,
@@ -25,7 +25,7 @@ def _tensor(path: Path, values: NDArray) -> Tensor:
     )
     z[:] = values
     tensor = Array.open(FilesystemStore(path))[:]
-    assert isinstance(tensor, Tensor)
+    assert isinstance(tensor, FixedLengthTensor)
     return tensor
 
 

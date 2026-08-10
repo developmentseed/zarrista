@@ -7,7 +7,7 @@ use pyo3::ffi;
 use pyo3::prelude::*;
 use zarrs::array::DataType;
 
-use crate::data::PyTensor;
+use crate::data::PyFixedLengthTensor;
 
 /// Internal TensorBuffer that implements the buffer protocol
 #[pyclass(
@@ -26,10 +26,10 @@ pub struct PyTensorBuffer {
     strides: Box<[isize]>,
 }
 
-impl TryFrom<PyTensor> for PyTensorBuffer {
+impl TryFrom<PyFixedLengthTensor> for PyTensorBuffer {
     type Error = PyErr;
 
-    fn try_from(tensor: PyTensor) -> Result<Self, Self::Error> {
+    fn try_from(tensor: PyFixedLengthTensor) -> Result<Self, Self::Error> {
         let (bytes, data_type, shape) = tensor.into_inner();
         let (format, itemsize) = data_type_to_buffer_protocol_format(&data_type)?;
 
@@ -85,7 +85,9 @@ impl PyTensorBuffer {
             return Err(PyBufferError::new_err("View is null"));
         }
         if (flags & ffi::PyBUF_WRITABLE) == ffi::PyBUF_WRITABLE {
-            return Err(PyBufferError::new_err("Tensor buffer is read-only"));
+            return Err(PyBufferError::new_err(
+                "FixedLengthTensor buffer is read-only",
+            ));
         }
 
         unsafe {

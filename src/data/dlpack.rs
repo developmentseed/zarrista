@@ -13,11 +13,11 @@ use pyo3::prelude::*;
 use pyo3::types::PyDict;
 use zarrs::array::DataType;
 
-use crate::data::PyTensor;
+use crate::data::PyFixedLengthTensor;
 use crate::error::ZarristaResult;
 
 #[pymethods]
-impl PyTensor {
+impl PyFixedLengthTensor {
     /// Export via the DLPack protocol so consumers (e.g. `np.from_dlpack`) can
     /// import this data zero-copy.
     #[pyo3(signature = (**_kwargs))]
@@ -36,7 +36,7 @@ impl PyTensor {
 
         // The boxed `Bytes` handed to the builder is what keeps the buffer alive: dlpark stores it
         // as the managed tensor's `manager_ctx` and drops it from the deleter, which a consumer
-        // may run on any thread and long after this `PyTensor` is gone.
+        // may run on any thread and long after this `PyFixedLengthTensor` is gone.
         let builder = Builder::new(
             Box::new(self.bytes.clone()),
             CopiedSlice::new(shape, strides),
@@ -46,9 +46,9 @@ impl PyTensor {
         // SAFETY:
         // `data` is the start of the `Bytes` allocation whose refcount is held by the
         // `ctx` clone above, so the pointer stays valid until the deleter drops that clone — which
-        // a consumer may do on another thread, long after this `PyTensor` is gone.
+        // a consumer may do on another thread, long after this `PyFixedLengthTensor` is gone.
         //
-        // `PyTensor::new` guarantees `bytes.len() == product(shape) * item_size`, so the shape,
+        // `PyFixedLengthTensor::new` guarantees `bytes.len() == product(shape) * item_size`, so the shape,
         // row-major strides, and dtype describe exactly the initialized, in-bounds elements.
         //
         // Alignment is not a concern: the DLTensor contract explicitly tells CPU consumers not to

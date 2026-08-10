@@ -37,7 +37,7 @@ This project is for **evaluation**. It examines whether a native binding to [Zar
 [`Group`]: https://developmentseed.org/zarrista/latest/api/group/#zarrista.Group
 [`AsyncGroup`]: https://developmentseed.org/zarrista/latest/api/group/#zarrista.AsyncGroup
 [Obstore]: https://github.com/developmentseed/obstore
-[`DecodedArray`]: https://developmentseed.org/zarrista/latest/api/decoded_array/#zarrista.DecodedArray
+[`Tensor`]: https://developmentseed.org/zarrista/latest/api/tensor/#zarrista.Tensor
 
 ## Example
 
@@ -64,7 +64,7 @@ array.dimension_names
 # ["lat", "lon"]
 ```
 
-Read a subset of the array. Indexing returns a [`DecodedArray`], which converts to a [NumPy] array:
+Read a subset of the array. Indexing returns a [`Tensor`], which converts to a [NumPy] array:
 
 ```py
 data = array[0:128, 0:128]

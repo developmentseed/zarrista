@@ -14,7 +14,7 @@ use crate::array::shared::shared_array_methods;
 use crate::array::{PyChunkIndices, PyEncodedChunk};
 use crate::array_bytes::PyArrayBytes;
 use crate::codec::{CodecChainSubchunkExt, PyCodecOptions};
-use crate::data::{DecodedArray, PyDataInput};
+use crate::data::{PyDataInput, PyTensor};
 use crate::error::ZarristaResult;
 use crate::metadata::PyArrayMetadata;
 use crate::node::PyNodePath;
@@ -60,7 +60,7 @@ shared_array_methods!(PyArray);
 #[pymethods]
 impl PyArray {
     /// Read a region with numpy-style basic indexing, e.g. `arr[0:10, :, 5]`.
-    fn __getitem__(&self, py: Python, selection: PySelection) -> ZarristaResult<DecodedArray> {
+    fn __getitem__(&self, py: Python, selection: PySelection) -> ZarristaResult<PyTensor> {
         self.retrieve_array_subset(py, selection)
     }
 
@@ -145,13 +145,14 @@ impl PyArray {
 
     /// Read a region of the array, using numpy-style basic indexing.
     ///
-    /// Returns one of the decoded result classes (`Tensor`, `VariableArray`,
-    /// `MaskedTensor`, `MaskedVariableArray`) depending on the dtype layout.
+    /// Returns one of the decoded result classes (`FixedLengthTensor`,
+    /// `VariableLengthTensor`, `OptionalFixedLengthTensor`,
+    /// `OptionalVariableLengthTensor`) depending on the dtype layout.
     fn retrieve_array_subset(
         &self,
         py: Python,
         selection: PySelection,
-    ) -> ZarristaResult<DecodedArray> {
+    ) -> ZarristaResult<PyTensor> {
         crate::py::detach(py, move || {
             let array_subset = self.array_subset(&selection)?;
             Ok(self.inner.retrieve_array_subset(&array_subset)?)
@@ -164,7 +165,7 @@ impl PyArray {
         py: Python,
         chunk_indices: PyChunkIndices,
         codec_options: Option<PyCodecOptions>,
-    ) -> ZarristaResult<DecodedArray> {
+    ) -> ZarristaResult<PyTensor> {
         crate::py::detach(py, move || {
             let codec_options = codec_options
                 .map(|opts| opts.into_inner())
@@ -237,7 +238,7 @@ impl PyArray {
         subchunk_indices: PyChunkIndices,
         shard_cache: Option<&PyShardCache>,
         codec_options: Option<PyCodecOptions>,
-    ) -> ZarristaResult<DecodedArray> {
+    ) -> ZarristaResult<PyTensor> {
         crate::py::detach(py, move || {
             let shard_cache = shard_cache.cloned().unwrap_or_else(|| self.shard_cache());
             let codec_options = codec_options

@@ -20,7 +20,7 @@ from zarrista import (
     DataType,
     EncodedChunk,
     FillValue,
-    Tensor,
+    FixedLengthTensor,
     ThreadPool,
     codec,
 )
@@ -74,7 +74,7 @@ def test_decode_matches_retrieve_chunk():
 
     decoded = _encoded(arr).decode()
 
-    assert isinstance(decoded, Tensor)
+    assert isinstance(decoded, FixedLengthTensor)
     np.testing.assert_array_equal(np.asarray(decoded), DATA)
     np.testing.assert_array_equal(
         np.asarray(decoded),

@@ -21,7 +21,7 @@ from zarrista import (
     DataType,
     EncodedChunk,
     FillValue,
-    Tensor,
+    FixedLengthTensor,
     codec,
 )
 from zarrista.exceptions import ArrayError
@@ -71,7 +71,7 @@ def test_retrieve_subchunk_decodes_each_inner_chunk():
     for r in range(2):
         for c in range(2):
             sub = arr.retrieve_subchunk([r, c])
-            assert isinstance(sub, Tensor)
+            assert isinstance(sub, FixedLengthTensor)
             np.testing.assert_array_equal(sub.to_numpy(), _expected(r, c))
 
 
@@ -181,7 +181,7 @@ async def test_async_retrieve_subchunk(tmp_path):
     arr = await _async_sharded_array(tmp_path)
 
     sub = await arr.retrieve_subchunk([1, 1])
-    assert isinstance(sub, Tensor)
+    assert isinstance(sub, FixedLengthTensor)
     np.testing.assert_array_equal(sub.to_numpy(), _expected(1, 1))
 
 

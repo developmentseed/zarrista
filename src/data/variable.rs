@@ -14,20 +14,20 @@ use zarrs::array::DataType;
 use zarrs::array::data_type::{BytesDataType, StringDataType};
 
 use crate::dtype::PyDataType;
-use crate::repr::decoded_array_repr;
+use crate::repr::tensor_repr;
 
 /// Variable-length data (string/bytes).
-#[pyclass(module = "zarrista", frozen, name = "VariableArray")]
-pub struct PyVariableArray {
+#[pyclass(module = "zarrista", frozen, name = "VariableLengthTensor")]
+pub struct PyVariableLengthTensor {
     bytes: Bytes,
     offsets: Vec<usize>,
     data_type: DataType,
     shape: Arc<[u64]>,
 }
 
-crate::wasm_send_sync!(PyVariableArray);
+crate::wasm_send_sync!(PyVariableLengthTensor);
 
-impl PyVariableArray {
+impl PyVariableLengthTensor {
     pub fn new(bytes: Bytes, offsets: Vec<usize>, data_type: DataType, shape: Arc<[u64]>) -> Self {
         Self {
             bytes,
@@ -86,7 +86,7 @@ impl PyVariableArray {
 }
 
 #[pymethods]
-impl PyVariableArray {
+impl PyVariableLengthTensor {
     #[pyo3(signature = (requested_schema=None))]
     fn __arrow_c_array__<'py>(
         &self,
@@ -113,7 +113,7 @@ impl PyVariableArray {
     }
 
     fn __repr__(&self, py: Python) -> PyResult<String> {
-        decoded_array_repr(py, "VariableArray", self.shape(), &self.dtype())
+        tensor_repr(py, "VariableLengthTensor", self.shape(), &self.dtype())
     }
 
     #[pyo3(signature = (dtype=None, copy=None))]
@@ -152,8 +152,8 @@ impl PyVariableArray {
 }
 
 /// Variable-length data with a validity mask. Skeleton.
-#[pyclass(module = "zarrista", frozen, name = "MaskedVariableArray")]
-pub struct PyMaskedVariableArray {
+#[pyclass(module = "zarrista", frozen, name = "OptionalVariableLengthTensor")]
+pub struct PyOptionalVariableLengthTensor {
     #[expect(dead_code)]
     bytes: Bytes,
     #[expect(dead_code)]
@@ -165,10 +165,11 @@ pub struct PyMaskedVariableArray {
     shape: Arc<[u64]>,
 }
 
-crate::wasm_send_sync!(PyMaskedVariableArray);
+crate::wasm_send_sync!(PyOptionalVariableLengthTensor);
 
-impl PyMaskedVariableArray {
-    /// Construct a new PyMaskedVariableArray from the given bytes, offsets, mask, data type, and shape.
+impl PyOptionalVariableLengthTensor {
+    /// Construct a new PyOptionalVariableLengthTensor from the given bytes,
+    /// offsets, mask, data type, and shape.
     pub fn new(
         bytes: Bytes,
         offsets: Vec<usize>,
@@ -187,7 +188,7 @@ impl PyMaskedVariableArray {
 }
 
 #[pymethods]
-impl PyMaskedVariableArray {
+impl PyOptionalVariableLengthTensor {
     #[getter]
     fn shape(&self) -> &[u64] {
         &self.shape
@@ -199,7 +200,12 @@ impl PyMaskedVariableArray {
     }
 
     fn __repr__(&self, py: Python) -> PyResult<String> {
-        decoded_array_repr(py, "MaskedVariableArray", self.shape(), &self.dtype())
+        tensor_repr(
+            py,
+            "OptionalVariableLengthTensor",
+            self.shape(),
+            &self.dtype(),
+        )
     }
 }
 

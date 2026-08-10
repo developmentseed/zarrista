@@ -1,4 +1,4 @@
-"""Arrow PyCapsule export from `VariableArray`, verified with arro3.
+"""Arrow PyCapsule export from `VariableLengthTensor`, verified with arro3.
 
 A variable-length (string/bytes) array written with zarr-python is read back with
 zarrista, exported through the Arrow C Data Interface, and the reconstructed Arrow
@@ -12,7 +12,7 @@ import zarr
 from arro3.core import Array as Arro3Array
 from arro3.core import DataType
 
-from zarrista import Array, VariableArray
+from zarrista import Array, VariableLengthTensor
 from zarrista.store import FilesystemStore
 
 
@@ -24,9 +24,9 @@ def test_variable_length_string_to_arrow(tmp_path: Path):
 
     arr = Array.open(FilesystemStore(path))
 
-    # A string dtype decodes to a VariableArray (not a Tensor).
+    # A string dtype decodes to a VariableLengthTensor (not a FixedLengthTensor).
     full = arr[:]
-    assert isinstance(full, VariableArray)
+    assert isinstance(full, VariableLengthTensor)
     assert full.shape == [4]
 
     # Consume the Arrow C interface and check the values round-trip.
@@ -37,5 +37,5 @@ def test_variable_length_string_to_arrow(tmp_path: Path):
 
     # Per-chunk reads expose the same interface.
     chunk0 = arr.retrieve_chunk([0])
-    assert isinstance(chunk0, VariableArray)
+    assert isinstance(chunk0, VariableLengthTensor)
     assert Arro3Array.from_arrow(chunk0).to_pylist() == values[0:2]

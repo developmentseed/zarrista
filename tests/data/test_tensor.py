@@ -1,6 +1,6 @@
-"""Buffer-protocol export on `Tensor`.
+"""Buffer-protocol export on `FixedLengthTensor`.
 
-A fixed-width `Tensor` is itself a PEP 3118 N-dimensional, typed, read-only
+A fixed-width `FixedLengthTensor` is itself a PEP 3118 N-dimensional, typed, read-only
 buffer. Fixtures are written with zarr-python and read back with zarrista.
 """
 
@@ -13,11 +13,11 @@ import pytest
 import zarr
 from numpy.typing import NDArray
 
-from zarrista import Array, Tensor
+from zarrista import Array, FixedLengthTensor
 from zarrista.store import FilesystemStore
 
 
-def _tensor(path: Path, data: NDArray) -> Tensor:
+def _tensor(path: Path, data: NDArray) -> FixedLengthTensor:
     z = zarr.create_array(
         store=str(path),
         shape=data.shape,
@@ -28,7 +28,7 @@ def _tensor(path: Path, data: NDArray) -> Tensor:
     arr = Array.open(FilesystemStore(path))
     ndim = data.ndim
     tensor = arr.retrieve_array_subset((slice(None),) * ndim)
-    assert isinstance(tensor, Tensor)
+    assert isinstance(tensor, FixedLengthTensor)
     return tensor
 
 
@@ -156,7 +156,11 @@ def test_array_copy_false_differing_dtype_raises(tmp_path: Path):
         tensor.__array__(np.dtype("float64"), copy=False)
 
 
-def _hand_written_tensor(path: Path, data_type: str, data: NDArray) -> Tensor:
+def _hand_written_tensor(
+    path: Path,
+    data_type: str,
+    data: NDArray,
+) -> FixedLengthTensor:
     """Write a fixture directly. zarr-python cannot write these data types."""
     path.mkdir(parents=True)
     (path / "zarr.json").write_text(
@@ -182,7 +186,7 @@ def _hand_written_tensor(path: Path, data_type: str, data: NDArray) -> Tensor:
     (path / "c").mkdir()
     (path / "c" / "0").write_bytes(data.tobytes())
     tensor = Array.open(FilesystemStore(path))[:]
-    assert isinstance(tensor, Tensor)
+    assert isinstance(tensor, FixedLengthTensor)
     return tensor
 
 

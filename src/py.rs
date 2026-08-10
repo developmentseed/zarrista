@@ -6,7 +6,7 @@
 /// zarrs-derived type. `Python::detach` bounds both the closure and its return
 /// type by `Ungil`, which implies `Send`. zarrs relaxes its `Send`/`Sync`
 /// bounds on `wasm32`, so a return type as ordinary as
-/// `ZarristaResult<DecodedArray>` does not satisfy that bound there:
+/// `ZarristaResult<PyTensor>` does not satisfy that bound there:
 /// `ZarristaError` holds a `CodecError`, which holds a `DataType`, which is an
 /// `Arc<dyn DataTypeTraits>`.
 ///
