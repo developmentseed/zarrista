@@ -16,7 +16,7 @@ use crate::array::shared::shared_array_methods;
 use crate::array::{PyChunkIndices, PyEncodedChunk};
 use crate::array_bytes::PyArrayBytes;
 use crate::codec::{CodecChainSubchunkExt, PyCodecOptions};
-use crate::data::{PyDataInput, Tensor};
+use crate::data::{PyDataInput, PyTensor};
 use crate::error::{ZarristaError, ZarristaResult};
 use crate::metadata::PyArrayMetadata;
 use crate::node::PyNodePath;
@@ -193,7 +193,7 @@ impl PyAsyncArray {
 
         future_into_py(py, async move {
             let decoded = inner
-                .async_retrieve_array_subset::<Tensor>(&array_subset)
+                .async_retrieve_array_subset::<PyTensor>(&array_subset)
                 .await
                 .map_err(ZarristaError::from)?;
             Ok(decoded)
@@ -214,7 +214,7 @@ impl PyAsyncArray {
 
         future_into_py(py, async move {
             let decoded = inner
-                .async_retrieve_chunk_opt::<Tensor>(&chunk_indices, &codec_options)
+                .async_retrieve_chunk_opt::<PyTensor>(&chunk_indices, &codec_options)
                 .await
                 .map_err(ZarristaError::from)?;
             Ok(decoded)
@@ -300,7 +300,7 @@ impl PyAsyncArray {
         let inner = self.inner.clone();
         future_into_py(py, async move {
             let decoded = inner
-                .async_retrieve_subchunk_opt::<Tensor>(
+                .async_retrieve_subchunk_opt::<PyTensor>(
                     shard_cache.as_ref(),
                     &subchunk_indices,
                     &codec_options,

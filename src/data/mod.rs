@@ -41,14 +41,14 @@ use zarrs::array::{ArrayBytes, ArrayError, DataType, FromArrayBytes, data_type};
 /// zarrs hands us, so we never have to re-derive it).
 ///
 /// The variants mirror the `ArrayBytes` layouts that produce them.
-pub enum Tensor {
+pub enum PyTensor {
     Fixed(PyFixedLengthTensor),
     Variable(PyVariableLengthTensor),
     OptionalFixed(PyOptionalFixedLengthTensor),
     OptionalVariable(PyOptionalVariableLengthTensor),
 }
 
-impl FromArrayBytes for Tensor {
+impl FromArrayBytes for PyTensor {
     fn from_array_bytes(
         bytes: ArrayBytes<'static>,
         shape: &[u64],
@@ -57,14 +57,14 @@ impl FromArrayBytes for Tensor {
         let shape = Arc::from(shape);
         let data_type = data_type.clone();
         Ok(match bytes {
-            ArrayBytes::Fixed(bytes) => Tensor::Fixed(PyFixedLengthTensor::new(
+            ArrayBytes::Fixed(bytes) => PyTensor::Fixed(PyFixedLengthTensor::new(
                 cow_to_bytes(bytes),
                 data_type,
                 shape,
             )?),
             ArrayBytes::Variable(v) => {
                 let (buf, offsets) = v.into_parts();
-                Tensor::Variable(PyVariableLengthTensor::new(
+                PyTensor::Variable(PyVariableLengthTensor::new(
                     cow_to_bytes(buf),
                     offsets.to_vec(),
                     data_type,
@@ -75,7 +75,7 @@ impl FromArrayBytes for Tensor {
                 let (data, mask) = optional.into_parts();
                 match *data {
                     ArrayBytes::Fixed(fixed) => {
-                        Tensor::OptionalFixed(PyOptionalFixedLengthTensor::new(
+                        PyTensor::OptionalFixed(PyOptionalFixedLengthTensor::new(
                             PyFixedLengthTensor::new(
                                 cow_to_bytes(fixed),
                                 data_type,
@@ -86,7 +86,7 @@ impl FromArrayBytes for Tensor {
                     }
                     ArrayBytes::Variable(variable) => {
                         let (buf, offsets) = variable.into_parts();
-                        Tensor::OptionalVariable(PyOptionalVariableLengthTensor::new(
+                        PyTensor::OptionalVariable(PyOptionalVariableLengthTensor::new(
                             cow_to_bytes(buf),
                             offsets.to_vec(),
                             cow_to_bytes(mask),
@@ -103,17 +103,17 @@ impl FromArrayBytes for Tensor {
     }
 }
 
-impl<'py> IntoPyObject<'py> for Tensor {
+impl<'py> IntoPyObject<'py> for PyTensor {
     type Target = PyAny;
     type Output = Bound<'py, PyAny>;
     type Error = PyErr;
 
     fn into_pyobject(self, py: Python<'py>) -> Result<Self::Output, Self::Error> {
         match self {
-            Tensor::Fixed(tensor) => tensor.into_bound_py_any(py),
-            Tensor::Variable(tensor) => tensor.into_bound_py_any(py),
-            Tensor::OptionalFixed(tensor) => tensor.into_bound_py_any(py),
-            Tensor::OptionalVariable(tensor) => tensor.into_bound_py_any(py),
+            PyTensor::Fixed(tensor) => tensor.into_bound_py_any(py),
+            PyTensor::Variable(tensor) => tensor.into_bound_py_any(py),
+            PyTensor::OptionalFixed(tensor) => tensor.into_bound_py_any(py),
+            PyTensor::OptionalVariable(tensor) => tensor.into_bound_py_any(py),
         }
     }
 }
