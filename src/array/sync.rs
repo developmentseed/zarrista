@@ -61,7 +61,7 @@ shared_array_methods!(PyArray);
 impl PyArray {
     /// Read a region with numpy-style basic indexing, e.g. `arr[0:10, :, 5]`.
     fn __getitem__(&self, py: Python, selection: PySelection) -> ZarristaResult<PyTensor> {
-        self.retrieve_array_subset(py, selection)
+        self.retrieve_array_subset(py, selection, None)
     }
 
     fn __repr__(&self, py: Python) -> PyResult<String> {
@@ -150,15 +150,21 @@ impl PyArray {
     /// Returns one of the decoded result classes (`FixedLengthTensor`,
     /// `VariableLengthTensor`, `OptionalFixedLengthTensor`,
     /// `OptionalVariableLengthTensor`) depending on the dtype layout.
-    #[pyo3(signature = (selection, /))]
+    #[pyo3(signature = (selection, /, **codec_options))]
     fn retrieve_array_subset(
         &self,
         py: Python,
         selection: PySelection,
+        codec_options: Option<PyCodecOptions>,
     ) -> ZarristaResult<PyTensor> {
         crate::py::detach(py, move || {
             let array_subset = self.array_subset(&selection)?;
-            Ok(self.inner.retrieve_array_subset(&array_subset)?)
+            let codec_options = codec_options
+                .map(|opts| opts.into_inner())
+                .unwrap_or_default();
+            Ok(self
+                .inner
+                .retrieve_array_subset_opt(&array_subset, &codec_options)?)
         })
     }
 

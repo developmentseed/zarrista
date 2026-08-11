@@ -65,7 +65,7 @@ impl PyAsyncArray {
         py: Python<'py>,
         selection: PySelection,
     ) -> PyResult<Bound<'py, PyAny>> {
-        self.retrieve_array_subset(py, selection)
+        self.retrieve_array_subset(py, selection, None)
     }
 
     fn __repr__(&self, py: Python) -> PyResult<String> {
@@ -185,18 +185,22 @@ impl PyAsyncArray {
     }
 
     /// Read a region of the array as `Data`, using numpy-style basic indexing.
-    #[pyo3(signature = (selection, /))]
+    #[pyo3(signature = (selection, /, **codec_options))]
     fn retrieve_array_subset<'py>(
         &self,
         py: Python<'py>,
         selection: PySelection,
+        codec_options: Option<PyCodecOptions>,
     ) -> PyResult<Bound<'py, PyAny>> {
         let inner = self.inner.clone();
         let array_subset = self.array_subset(&selection)?;
+        let codec_options = codec_options
+            .map(|opts| opts.into_inner())
+            .unwrap_or_default();
 
         future_into_py(py, async move {
             let decoded = inner
-                .async_retrieve_array_subset::<PyTensor>(&array_subset)
+                .async_retrieve_array_subset_opt::<PyTensor>(&array_subset, &codec_options)
                 .await
                 .map_err(ZarristaError::from)?;
             Ok(decoded)
