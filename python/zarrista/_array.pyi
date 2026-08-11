@@ -578,7 +578,7 @@ class Array:
         and the chunking together:
 
         ```py
-        array = array.with_chunk_grid(ChunkGrid.regular([8, 8], [4, 4]))
+        array = array.with_chunk_grid(ChunkGrid.regular([8, 8], chunk_shape=[4, 4]))
         array.store_metadata()
         ```
 
@@ -1249,7 +1249,7 @@ class AsyncArray:
         from the grid, so this can change the shape and the chunking together:
 
         ```py
-        array = array.with_chunk_grid(ChunkGrid.regular([8, 8], [4, 4]))
+        array = array.with_chunk_grid(ChunkGrid.regular([8, 8], chunk_shape=[4, 4]))
         await array.store_metadata()
         ```
 

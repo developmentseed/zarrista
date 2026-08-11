@@ -142,7 +142,7 @@ def test_store_repr_names_its_argument() -> None:
 
 def test_chunk_grid_repr() -> None:
     """Reuses the named-configuration form, so it reads like the codecs."""
-    grid = ChunkGrid.regular([4, 4], [2, 2])
+    grid = ChunkGrid.regular([4, 4], chunk_shape=[2, 2])
 
     assert repr(grid) == "ChunkGrid('regular', config={'chunk_shape': [2, 2]})"
 
@@ -163,7 +163,7 @@ def test_array_bytes_repr() -> None:
 
 def test_array_builder_repr() -> None:
     builder = ArrayBuilder(
-        ChunkGrid.regular([4, 4], [2, 2]),
+        ChunkGrid.regular([4, 4], chunk_shape=[2, 2]),
         DataType.from_string("int32"),
         FillValue(b"\x00\x00\x00\x00"),
     )

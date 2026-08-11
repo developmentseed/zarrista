@@ -33,7 +33,7 @@ def _builder() -> ArrayBuilder:
     subchunk rows 2 and 3 live in shard [1, 0].
     """
     return ArrayBuilder(
-        ChunkGrid.regular([8, 4], [4, 4]),
+        ChunkGrid.regular([8, 4], chunk_shape=[4, 4]),
         DataType.from_string("int32"),
         FillValue(b"\x00\x00\x00\x00"),
     ).subchunk_shape([2, 2])

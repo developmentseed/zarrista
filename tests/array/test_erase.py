@@ -41,7 +41,7 @@ EMPTY = np.zeros((4, 4), dtype="int32")
 def _chunked_array() -> Array:
     """A 4x4 int32 array: a 2x2 grid of 2x2 chunks, each filled with `1 + 2i + j`."""
     array = ArrayBuilder(
-        ChunkGrid.regular([4, 4], [2, 2]),
+        ChunkGrid.regular([4, 4], chunk_shape=[2, 2]),
         DataType.from_string("int32"),
         FillValue(b"\x00\x00\x00\x00"),
     ).create(MemoryStore(), "/a")
@@ -56,7 +56,7 @@ def _sharded_array() -> Array:
     """An 8x8 int32 array: a 2x2 grid of 4x4 shards, each split into 2x2 subchunks."""
     array = (
         ArrayBuilder(
-            ChunkGrid.regular([8, 8], [4, 4]),
+            ChunkGrid.regular([8, 8], chunk_shape=[4, 4]),
             DataType.from_string("int32"),
             FillValue(b"\x00\x00\x00\x00"),
         )

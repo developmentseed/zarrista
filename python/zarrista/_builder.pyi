@@ -38,7 +38,7 @@ class ArrayBuilder:
         from zarrista import ArrayBuilder, ChunkGrid, DataType, FillValue, codec
         from zarrista.store import FilesystemStore
 
-        grid = ChunkGrid.regular([1024, 1024], [256, 256])
+        grid = ChunkGrid.regular([1024, 1024], chunk_shape=[256, 256])
         dtype = DataType.from_string("int32")
         fill_value = FillValue((0).to_bytes(4, "little"))
 

@@ -11,7 +11,7 @@ from zarrista.store import MemoryStore
 def _writable_array() -> Array:
     """A 4x4 int8 array (single 4x4 chunk, fill 0) created in a MemoryStore."""
     return ArrayBuilder(
-        ChunkGrid.regular([4, 4], [4, 4]),
+        ChunkGrid.regular([4, 4], chunk_shape=[4, 4]),
         DataType.from_string("int8"),
         FillValue(b"\x00"),
     ).create(MemoryStore(), "/a")
