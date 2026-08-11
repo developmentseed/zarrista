@@ -142,6 +142,41 @@ class Group:
         Raises:
             TypeError: If a value in `attrs` is not JSON-serializable.
         """
+    def with_consolidated_metadata(
+        self,
+        consolidated_metadata: ZarrV3ConsolidatedMetadataJSON | None,
+    ) -> Group:
+        """Return a new group reference with `consolidated_metadata`.
+
+        This group is unchanged. Pass `None` to remove the consolidated metadata
+        from the new group reference.
+
+        This does not build the consolidated metadata. It stores the block that
+        you give it, and it does not check the block against the hierarchy.
+
+        Nothing is persisted to the store. Call
+        [`Group.store_metadata`][zarrista.Group.store_metadata] to persist the new
+        block to the store:
+
+        ```py
+        group = group.with_consolidated_metadata(consolidated_metadata)
+        group.store_metadata()
+        ```
+
+        Args:
+            consolidated_metadata: The consolidated metadata of the new group
+                reference, or `None` to remove it. The block has the same shape
+                that
+                [`Group.consolidated_metadata`][zarrista.Group.consolidated_metadata]
+                returns.
+
+        Returns:
+            A new group reference that uses `consolidated_metadata`.
+
+        Raises:
+            ValueError: If the group holds Zarr V2 metadata. Consolidated
+                metadata is a Zarr V3 convention.
+        """
     @property
     def storage(self) -> SyncStore:
         """The store that backs this group."""
@@ -291,6 +326,41 @@ class AsyncGroup:
 
         Raises:
             TypeError: If a value in `attrs` is not JSON-serializable.
+        """
+    def with_consolidated_metadata(
+        self,
+        consolidated_metadata: ZarrV3ConsolidatedMetadataJSON | None,
+    ) -> AsyncGroup:
+        """Return a new group reference with `consolidated_metadata`.
+
+        This group is unchanged. Pass `None` to remove the consolidated metadata
+        from the new group reference.
+
+        This does not build the consolidated metadata. It stores the block that
+        you give it, and it does not check the block against the hierarchy.
+
+        Nothing is persisted to the store. Call
+        [`AsyncGroup.store_metadata`][zarrista.AsyncGroup.store_metadata] to
+        persist the new block to the store:
+
+        ```py
+        group = group.with_consolidated_metadata(consolidated_metadata)
+        await group.store_metadata()
+        ```
+
+        Args:
+            consolidated_metadata: The consolidated metadata of the new group
+                reference, or `None` to remove it. The block has the same shape
+                that
+                [`AsyncGroup.consolidated_metadata`][zarrista.AsyncGroup.consolidated_metadata]
+                returns.
+
+        Returns:
+            A new group reference that uses `consolidated_metadata`.
+
+        Raises:
+            ValueError: If the group holds Zarr V2 metadata. Consolidated
+                metadata is a Zarr V3 convention.
         """
     @property
     def storage(self) -> AsyncStore:

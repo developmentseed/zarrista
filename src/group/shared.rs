@@ -53,6 +53,34 @@ macro_rules! group_metadata_accessors {
                     self.store.clone(),
                 ))
             }
+
+            /// Return a new group reference with `consolidated_metadata`, leaving this one unchanged.
+            fn with_consolidated_metadata(
+                &self,
+                consolidated_metadata: Option<$crate::metadata::PyConsolidatedMetadata>,
+            ) -> $crate::error::ZarristaResult<Self> {
+                // zarrs makes `set_consolidated_metadata` a no-op on V2 metadata, which
+                // would silently drop the caller's block.
+                if matches!(self.inner.metadata(), ::zarrs::group::GroupMetadata::V2(_)) {
+                    return Err(::pyo3::exceptions::PyValueError::new_err(
+                        "Consolidated metadata is not supported for Zarr V2 groups",
+                    )
+                    .into());
+                }
+
+                // Workaround for missing Clone; see `with_attrs`.
+                // Clone should be available in zarrs 0.24
+                let mut updated = ::zarrs::group::Group::new_with_metadata(
+                    self.inner.storage(),
+                    self.inner.path().as_str(),
+                    self.inner.metadata().clone(),
+                )?;
+                updated.set_consolidated_metadata(consolidated_metadata.map(|m| m.into()));
+                Ok(Self::new(
+                    ::std::sync::Arc::new(updated),
+                    self.store.clone(),
+                ))
+            }
         }
     };
 }
