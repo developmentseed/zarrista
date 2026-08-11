@@ -4,6 +4,8 @@ from typing import Protocol, TypeAlias, Unpack
 
 from zarr_metadata import JSONValue, ZarrV3ArrayMetadataJSON
 
+from zarrista import Tensor
+
 # Imported only so that the `Raises:` sections below link to the exception docs.
 from zarrista.exceptions import (  # noqa: F401
     ArrayCreateError,
@@ -19,7 +21,6 @@ from ._dtype import DataType
 from ._encoded_chunk import EncodedChunk
 from ._fill_value import FillValue
 from ._shard_cache import AsyncShardCache, ShardCache
-from ._tensor import Tensor
 from .codec import CodecChain, CodecOptions
 
 _AxisSelector: TypeAlias = int | slice | EllipsisType

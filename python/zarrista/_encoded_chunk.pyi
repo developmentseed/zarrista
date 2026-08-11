@@ -1,11 +1,11 @@
 from collections.abc import Buffer
 from typing import Unpack
 
+from zarrista import Tensor
 from zarrista.codec import CodecChain, CodecOptions
 
 from ._dtype import DataType
 from ._fill_value import FillValue
-from ._tensor import Tensor
 from ._thread_pool import ThreadPool
 
 class EncodedChunk:
