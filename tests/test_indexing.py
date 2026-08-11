@@ -163,3 +163,19 @@ async def test_async_getitem_matches_numpy(int32_array: tuple[Path, NDArray[np.i
     result = (await arr[0:2, :, 5:7]).to_numpy()
 
     np.testing.assert_array_equal(result, data[0:2, :, 5:7])
+
+
+def test_setitem_writes_the_selected_region(
+    int32_array: tuple[Path, NDArray[np.int32]],
+):
+    """`arr[selection] = data` is sugar for `store_array_subset`."""
+    path, data = int32_array
+    arr = Array.open(FilesystemStore(path))
+    replacement = np.zeros((2, 64, 2), dtype="int32")
+
+    arr[0:2, :, 5:7] = replacement
+
+    reopened = Array.open(FilesystemStore(path))
+    np.testing.assert_array_equal(reopened[0:2, :, 5:7].to_numpy(), replacement)
+    # Everything outside the selection is untouched.
+    np.testing.assert_array_equal(reopened[0:2, :, 7:9].to_numpy(), data[0:2, :, 7:9])
