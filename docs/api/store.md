@@ -1,25 +1,6 @@
-# Stores
+# zarrista.store
 
-::: zarrista.store.FilesystemStore
+::: zarrista.store
     options:
-      show_bases: false
-
-::: zarrista.store.MemoryStore
-    options:
-      show_bases: false
-
-::: zarrista.store.ZipStore
-    options:
-      show_bases: false
-
-::: zarrista.store.AsyncZipStore
-    options:
-      show_bases: false
-
-::: zarrista.store.SyncStore
-    options:
-      show_bases: false
-
-::: zarrista.store.AsyncStore
-    options:
+      show_root_heading: false
       show_bases: false

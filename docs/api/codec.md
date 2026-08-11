@@ -1,6 +1,8 @@
-# Codec
+# zarrista.codec
 
 ::: zarrista.codec
+    options:
+      show_root_heading: false
 
 <!--
 `CodecOptions` is a type-check-only `TypedDict` with no runtime object, so it is
