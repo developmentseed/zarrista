@@ -127,6 +127,7 @@ plugins:
             - https://icechunk.io/en/stable/objects.inv
             - https://kylebarron.dev/arro3/latest/objects.inv
             - https://numpy.org/doc/stable/objects.inv
+            - https://typing-extensions.readthedocs.io/en/latest/objects.inv
             - https://zarr.readthedocs.io/en/stable/objects.inv
             - https://zarr.readthedocs.io/projects/zarr-metadata/en/latest/objects.inv
 
