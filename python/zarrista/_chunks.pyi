@@ -10,14 +10,14 @@ from zarrista.exceptions import (  # noqa: F401
     PluginCreateError,
 )
 
-_RunLength: TypeAlias = int | tuple[int, int]
+RunLength: TypeAlias = int | tuple[int, int]
 """One run of chunks along a rectilinear chunk edge.
 
 A single chunk size, or a `(size, count)` pair. The pair means `count`
 adjacent chunks that each have the given size.
 """
 
-_ChunkEdgeLengths: TypeAlias = int | Sequence[_RunLength]
+ChunkEdgeLengths: TypeAlias = int | Sequence[RunLength]
 """The chunk sizes along one dimension.
 
 An integer if the dimension has one chunk size, or a sequence of runs if the
@@ -49,7 +49,7 @@ class ChunkGrid:
     @staticmethod
     def rectilinear(
         array_shape: Sequence[int],
-        chunk_shapes: Sequence[_ChunkEdgeLengths],
+        chunk_shapes: Sequence[ChunkEdgeLengths],
     ) -> ChunkGrid:
         """Construct a rectilinear grid with different chunk sizes along each dimension.
 

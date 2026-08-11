@@ -23,8 +23,10 @@ from ._fill_value import FillValue
 from ._shard_cache import AsyncShardCache, ShardCache
 from .codec import CodecChain, CodecOptions
 
-_AxisSelector: TypeAlias = int | slice | EllipsisType
-Selection: TypeAlias = _AxisSelector | tuple[_AxisSelector, ...]
+AxisSelector: TypeAlias = int | slice | EllipsisType
+"""The selector for one axis: an integer, a step-1 slice, or `Ellipsis`."""
+
+Selection: TypeAlias = AxisSelector | tuple[AxisSelector, ...]
 """A numpy-style basic-indexing selection: what you would write inside `[]`.
 
 This supports integers, step-1 slices, `Ellipsis`, and tuples of those. A tuple

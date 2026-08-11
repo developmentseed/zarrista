@@ -13,3 +13,8 @@ cross-references in the array read/write docstrings a target (required under
 -->
 ::: zarrista.codec.CodecOptions
 
+## Codec configuration types
+
+::: zarrista.codec._bytes_to_bytes._blosc.BloscCompressor
+
+::: zarrista.codec._bytes_to_bytes._blosc.BloscShuffle
