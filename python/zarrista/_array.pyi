@@ -4,8 +4,6 @@ from typing import Protocol, TypeAlias, Unpack
 
 from zarr_metadata import JSONValue, ZarrV3ArrayMetadataJSON
 
-from zarrista.codec import CodecChain, CodecOptions
-
 from ._array_bytes import ArrayBytes
 from ._chunk_key_encoding import ChunkKeyEncoding
 from ._chunks import ChunkGrid
@@ -15,6 +13,7 @@ from ._fill_value import FillValue
 from ._shard_cache import AsyncShardCache, ShardCache
 from ._store import AsyncStore, SyncStore
 from ._tensor import Tensor
+from .codec import CodecChain, CodecOptions
 
 _AxisSelector: TypeAlias = int | slice | EllipsisType
 Selection: TypeAlias = _AxisSelector | tuple[_AxisSelector, ...]
