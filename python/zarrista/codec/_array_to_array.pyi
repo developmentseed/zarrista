@@ -120,7 +120,7 @@ class ArrayToArrayCodec:
 
         Returns:
             The shape of the decoded chunk, or `None` if the codec cannot
-            determine it.
+                determine it.
         """
 
 def transpose(order: list[int]) -> ArrayToArrayCodec:

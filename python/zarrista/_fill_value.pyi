@@ -26,6 +26,6 @@ class FillValue:
 
         Returns:
             `True` if `other` is a whole number of copies of this fill value.
-            `False` if the bytes differ, or if the length of `other` is not a
-            multiple of `size`.
+                `False` if the bytes differ, or if the length of `other` is not a
+                multiple of `size`.
         """

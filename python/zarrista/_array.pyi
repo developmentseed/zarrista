@@ -159,7 +159,7 @@ class Array:
 
         Returns:
             One slice per dimension, which together give the array subset of
-            the chunk.
+                the chunk.
 
         Raises:
             ArrayError: If `chunk_indices` has a different number of dimensions
@@ -312,7 +312,7 @@ class Array:
 
         Returns:
             The encoded subchunk, or `None` if the subchunk is absent from the
-            store.
+                store.
 
         Raises:
             ArrayError: If the array is not exclusively sharded.
@@ -503,7 +503,7 @@ class Array:
 
         Returns:
             `True` if the method rewrote the chunk. `False` if the chunk is
-            absent, or if it is already as compact as possible.
+                absent, or if it is already as compact as possible.
 
         Raises:
             ArrayError: If the stored chunk cannot be decoded, or if the array
@@ -827,7 +827,7 @@ class AsyncArray:
 
         Returns:
             One slice per dimension, which together give the array subset of
-            the chunk.
+                the chunk.
 
         Raises:
             ArrayError: If `chunk_indices` has a different number of dimensions
@@ -983,7 +983,7 @@ class AsyncArray:
 
         Returns:
             The encoded subchunk, or `None` if the subchunk is absent from the
-            store.
+                store.
 
         Raises:
             ArrayError: If the array is not exclusively sharded.
@@ -1176,7 +1176,7 @@ class AsyncArray:
 
         Returns:
             `True` if the method rewrote the chunk. `False` if the chunk is
-            absent, or if it is already as compact as possible.
+                absent, or if it is already as compact as possible.
 
         Raises:
             ArrayError: If the stored chunk cannot be decoded, or if the array

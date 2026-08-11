@@ -48,7 +48,7 @@ class FixedLengthTensor:
 
         Returns:
             A read-only NumPy array with the same shape and dtype as this
-            tensor.
+                tensor.
         """
     def __buffer__(self, flags: int, /) -> memoryview:
         """Export an N-dimensional, typed, read-only PEP 3118 buffer view.
