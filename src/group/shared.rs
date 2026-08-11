@@ -32,6 +32,27 @@ macro_rules! group_metadata_accessors {
             fn path(&self) -> &str {
                 self.inner.path().as_str()
             }
+
+            /// Return a new group reference with `attrs`, leaving this one unchanged.
+            fn with_attrs(
+                &self,
+                attrs: $crate::metadata::PyAttributes,
+            ) -> $crate::error::ZarristaResult<Self> {
+                // Workaround for missing Clone
+                // Clone added in
+                // https://github.com/zarrs/zarrs/pull/441
+                // and available in zarrs 0.24
+                let mut updated = ::zarrs::group::Group::new_with_metadata(
+                    self.inner.storage(),
+                    self.inner.path().as_str(),
+                    self.inner.metadata().clone(),
+                )?;
+                *updated.attributes_mut() = attrs.into_inner();
+                Ok(Self::new(
+                    ::std::sync::Arc::new(updated),
+                    self.store.clone(),
+                ))
+            }
         }
     };
 }

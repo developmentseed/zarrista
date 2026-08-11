@@ -1,3 +1,5 @@
+from collections.abc import Mapping
+
 from zarr_metadata import (
     JSONValue,
     ZarrV3ConsolidatedMetadataJSON,
@@ -106,6 +108,39 @@ class Group:
         """Write the group metadata to the store.
 
         This overwrites any metadata that exists at the group's path.
+        """
+    def with_attrs(self, attrs: Mapping[str, JSONValue]) -> Group:
+        """Return a new group reference with `attrs`, leaving this one unchanged.
+
+        The new attributes replace the old ones. Any key that `attrs` does not
+        contain is gone from the new group reference. To keep the existing
+        attributes, merge them yourself:
+
+        ```py
+        group = group.with_attrs({**group.attrs, "title": "root"})
+        ```
+
+        Nothing is persisted to the store. Call
+        [`Group.store_metadata`][zarrista.Group.store_metadata] to persist the new
+        attributes to the store:
+
+        ```py
+        group = group.with_attrs({"title": "root"})
+        group.store_metadata()
+        ```
+
+        This group is unaffected and remains usable; it simply goes on describing
+        the old attributes. Rebinding, as above, is the intended usage.
+
+        Args:
+            attrs: The user attributes of the new group reference. Each value
+                must be JSON-serializable.
+
+        Returns:
+            A new group reference that uses `attrs`.
+
+        Raises:
+            TypeError: If a value in `attrs` is not JSON-serializable.
         """
     @property
     def storage(self) -> SyncStore:
@@ -223,6 +258,39 @@ class AsyncGroup:
 
         Raises:
             KeyError: If the group has no direct child with that name.
+        """
+    def with_attrs(self, attrs: Mapping[str, JSONValue]) -> AsyncGroup:
+        """Return a new group reference with `attrs`, leaving this one unchanged.
+
+        The new attributes replace the old ones. Any key that `attrs` does not
+        contain is gone from the new group reference. To keep the existing
+        attributes, merge them yourself:
+
+        ```py
+        group = group.with_attrs({**group.attrs, "title": "root"})
+        ```
+
+        Nothing is persisted to the store. Call
+        [`AsyncGroup.store_metadata`][zarrista.AsyncGroup.store_metadata] to
+        persist the new attributes to the store:
+
+        ```py
+        group = group.with_attrs({"title": "root"})
+        await group.store_metadata()
+        ```
+
+        This group is unaffected and remains usable; it simply goes on describing
+        the old attributes. Rebinding, as above, is the intended usage.
+
+        Args:
+            attrs: The user attributes of the new group reference. Each value
+                must be JSON-serializable.
+
+        Returns:
+            A new group reference that uses `attrs`.
+
+        Raises:
+            TypeError: If a value in `attrs` is not JSON-serializable.
         """
     @property
     def storage(self) -> AsyncStore:
