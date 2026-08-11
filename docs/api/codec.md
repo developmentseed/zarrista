@@ -1,4 +1,4 @@
-# zarrista.codec
+# Codec
 
 ::: zarrista.codec
     options:

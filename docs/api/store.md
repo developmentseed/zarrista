@@ -1,4 +1,4 @@
-# zarrista.store
+# Store
 
 ::: zarrista.store
     options:

@@ -1,4 +1,4 @@
-# zarrista.exceptions
+# Exceptions
 
 ::: zarrista.exceptions
     options:
