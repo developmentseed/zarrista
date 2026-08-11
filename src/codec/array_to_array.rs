@@ -90,17 +90,18 @@ impl PyArrayToArrayCodec {
             .into())
     }
 
+    #[pyo3(signature = (value, /, shape, data_type, fill_value))]
     fn encode(
         &self,
         py: Python,
-        bytes: &PyArrayBytes,
+        value: &PyArrayBytes,
         shape: Vec<NonZeroU64>,
         data_type: &PyDataType,
         fill_value: &PyFillValue,
     ) -> ZarristaResult<PyArrayBytes> {
         crate::py::detach(py, || {
             let encoded = self.0.encode(
-                bytes.as_array_bytes()?,
+                value.as_array_bytes()?,
                 &shape,
                 data_type.inner(),
                 fill_value.inner(),
@@ -110,17 +111,18 @@ impl PyArrayToArrayCodec {
         })
     }
 
+    #[pyo3(signature = (value, /, shape, data_type, fill_value))]
     fn decode(
         &self,
         py: Python,
-        bytes: &PyArrayBytes,
+        value: &PyArrayBytes,
         shape: Vec<NonZeroU64>,
         data_type: &PyDataType,
         fill_value: &PyFillValue,
     ) -> ZarristaResult<PyArrayBytes> {
         crate::py::detach(py, || {
             let decoded = self.0.decode(
-                bytes.as_array_bytes()?,
+                value.as_array_bytes()?,
                 &shape,
                 data_type.inner(),
                 fill_value.inner(),

@@ -22,11 +22,14 @@ pub struct PyArrayBytes(ArrayBytesOwned);
 #[pymethods]
 impl PyArrayBytes {
     #[new]
-    #[pyo3(signature = (bytes, *, mask=None, offsets=None))]
-    fn py_new(bytes: PyBytes, mask: Option<PyBytes>, offsets: Option<Vec<usize>>) -> Self {
+    #[pyo3(signature = (value, /, *, mask=None, offsets=None))]
+    fn py_new(value: PyBytes, mask: Option<PyBytes>, offsets: Option<Vec<usize>>) -> Self {
         let data = match offsets {
-            Some(offsets) => ArrayBytesOwned::Variable { bytes, offsets },
-            None => ArrayBytesOwned::Fixed(bytes),
+            Some(offsets) => ArrayBytesOwned::Variable {
+                bytes: value,
+                offsets,
+            },
+            None => ArrayBytesOwned::Fixed(value),
         };
         let repr = match mask {
             Some(mask) => ArrayBytesOwned::Optional {
