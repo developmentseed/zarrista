@@ -21,6 +21,9 @@ from zarr_metadata.v3.data_type import (
     Uint64DataTypeName,
 )
 
+# Imported only so that the `Raises:` sections below link to the exception docs.
+from zarrista.exceptions import PluginCreateError  # noqa: F401
+
 DataTypeName: TypeAlias = (
     BoolDataTypeName
     | Int8DataTypeName

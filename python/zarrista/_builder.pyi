@@ -7,6 +7,9 @@ from zarrista.codec import (
     ArrayToBytesCodec,
     BytesToBytesCodec,
 )
+
+# Imported only so that the `Raises:` sections below link to the exception docs.
+from zarrista.exceptions import ArrayCreateError  # noqa: F401
 from zarrista.store import AsyncStore, SyncStore
 
 from ._array import Array, AsyncArray

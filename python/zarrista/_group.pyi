@@ -6,6 +6,8 @@ from zarr_metadata import (
     ZarrV3GroupMetadataJSON,
 )
 
+# Imported only so that the `Raises:` sections below link to the exception docs.
+from zarrista.exceptions import GroupCreateError  # noqa: F401
 from zarrista.store import AsyncStore, SyncStore
 
 from ._array import Array, AsyncArray

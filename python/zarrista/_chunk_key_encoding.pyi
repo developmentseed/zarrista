@@ -2,6 +2,9 @@ from typing import Literal
 
 from zarr_metadata import ZarrV3NamedConfigJSON
 
+# Imported only so that the `Raises:` sections below link to the exception docs.
+from zarrista.exceptions import PluginCreateError  # noqa: F401
+
 class ChunkKeyEncoding:
     """How an array maps chunk grid indices to store keys."""
 

@@ -1,5 +1,7 @@
 from pathlib import Path
 
+# Imported only so that the `Raises:` sections below link to the exception docs.
+from zarrista.exceptions import StorageError  # noqa: F401
 from zarrista.store import AsyncStore, SyncStore
 
 class FilesystemStore:

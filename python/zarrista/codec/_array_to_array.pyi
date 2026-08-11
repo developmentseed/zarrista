@@ -4,6 +4,13 @@ from zarrista._array_bytes import ArrayBytes
 from zarrista._dtype import DataType
 from zarrista._fill_value import FillValue
 
+# Imported only so that the `Raises:` sections below link to the exception docs.
+from zarrista.exceptions import (  # noqa: F401
+    CodecError,
+    PluginCreateError,
+    TransposeOrderError,
+)
+
 class ArrayToArrayCodec:
     """A Zarr v3 array-to-array codec."""
 

@@ -1,5 +1,8 @@
 from zarr_metadata import JSONValue
 
+# Imported only so that the `Raises:` sections below link to the exception docs.
+from zarrista.exceptions import PluginCreateError  # noqa: F401
+
 class ArrayToBytesCodec:
     """A Zarr v3 array-to-bytes codec (the "serializer")."""
 

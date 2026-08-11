@@ -2,6 +2,9 @@ from typing import Literal, TypeAlias
 
 from zarrista.codec._bytes_to_bytes import BytesToBytesCodec
 
+# Imported only so that the `Raises:` sections below link to the exception docs.
+from zarrista.exceptions import PluginCreateError  # noqa: F401
+
 BloscCompressor: TypeAlias = Literal[
     "blosclz",
     "lz4",

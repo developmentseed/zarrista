@@ -4,6 +4,12 @@ from typing import Protocol, TypeAlias, Unpack
 
 from zarr_metadata import JSONValue, ZarrV3ArrayMetadataJSON
 
+# Imported only so that the `Raises:` sections below link to the exception docs.
+from zarrista.exceptions import (  # noqa: F401
+    ArrayCreateError,
+    ArrayError,
+    StorageError,
+)
 from zarrista.store import AsyncStore, SyncStore
 
 from ._array_bytes import ArrayBytes

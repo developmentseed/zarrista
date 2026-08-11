@@ -3,6 +3,13 @@ from typing import TypeAlias
 
 from zarr_metadata import ZarrV3NamedConfigJSON
 
+# Imported only so that the `Raises:` sections below link to the exception docs.
+from zarrista.exceptions import (  # noqa: F401
+    ChunkGridCreateError,
+    IncompatibleDimensionalityError,
+    PluginCreateError,
+)
+
 _RunLength: TypeAlias = int | tuple[int, int]
 """One run of chunks along a rectilinear chunk edge.
 
