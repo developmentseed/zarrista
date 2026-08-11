@@ -19,8 +19,9 @@ impl PyFillValue {
 #[pymethods]
 impl PyFillValue {
     #[new]
-    fn new(bytes: Vec<u8>) -> Self {
-        Self(FillValue::new(bytes))
+    #[pyo3(signature = (value, /))]
+    fn new(value: Vec<u8>) -> Self {
+        Self(FillValue::new(value))
     }
 
     #[getter]

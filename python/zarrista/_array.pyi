@@ -4,7 +4,15 @@ from typing import Protocol, TypeAlias, Unpack
 
 from zarr_metadata import JSONValue, ZarrV3ArrayMetadataJSON
 
-from zarrista.codec import CodecChain, CodecOptions
+from zarrista import Tensor
+
+# Imported only so that the `Raises:` sections below link to the exception docs.
+from zarrista.exceptions import (  # noqa: F401
+    ArrayCreateError,
+    ArrayError,
+    StorageError,
+)
+from zarrista.store import AsyncStore, SyncStore
 
 from ._array_bytes import ArrayBytes
 from ._chunk_key_encoding import ChunkKeyEncoding
@@ -13,11 +21,12 @@ from ._dtype import DataType
 from ._encoded_chunk import EncodedChunk
 from ._fill_value import FillValue
 from ._shard_cache import AsyncShardCache, ShardCache
-from ._store import AsyncStore, SyncStore
-from ._tensor import Tensor
+from .codec import CodecChain, CodecOptions
 
-_AxisSelector: TypeAlias = int | slice | EllipsisType
-Selection: TypeAlias = _AxisSelector | tuple[_AxisSelector, ...]
+AxisSelector: TypeAlias = int | slice | EllipsisType
+"""The selector for one axis: an integer, a step-1 slice, or `Ellipsis`."""
+
+Selection: TypeAlias = AxisSelector | tuple[AxisSelector, ...]
 """A numpy-style basic-indexing selection: what you would write inside `[]`.
 
 This supports integers, step-1 slices, `Ellipsis`, and tuples of those. A tuple
@@ -159,7 +168,7 @@ class Array:
 
         Returns:
             One slice per dimension, which together give the array subset of
-            the chunk.
+                the chunk.
 
         Raises:
             ArrayError: If `chunk_indices` has a different number of dimensions
@@ -312,7 +321,7 @@ class Array:
 
         Returns:
             The encoded subchunk, or `None` if the subchunk is absent from the
-            store.
+                store.
 
         Raises:
             ArrayError: If the array is not exclusively sharded.
@@ -503,7 +512,7 @@ class Array:
 
         Returns:
             `True` if the method rewrote the chunk. `False` if the chunk is
-            absent, or if it is already as compact as possible.
+                absent, or if it is already as compact as possible.
 
         Raises:
             ArrayError: If the stored chunk cannot be decoded, or if the array
@@ -827,7 +836,7 @@ class AsyncArray:
 
         Returns:
             One slice per dimension, which together give the array subset of
-            the chunk.
+                the chunk.
 
         Raises:
             ArrayError: If `chunk_indices` has a different number of dimensions
@@ -983,7 +992,7 @@ class AsyncArray:
 
         Returns:
             The encoded subchunk, or `None` if the subchunk is absent from the
-            store.
+                store.
 
         Raises:
             ArrayError: If the array is not exclusively sharded.
@@ -1176,7 +1185,7 @@ class AsyncArray:
 
         Returns:
             `True` if the method rewrote the chunk. `False` if the chunk is
-            absent, or if it is already as compact as possible.
+                absent, or if it is already as compact as possible.
 
         Raises:
             ArrayError: If the stored chunk cannot be decoded, or if the array

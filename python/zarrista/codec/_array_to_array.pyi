@@ -4,6 +4,13 @@ from zarrista._array_bytes import ArrayBytes
 from zarrista._dtype import DataType
 from zarrista._fill_value import FillValue
 
+# Imported only so that the `Raises:` sections below link to the exception docs.
+from zarrista.exceptions import (  # noqa: F401
+    CodecError,
+    PluginCreateError,
+    TransposeOrderError,
+)
+
 class ArrayToArrayCodec:
     """A Zarr v3 array-to-array codec."""
 
@@ -120,7 +127,7 @@ class ArrayToArrayCodec:
 
         Returns:
             The shape of the decoded chunk, or `None` if the codec cannot
-            determine it.
+                determine it.
         """
 
 def transpose(order: list[int]) -> ArrayToArrayCodec:

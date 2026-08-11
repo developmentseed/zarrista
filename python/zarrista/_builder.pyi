@@ -8,12 +8,15 @@ from zarrista.codec import (
     BytesToBytesCodec,
 )
 
+# Imported only so that the `Raises:` sections below link to the exception docs.
+from zarrista.exceptions import ArrayCreateError  # noqa: F401
+from zarrista.store import AsyncStore, SyncStore
+
 from ._array import Array, AsyncArray
 from ._chunk_key_encoding import ChunkKeyEncoding
 from ._chunks import ChunkGrid
 from ._dtype import DataType
 from ._fill_value import FillValue
-from ._store import AsyncStore, SyncStore
 
 class ArrayBuilder:
     """A chained, immutable builder for creating Zarr arrays.

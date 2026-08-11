@@ -97,6 +97,11 @@ known-first-party = ["zarrista"]
 "*.pyi" = [
     "A002", # Function argument `bytes` is shadowing a Python builtin
 ]
+# Command-line scripts that support the skills in `.claude/skills`.
+".claude/skills/*/*.py" = [
+    "PLC0415", # import not at top-level (network imports stay in the one check that needs them)
+    "T201",    # print (these scripts report to the terminal)
+]
 "tests/*" = [
     "ANN001",  # annotation in function argument
     "ANN201",  # return type annotation
