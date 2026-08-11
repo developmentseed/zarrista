@@ -19,6 +19,8 @@ mod storage;
 mod thread_pool;
 mod wasm;
 
+// In cargo.toml only to select the zlib-rs backend for zarrs' gzip/zlib codecs
+use flate2 as _;
 use pyo3::prelude::*;
 // In cargo.toml only to add decompression support to zarrs_zip
 use rc_zip as _;
