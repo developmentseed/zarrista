@@ -5,15 +5,18 @@
 [pypi_badge]: https://badge.fury.io/py/zarrista.svg
 [pypi_link]: https://pypi.org/project/zarrista/
 
-A low-level [Zarr] API for Python, inspired by [zarrita.js], powered from Rust by [Zarrs]. Serving up Zarr chunks like your favorite barista!
+A fast, low-level [Zarr] API for Python, powered from Rust by [Zarrs].
+
+[Very early benchmarking](https://github.com/developmentseed/zarrista/pull/151) suggests potential 17-35x faster read throughput than [Zarr-Python].
+
+While Zarrista will exist as a standalone Python library and can be used directly, the goal is to integrate Zarrista directly into [Zarr-Python] so that existing users can get improved performance out of the box and to avoid fracturing the ecosystem.
+
+This library is beta-quality. The underlying [Zarrs] library is reliable and broadly used. The way we expose a Python API from it may change in the future.
 
 [Zarr]: https://zarr.dev/
 [zarrita.js]: https://zarrita.dev/
 [Zarrs]: https://zarrs.dev/
-
-This project is _minimally_ vibe-coded. A person wrote most of the code by hand, and Claude prototyped some areas.
-
-This project is for **evaluation**. It examines whether a native binding to [Zarrs] gives better performance. It is not ready for production.
+[Zarr-Python]: https://zarr.readthedocs.io/en/stable/
 
 ## Documentation
 
@@ -21,14 +24,17 @@ This project is for **evaluation**. It examines whether a native binding to [Zar
 
 ## Features
 
-- **Low-level, explicit** Zarr access. Open arrays and groups, read chunks, and examine metadata. The API hides no machinery.
-- **Both sync and async** APIs ([`Array`] / [`AsyncArray`], [`Group`] / [`AsyncGroup`]).
-- **Rust core** through [Zarrs], for the performance of compiled code.
-- **NumPy integration**. Read data into [NumPy] arrays through the buffer protocol. Rust and Python share the memory without a copy.
-- **Variety of data access**
-    - AWS S3, Google Cloud Storage, Azure Storage through [Obstore]
-    - [Icechunk] integration
+- **High-performance Rust core**
+    - Encoded chunk access allows explicitly managing IO-bound data access and CPU-bound decoding separately.
+- **Sync/Async support**
+    - Synchronous [`Array`] and [`Group`] for local file system access
+    - [Asynchronous][`AsyncArray`] [counterparts][`AsyncGroup`] for remote data access through [Obstore]
+- **NumPy integration**
+- **Zero-copy data exchange** via [DLPack], the buffer protocol, and Arrow.
+- **Broad data type support** including variable-length string/bytes and the machine-learning float and sub-byte integer types (integrating with [`ml_dtypes`]).
+- **Broad codec support**, including all in the Zarr v3 spec.
 - **Full type hinting** for all operations.
+- **[Icechunk]** integration
 
 [NumPy]: https://numpy.org/
 [Icechunk]: https://icechunk.io/
@@ -38,6 +44,8 @@ This project is for **evaluation**. It examines whether a native binding to [Zar
 [`AsyncGroup`]: https://developmentseed.org/zarrista/latest/api/group/#zarrista.AsyncGroup
 [Obstore]: https://github.com/developmentseed/obstore
 [`Tensor`]: https://developmentseed.org/zarrista/latest/api/tensor/#zarrista.Tensor
+[DLPack]: https://dmlc.github.io/dlpack/latest/
+[`ml_dtypes`]: https://github.com/jax-ml/ml_dtypes
 
 ## Example
 
@@ -78,3 +86,13 @@ You can also read individual chunks by their grid index:
 ```py
 data = array.retrieve_chunk([0, 0])
 ```
+
+## AI Policy
+
+This project is _minimally_ vibe-coded.
+
+Most of the library code was written by hand by @kylebarron, sometimes in conversation with Claude.
+
+Documentation and type stubs are mixed. Much documentation is written by hand but Python type stubs are partially kept up to date via Claude.
+
+Almost all current tests were written by Claude.
