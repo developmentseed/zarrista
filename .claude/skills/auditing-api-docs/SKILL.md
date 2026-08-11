@@ -21,6 +21,9 @@ The audit therefore reads the built HTML, not the build log.
 - After changing a `:::` directive path, `mkdocs.yml`, or the `_zarrista` stubs.
 - When a reader reports that a type in a signature is not clickable.
 
+Cutting a release? Use `preparing-a-release`, which runs this audit as one step
+of a wider API review.
+
 ## The audit
 
 ```bash
