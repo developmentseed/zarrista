@@ -3,11 +3,11 @@ from collections.abc import Buffer
 class FillValue:
     """An array's fill value, stored as native-endian bytes."""
 
-    def __init__(self, bytes: bytes) -> None:
+    def __init__(self, value: bytes, /) -> None:
         """Construct a fill value from its native-endian bytes.
 
         Args:
-            bytes: The native-endian bytes of one fill value element.
+            value: The native-endian bytes of one fill value element.
         """
     @property
     def size(self) -> int:
