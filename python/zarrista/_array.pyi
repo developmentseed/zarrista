@@ -929,6 +929,7 @@ class AsyncArray:
     async def retrieve_encoded_chunk(
         self,
         chunk_indices: list[int],
+        /,
     ) -> EncodedChunk | None:
         """Read the raw, still-encoded bytes of the chunk at `chunk_indices`.
 
