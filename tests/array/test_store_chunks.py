@@ -19,7 +19,7 @@ DATA = np.arange(16, dtype="int32").reshape(4, 4)
 def _array() -> Array:
     """A 4x4 int32 array chunked 2x2, so the chunk grid is 2x2."""
     return ArrayBuilder(
-        ChunkGrid.regular([4, 4], [2, 2]),
+        ChunkGrid.regular([4, 4], chunk_shape=[2, 2]),
         DataType.from_string("int32"),
         FillValue(b"\x00\x00\x00\x00"),
     ).create(MemoryStore(), "/a")
@@ -52,7 +52,7 @@ def test_partial_selection_spans_the_remaining_dimensions() -> None:
     the first dimension. Those span 2x4x4 elements, not the 2x2x2 of one chunk.
     """
     array = ArrayBuilder(
-        ChunkGrid.regular([4, 4, 4], [2, 2, 2]),
+        ChunkGrid.regular([4, 4, 4], chunk_shape=[2, 2, 2]),
         DataType.from_string("int32"),
         FillValue(b"\x00\x00\x00\x00"),
     ).create(MemoryStore(), "/a")
@@ -75,7 +75,7 @@ def test_data_shaped_like_the_chunk_grid_raises() -> None:
 async def test_async_writes_a_single_chunk_into_its_element_region(tmp_path) -> None:
     store = LocalStore(str(tmp_path))
     array = await ArrayBuilder(
-        ChunkGrid.regular([4, 4], [2, 2]),
+        ChunkGrid.regular([4, 4], chunk_shape=[2, 2]),
         DataType.from_string("int32"),
         FillValue(b"\x00\x00\x00\x00"),
     ).create_async(store, "/a")

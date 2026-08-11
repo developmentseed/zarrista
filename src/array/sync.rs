@@ -61,7 +61,7 @@ shared_array_methods!(PyArray);
 impl PyArray {
     /// Read a region with numpy-style basic indexing, e.g. `arr[0:10, :, 5]`.
     fn __getitem__(&self, py: Python, selection: PySelection) -> ZarristaResult<PyTensor> {
-        self.retrieve_array_subset(py, selection)
+        self.retrieve_array_subset(py, selection, None)
     }
 
     fn __repr__(&self, py: Python) -> PyResult<String> {
@@ -97,7 +97,7 @@ impl PyArray {
         Ok(Self::new(Arc::new(inner), store))
     }
 
-    #[pyo3(signature = (chunk_indices, **codec_options))]
+    #[pyo3(signature = (chunk_indices, /, **codec_options))]
     fn compact_chunk(
         &self,
         py: Python,
@@ -112,6 +112,7 @@ impl PyArray {
         })
     }
 
+    #[pyo3(signature = (chunk_indices, /))]
     fn erase_chunk(&self, py: Python, chunk_indices: PyChunkIndices) -> ZarristaResult<()> {
         crate::py::detach(py, || {
             self.inner.erase_chunk(&chunk_indices)?;
@@ -119,6 +120,7 @@ impl PyArray {
         })
     }
 
+    #[pyo3(signature = (chunks, /))]
     fn erase_chunks(&self, py: Python, chunks: PySelection) -> ZarristaResult<()> {
         crate::py::detach(py, move || {
             let chunks = self.chunk_grid_subset(&chunks)?;
@@ -148,18 +150,25 @@ impl PyArray {
     /// Returns one of the decoded result classes (`FixedLengthTensor`,
     /// `VariableLengthTensor`, `OptionalFixedLengthTensor`,
     /// `OptionalVariableLengthTensor`) depending on the dtype layout.
+    #[pyo3(signature = (selection, /, **codec_options))]
     fn retrieve_array_subset(
         &self,
         py: Python,
         selection: PySelection,
+        codec_options: Option<PyCodecOptions>,
     ) -> ZarristaResult<PyTensor> {
         crate::py::detach(py, move || {
             let array_subset = self.array_subset(&selection)?;
-            Ok(self.inner.retrieve_array_subset(&array_subset)?)
+            let codec_options = codec_options
+                .map(|opts| opts.into_inner())
+                .unwrap_or_default();
+            Ok(self
+                .inner
+                .retrieve_array_subset_opt(&array_subset, &codec_options)?)
         })
     }
 
-    #[pyo3(signature = (chunk_indices, **codec_options))]
+    #[pyo3(signature = (chunk_indices, /, **codec_options))]
     fn retrieve_chunk(
         &self,
         py: Python,
@@ -176,6 +185,7 @@ impl PyArray {
         })
     }
 
+    #[pyo3(signature = (chunk_indices, /))]
     fn retrieve_encoded_chunk(
         &self,
         py: Python,
@@ -196,7 +206,7 @@ impl PyArray {
         })
     }
 
-    #[pyo3(signature = (subchunk_indices, *, shard_cache = None))]
+    #[pyo3(signature = (subchunk_indices, /, *, shard_cache = None))]
     fn retrieve_encoded_subchunk(
         &self,
         py: Python,
@@ -231,7 +241,7 @@ impl PyArray {
         })
     }
 
-    #[pyo3(signature = (subchunk_indices, *, shard_cache = None, **codec_options))]
+    #[pyo3(signature = (subchunk_indices, /, *, shard_cache = None, **codec_options))]
     fn retrieve_subchunk(
         &self,
         py: Python,
@@ -258,7 +268,7 @@ impl PyArray {
         self.store.clone()
     }
 
-    #[pyo3(signature = (selection, data, **codec_options))]
+    #[pyo3(signature = (selection, data, /, **codec_options))]
     fn store_array_subset(
         &self,
         py: Python,
@@ -278,7 +288,7 @@ impl PyArray {
         })
     }
 
-    #[pyo3(signature = (chunk_indices, decoded_chunk, **codec_options))]
+    #[pyo3(signature = (chunk_indices, decoded_chunk, /, **codec_options))]
     fn store_chunk(
         &self,
         py: Python,
@@ -299,7 +309,7 @@ impl PyArray {
         })
     }
 
-    #[pyo3(signature = (chunks, data, **codec_options))]
+    #[pyo3(signature = (chunks, data, /, **codec_options))]
     fn store_chunks(
         &self,
         py: Python,
@@ -322,6 +332,7 @@ impl PyArray {
         })
     }
 
+    #[pyo3(signature = (chunk_indices, encoded_chunk, /))]
     fn store_encoded_chunk(
         &self,
         py: Python,

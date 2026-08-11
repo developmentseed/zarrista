@@ -95,7 +95,7 @@ class Group:
 
         This succeeds if the metadata does not exist.
         """
-    def child(self, name: str) -> Array | Group:
+    def child(self, name: str, /) -> Array | Group:
         """Open a direct child array or group by name.
 
         Args:
@@ -112,7 +112,7 @@ class Group:
 
         This overwrites any metadata that exists at the group's path.
         """
-    def with_attrs(self, attrs: Mapping[str, JSONValue]) -> Group:
+    def with_attrs(self, attrs: Mapping[str, JSONValue], /) -> Group:
         """Return a new group reference with `attrs`, leaving this one unchanged.
 
         The new attributes replace the old ones. Any key that `attrs` does not
@@ -148,6 +148,7 @@ class Group:
     def with_consolidated_metadata(
         self,
         consolidated_metadata: ZarrV3ConsolidatedMetadataJSON | None,
+        /,
     ) -> Group:
         """Return a new group reference with `consolidated_metadata`.
 
@@ -183,7 +184,7 @@ class Group:
     @property
     def storage(self) -> SyncStore:
         """The store that backs this group."""
-    def __getitem__(self, name: str) -> Array | Group:
+    def __getitem__(self, name: str, /) -> Array | Group:
         """Open a direct child array or group by name.
 
         Args:
@@ -285,7 +286,7 @@ class AsyncGroup:
 
         This succeeds if the metadata does not exist.
         """
-    async def child(self, name: str) -> AsyncArray | AsyncGroup:
+    async def child(self, name: str, /) -> AsyncArray | AsyncGroup:
         """Open a direct child array or group by name.
 
         Args:
@@ -297,7 +298,7 @@ class AsyncGroup:
         Raises:
             KeyError: If the group has no direct child with that name.
         """
-    def with_attrs(self, attrs: Mapping[str, JSONValue]) -> AsyncGroup:
+    def with_attrs(self, attrs: Mapping[str, JSONValue], /) -> AsyncGroup:
         """Return a new group reference with `attrs`, leaving this one unchanged.
 
         The new attributes replace the old ones. Any key that `attrs` does not
@@ -333,6 +334,7 @@ class AsyncGroup:
     def with_consolidated_metadata(
         self,
         consolidated_metadata: ZarrV3ConsolidatedMetadataJSON | None,
+        /,
     ) -> AsyncGroup:
         """Return a new group reference with `consolidated_metadata`.
 

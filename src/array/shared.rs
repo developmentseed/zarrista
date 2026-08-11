@@ -23,6 +23,7 @@ macro_rules! shared_array_methods {
                 self.inner.chunk_grid_shape()
             }
 
+            #[pyo3(signature = (chunk_indices, /))]
             fn chunk_key(
                 &self,
                 chunk_indices: $crate::array::PyChunkIndices,
@@ -35,6 +36,7 @@ macro_rules! shared_array_methods {
                 self.inner.chunk_key_encoding().clone().into()
             }
 
+            #[pyo3(signature = (chunk_indices, /))]
             fn chunk_origin(
                 &self,
                 chunk_indices: $crate::array::PyChunkIndices,
@@ -42,6 +44,7 @@ macro_rules! shared_array_methods {
                 Ok(self.inner.chunk_origin(chunk_indices.as_ref())?.into())
             }
 
+            #[pyo3(signature = (chunk_indices, /))]
             fn chunk_shape(
                 &self,
                 chunk_indices: $crate::array::PyChunkIndices,
@@ -49,6 +52,7 @@ macro_rules! shared_array_methods {
                 Ok(self.inner.chunk_shape(chunk_indices.as_ref())?.into())
             }
 
+            #[pyo3(signature = (chunk_indices, /))]
             fn chunk_subset(
                 &self,
                 chunk_indices: $crate::array::PyChunkIndices,
@@ -142,6 +146,7 @@ macro_rules! shared_array_methods {
             }
 
             /// Return a new array reference with `attrs`, leaving this one unchanged.
+            #[pyo3(signature = (attrs, /))]
             fn with_attrs(&self, attrs: $crate::metadata::PyAttributes) -> Self {
                 // Workaround for missing Clone
                 let mut updated = self.inner.with_storage(self.inner.storage());
@@ -150,6 +155,7 @@ macro_rules! shared_array_methods {
             }
 
             /// Return a new array reference with `chunk_grid`, leaving this one unchanged.
+            #[pyo3(signature = (chunk_grid, /))]
             fn with_chunk_grid(
                 &self,
                 chunk_grid: $crate::array::PyChunkGrid,
@@ -176,6 +182,7 @@ macro_rules! shared_array_methods {
             }
 
             /// Return a new array reference with `shape`, leaving this one unchanged.
+            #[pyo3(signature = (shape, /))]
             fn with_shape(
                 &self,
                 shape: $crate::array::PyArrayShape,

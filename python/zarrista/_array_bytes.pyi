@@ -9,18 +9,19 @@ class ArrayBytes:
 
     def __init__(
         self,
-        bytes: Buffer,
+        value: Buffer,
+        /,
         *,
         mask: Buffer | None = None,
         offsets: list[int] | None = None,
     ) -> None:
         """Construct from a data buffer, with an optional mask and offsets.
 
-        This does not check `mask` or `offsets` against `bytes`. The codec
+        This does not check `mask` or `offsets` against `value`. The codec
         pipeline reports an error only when it uses the data.
 
         Args:
-            bytes: The element bytes.
+            value: The element bytes.
 
         Keyword Args:
             mask: The validity mask, with one byte per element. Give `None` for

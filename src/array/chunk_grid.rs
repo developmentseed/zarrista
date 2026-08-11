@@ -33,6 +33,7 @@ impl PyChunkGrid {
 #[pymethods]
 impl PyChunkGrid {
     #[staticmethod]
+    #[pyo3(signature = (array_shape, *, chunk_shapes))]
     fn rectilinear(
         array_shape: PyArrayShape,
         chunk_shapes: Vec<PyChunkEdgeLengths>,
@@ -43,6 +44,7 @@ impl PyChunkGrid {
     }
 
     #[staticmethod]
+    #[pyo3(signature = (array_shape, *, chunk_shape))]
     fn regular(array_shape: PyArrayShape, chunk_shape: PyChunkShape) -> ZarristaResult<Self> {
         let chunk_grid = RegularChunkGrid::new(array_shape, chunk_shape)?;
         Ok(Self(Arc::new(chunk_grid).into()))
@@ -50,6 +52,7 @@ impl PyChunkGrid {
 
     /// This chunk grid is experimental and may be incompatible with other Zarr V3 implementations.
     #[staticmethod]
+    #[pyo3(signature = (array_shape, *, chunk_shape))]
     fn regular_bounded(
         array_shape: PyArrayShape,
         chunk_shape: PyChunkShape,

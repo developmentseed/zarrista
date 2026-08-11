@@ -48,7 +48,7 @@ def _fill_value(dtype: str) -> FillValue:
 def _array(dtype: str = "int32", *, shape: list[int] | None = None) -> Array:
     shape = shape or [4, 4]
     return ArrayBuilder(
-        ChunkGrid.regular(shape, [2, 2]),
+        ChunkGrid.regular(shape, chunk_shape=[2, 2]),
         DataType.from_string(dtype),
         _fill_value(dtype),
     ).create(MemoryStore(), "/a")
@@ -232,7 +232,7 @@ async def test_async_write_outlives_the_source_array(tmp_path):
     """The async write moves the tensor into a `'static` future, and its
     deleter runs on whichever thread drops that future."""
     arr = await ArrayBuilder(
-        ChunkGrid.regular([4, 4], [2, 2]),
+        ChunkGrid.regular([4, 4], chunk_shape=[2, 2]),
         DataType.from_string("int32"),
         _fill_value("int32"),
     ).create_async(LocalStore(str(tmp_path)), "/a")
@@ -252,7 +252,7 @@ async def test_many_concurrent_async_writes(tmp_path):
     import asyncio
 
     arr = await ArrayBuilder(
-        ChunkGrid.regular([4, 4], [2, 2]),
+        ChunkGrid.regular([4, 4], chunk_shape=[2, 2]),
         DataType.from_string("int32"),
         _fill_value("int32"),
     ).create_async(LocalStore(str(tmp_path)), "/a")

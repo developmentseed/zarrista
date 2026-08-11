@@ -25,7 +25,7 @@ def _array(store: MemoryStore) -> Array:
     `ArrayBuilder.create` writes the metadata, so the array is openable.
     """
     return ArrayBuilder(
-        ChunkGrid.regular([4, 4], [2, 2]),
+        ChunkGrid.regular([4, 4], chunk_shape=[2, 2]),
         DataType.from_string("int8"),
         FillValue(b"\x00"),
     ).create(store, "/a")
@@ -101,7 +101,7 @@ def test_wrong_dimensionality_raises(shape: list[int]) -> None:
 
 async def test_async_with_shape_returns_new_array(tmp_path: Path) -> None:
     array = await ArrayBuilder(
-        ChunkGrid.regular([4, 4], [2, 2]),
+        ChunkGrid.regular([4, 4], chunk_shape=[2, 2]),
         DataType.from_string("int8"),
         FillValue(b"\x00"),
     ).create_async(LocalStore(str(tmp_path)), "/a")

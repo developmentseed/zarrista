@@ -33,7 +33,7 @@ DATA = np.arange(16, dtype="int32").reshape(4, 4)
 def _builder(*, compressed: bool = False) -> ArrayBuilder:
     """A 4x4 int32 array: one 4x4 shard split into 2x2 subchunks (a 2x2 grid)."""
     builder = ArrayBuilder(
-        ChunkGrid.regular([4, 4], [4, 4]),
+        ChunkGrid.regular([4, 4], chunk_shape=[4, 4]),
         DataType.from_string("int32"),
         FillValue(b"\x00\x00\x00\x00"),
     ).subchunk_shape([2, 2])

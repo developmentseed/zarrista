@@ -39,6 +39,7 @@ impl PyFillValue {
         Ok(format!("FillValue({bytes})"))
     }
 
+    #[pyo3(signature = (other, /))]
     fn equals_all(&self, other: PyBytes) -> bool {
         self.0.equals_all(other.as_ref())
     }

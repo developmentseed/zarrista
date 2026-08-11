@@ -35,6 +35,7 @@ impl PyArrayBuilder {
     }
 
     #[staticmethod]
+    #[pyo3(signature = (array, /))]
     fn like<'py>(array: Bound<'py, PyAny>) -> ZarristaResult<Self> {
         if let Ok(array) = array.cast::<PyArray>() {
             Ok(Self(ArrayBuilder::from_array(array.get().inner())))
@@ -52,18 +53,21 @@ impl PyArrayBuilder {
         }
     }
 
+    #[pyo3(signature = (attrs, /))]
     fn attrs(&self, attrs: PyAttributes) -> PyResult<Self> {
         Ok(self.with(|builder| {
             builder.attributes(attrs.into_inner());
         }))
     }
 
+    #[pyo3(signature = (chunk_grid, /))]
     fn chunk_grid(&self, chunk_grid: PyChunkGrid) -> Self {
         self.with(|builder| {
             builder.chunk_grid(chunk_grid.into_inner());
         })
     }
 
+    #[pyo3(signature = (chunk_key_encoding, /))]
     fn chunk_key_encoding(&self, chunk_key_encoding: PyChunkKeyEncoding) -> Self {
         self.with(|builder| {
             builder.chunk_key_encoding(chunk_key_encoding.into_inner());
@@ -73,6 +77,7 @@ impl PyArrayBuilder {
     // TODO:
     // fn codec_options
 
+    #[pyo3(signature = (compressors, /))]
     fn compressors(&self, compressors: Vec<PyBytesToBytesCodec>) -> Self {
         self.with(|builder| {
             builder
@@ -129,24 +134,28 @@ impl PyArrayBuilder {
     }
 
     /// Set the data type of the array to be built.
+    #[pyo3(signature = (data_type, /))]
     fn data_type(&self, data_type: PyDataType) -> Self {
         self.with(|builder| {
             builder.data_type(data_type.into_inner());
         })
     }
 
+    #[pyo3(signature = (dimension_names, /))]
     fn dimension_names(&self, dimension_names: Option<Vec<PyDimensionName>>) -> Self {
         self.with(|builder| {
             builder.dimension_names(dimension_names);
         })
     }
 
+    #[pyo3(signature = (filters, /))]
     fn filters(&self, filters: Vec<PyArrayToArrayCodec>) -> Self {
         self.with(|builder| {
             builder.array_to_array_codecs(filters.into_iter().map(|f| f.into_inner()).collect());
         })
     }
 
+    #[pyo3(signature = (serializer, /))]
     fn serializer(&self, serializer: PyArrayToBytesCodec) -> Self {
         self.with(|builder| {
             builder.array_to_bytes_codec(serializer.into_inner());
@@ -154,12 +163,14 @@ impl PyArrayBuilder {
     }
 
     /// Set the shape of the array to be built.
+    #[pyo3(signature = (shape, /))]
     fn shape(&self, shape: PyArrayShape) -> Self {
         self.with(|builder| {
             builder.shape(shape);
         })
     }
 
+    #[pyo3(signature = (subchunk_shape, /))]
     fn subchunk_shape(&self, subchunk_shape: Option<PyArrayShape>) -> Self {
         self.with(|builder| {
             builder.subchunk_shape(subchunk_shape);

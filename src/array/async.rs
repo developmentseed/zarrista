@@ -65,7 +65,7 @@ impl PyAsyncArray {
         py: Python<'py>,
         selection: PySelection,
     ) -> PyResult<Bound<'py, PyAny>> {
-        self.retrieve_array_subset(py, selection)
+        self.retrieve_array_subset(py, selection, None)
     }
 
     fn __repr__(&self, py: Python) -> PyResult<String> {
@@ -109,7 +109,7 @@ impl PyAsyncArray {
         })
     }
 
-    #[pyo3(signature = (chunk_indices, **codec_options))]
+    #[pyo3(signature = (chunk_indices, /, **codec_options))]
     fn compact_chunk<'py>(
         &self,
         py: Python<'py>,
@@ -130,6 +130,7 @@ impl PyAsyncArray {
         })
     }
 
+    #[pyo3(signature = (chunk_indices, /))]
     fn erase_chunk<'py>(
         &self,
         py: Python<'py>,
@@ -145,6 +146,7 @@ impl PyAsyncArray {
         })
     }
 
+    #[pyo3(signature = (chunks, /))]
     fn erase_chunks<'py>(
         &self,
         py: Python<'py>,
@@ -183,24 +185,29 @@ impl PyAsyncArray {
     }
 
     /// Read a region of the array as `Data`, using numpy-style basic indexing.
+    #[pyo3(signature = (selection, /, **codec_options))]
     fn retrieve_array_subset<'py>(
         &self,
         py: Python<'py>,
         selection: PySelection,
+        codec_options: Option<PyCodecOptions>,
     ) -> PyResult<Bound<'py, PyAny>> {
         let inner = self.inner.clone();
         let array_subset = self.array_subset(&selection)?;
+        let codec_options = codec_options
+            .map(|opts| opts.into_inner())
+            .unwrap_or_default();
 
         future_into_py(py, async move {
             let decoded = inner
-                .async_retrieve_array_subset::<PyTensor>(&array_subset)
+                .async_retrieve_array_subset_opt::<PyTensor>(&array_subset, &codec_options)
                 .await
                 .map_err(ZarristaError::from)?;
             Ok(decoded)
         })
     }
 
-    #[pyo3(signature = (chunk_indices, **codec_options))]
+    #[pyo3(signature = (chunk_indices, /, **codec_options))]
     fn retrieve_chunk<'py>(
         &self,
         py: Python<'py>,
@@ -221,6 +228,7 @@ impl PyAsyncArray {
         })
     }
 
+    #[pyo3(signature = (chunk_indices, /))]
     fn retrieve_encoded_chunk<'py>(
         &self,
         py: Python<'py>,
@@ -247,7 +255,7 @@ impl PyAsyncArray {
         })
     }
 
-    #[pyo3(signature = (subchunk_indices, *, shard_cache = None))]
+    #[pyo3(signature = (subchunk_indices, /, *, shard_cache = None))]
     fn retrieve_encoded_subchunk<'py>(
         &self,
         py: Python<'py>,
@@ -284,7 +292,7 @@ impl PyAsyncArray {
         })
     }
 
-    #[pyo3(signature = (subchunk_indices, *, shard_cache = None, **codec_options))]
+    #[pyo3(signature = (subchunk_indices, /, *, shard_cache = None, **codec_options))]
     fn retrieve_subchunk<'py>(
         &self,
         py: Python<'py>,
@@ -316,7 +324,7 @@ impl PyAsyncArray {
         self.store.clone()
     }
 
-    #[pyo3(signature = (selection, data, **codec_options))]
+    #[pyo3(signature = (selection, data, /, **codec_options))]
     fn store_array_subset<'py>(
         &self,
         py: Python<'py>,
@@ -343,7 +351,7 @@ impl PyAsyncArray {
         })
     }
 
-    #[pyo3(signature = (chunk_indices, decoded_chunk, **codec_options))]
+    #[pyo3(signature = (chunk_indices, decoded_chunk, /, **codec_options))]
     fn store_chunk<'py>(
         &self,
         py: Python<'py>,
@@ -369,7 +377,7 @@ impl PyAsyncArray {
         })
     }
 
-    #[pyo3(signature = (chunks, data, **codec_options))]
+    #[pyo3(signature = (chunks, data, /, **codec_options))]
     fn store_chunks<'py>(
         &self,
         py: Python<'py>,
@@ -401,6 +409,7 @@ impl PyAsyncArray {
         })
     }
 
+    #[pyo3(signature = (chunk_indices, encoded_chunk, /))]
     fn store_encoded_chunk<'py>(
         &self,
         py: Python<'py>,

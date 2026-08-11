@@ -34,6 +34,7 @@ macro_rules! group_metadata_accessors {
             }
 
             /// Return a new group reference with `attrs`, leaving this one unchanged.
+            #[pyo3(signature = (attrs, /))]
             fn with_attrs(
                 &self,
                 attrs: $crate::metadata::PyAttributes,
@@ -55,6 +56,7 @@ macro_rules! group_metadata_accessors {
             }
 
             /// Return a new group reference with `consolidated_metadata`, leaving this one unchanged.
+            #[pyo3(signature = (consolidated_metadata, /))]
             fn with_consolidated_metadata(
                 &self,
                 consolidated_metadata: Option<$crate::metadata::PyConsolidatedMetadata>,

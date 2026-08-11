@@ -21,7 +21,7 @@ class ArrayToArrayCodec:
     def config(self) -> JSONValue | None:
         """The codec's Zarr v3 configuration as a dict, if any."""
     @staticmethod
-    def from_config(metadata: JSONValue) -> ArrayToArrayCodec:
+    def from_config(metadata: JSONValue, /) -> ArrayToArrayCodec:
         """Construct a codec from its Zarr v3 metadata.
 
         Args:
@@ -60,7 +60,8 @@ class ArrayToArrayCodec:
         """
     def encode(
         self,
-        bytes: ArrayBytes,
+        value: ArrayBytes,
+        /,
         shape: list[int],
         data_type: DataType,
         fill_value: FillValue,
@@ -68,7 +69,7 @@ class ArrayToArrayCodec:
         """Encode chunk bytes with this codec.
 
         Args:
-            bytes: The decoded chunk bytes.
+            value: The decoded chunk bytes.
             shape: The shape of the decoded chunk, in elements along each
                 dimension.
             data_type: The data type of the decoded chunk.
@@ -78,12 +79,13 @@ class ArrayToArrayCodec:
             The encoded chunk bytes.
 
         Raises:
-            CodecError: If `bytes` does not agree with `shape` and `data_type`,
+            CodecError: If `value` does not agree with `shape` and `data_type`,
                 or if the codec cannot encode the chunk.
         """
     def decode(
         self,
-        bytes: ArrayBytes,
+        value: ArrayBytes,
+        /,
         shape: list[int],
         data_type: DataType,
         fill_value: FillValue,
@@ -91,7 +93,7 @@ class ArrayToArrayCodec:
         """Decode chunk bytes with this codec.
 
         Args:
-            bytes: The encoded chunk bytes.
+            value: The encoded chunk bytes.
             shape: The shape of the encoded chunk, in elements along each
                 dimension.
             data_type: The data type of the encoded chunk.
@@ -101,7 +103,7 @@ class ArrayToArrayCodec:
             The decoded chunk bytes.
 
         Raises:
-            CodecError: If `bytes` does not agree with `shape` and `data_type`,
+            CodecError: If `value` does not agree with `shape` and `data_type`,
                 or if the codec cannot decode the chunk.
         """
     def encoded_shape(self, decoded_shape: list[int]) -> list[int]:

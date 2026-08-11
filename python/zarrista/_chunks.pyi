@@ -31,7 +31,11 @@ class ChunkGrid:
     """
 
     @staticmethod
-    def regular(array_shape: Sequence[int], chunk_shape: Sequence[int]) -> ChunkGrid:
+    def regular(
+        array_shape: Sequence[int],
+        *,
+        chunk_shape: Sequence[int],
+    ) -> ChunkGrid:
         """Construct a regular grid with a fixed chunk shape.
 
         Args:
@@ -49,6 +53,7 @@ class ChunkGrid:
     @staticmethod
     def rectilinear(
         array_shape: Sequence[int],
+        *,
         chunk_shapes: Sequence[ChunkEdgeLengths],
     ) -> ChunkGrid:
         """Construct a rectilinear grid with different chunk sizes along each dimension.
@@ -68,6 +73,7 @@ class ChunkGrid:
     @staticmethod
     def regular_bounded(
         array_shape: Sequence[int],
+        *,
         chunk_shape: Sequence[int],
     ) -> ChunkGrid:
         """Construct a regular grid that clips the last chunks to the array bounds.

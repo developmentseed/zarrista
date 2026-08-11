@@ -19,7 +19,7 @@ from zarrista.store import MemoryStore
 def _builder() -> ArrayBuilder:
     """A minimal int8 builder: 8x8 array, 4x4 regular chunks, fill value 0."""
     return ArrayBuilder(
-        ChunkGrid.regular([8, 8], [4, 4]),
+        ChunkGrid.regular([8, 8], chunk_shape=[4, 4]),
         DataType.from_string("int8"),
         FillValue(b"\x00"),
     )
@@ -164,7 +164,7 @@ def test_like_with_override():
 def test_chunk_grid_dimension_mismatch_raises():
     """A chunk shape with the wrong dimensionality is rejected at parse time."""
     with pytest.raises(ChunkGridCreateError):
-        ChunkGrid.regular([8, 8], [4, 4, 4])
+        ChunkGrid.regular([8, 8], chunk_shape=[4, 4, 4])
 
 
 def test_chunk_grid_create_error_is_zarrista_error():

@@ -54,7 +54,7 @@ class DataType:
     """A Zarr v3 data type."""
 
     @staticmethod
-    def from_metadata(metadata: ZarrV3NamedConfigJSON) -> DataType:
+    def from_metadata(metadata: ZarrV3NamedConfigJSON, /) -> DataType:
         """Construct a data type from its Zarr v3 metadata.
 
         Args:
@@ -68,7 +68,7 @@ class DataType:
                 or if the configuration is not valid for it.
         """
     @staticmethod
-    def from_string(name: DataTypeName | str) -> DataType:
+    def from_string(name: DataTypeName | str, /) -> DataType:
         """Construct a data type from its Zarr v3 name (e.g. `"float32"`).
 
         Args:
@@ -86,4 +86,4 @@ class DataType:
     @property
     def size(self) -> int | None:
         """The fixed size in bytes, or `None` for variable-length data types."""
-    def __eq__(self, other: object) -> bool: ...
+    def __eq__(self, other: object, /) -> bool: ...

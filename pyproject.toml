@@ -94,9 +94,6 @@ ignore = [
 known-first-party = ["zarrista"]
 
 [tool.ruff.lint.per-file-ignores]
-"*.pyi" = [
-    "A002", # Function argument `bytes` is shadowing a Python builtin
-]
 # Command-line scripts that support the skills in `.claude/skills`.
 ".claude/skills/*/*.py" = [
     "PLC0415", # import not at top-level (network imports stay in the one check that needs them)
