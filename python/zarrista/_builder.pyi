@@ -77,7 +77,7 @@ class ArrayBuilder:
             fill_value: The fill value of the array. This must match `dtype`.
         """
     @staticmethod
-    def like(array: Array | AsyncArray) -> ArrayBuilder:
+    def like(array: Array | AsyncArray, /) -> ArrayBuilder:
         """Create a builder that copies the configuration of an existing array.
 
         Args:
@@ -86,7 +86,7 @@ class ArrayBuilder:
         Returns:
             A new builder with the same configuration as `array`.
         """
-    def attrs(self, attrs: Mapping[str, JSONValue]) -> ArrayBuilder:
+    def attrs(self, attrs: Mapping[str, JSONValue], /) -> ArrayBuilder:
         """Return a new builder with the given user attributes set.
 
         Args:
@@ -95,7 +95,7 @@ class ArrayBuilder:
         Returns:
             A new builder with the user attributes set.
         """
-    def chunk_grid(self, chunk_grid: ChunkGrid) -> ArrayBuilder:
+    def chunk_grid(self, chunk_grid: ChunkGrid, /) -> ArrayBuilder:
         """Return a new builder with the chunk grid set.
 
         This can also change the array shape, because the grid carries one.
@@ -109,6 +109,7 @@ class ArrayBuilder:
     def chunk_key_encoding(
         self,
         chunk_key_encoding: ChunkKeyEncoding,
+        /,
     ) -> ArrayBuilder:
         """Return a new builder with the chunk key encoding set.
 
@@ -122,6 +123,7 @@ class ArrayBuilder:
     def compressors(
         self,
         compressors: Sequence[BytesToBytesCodec],
+        /,
     ) -> ArrayBuilder:
         """Return a new builder with the bytes-to-bytes codecs ("compressors") set.
 
@@ -131,7 +133,7 @@ class ArrayBuilder:
         Returns:
             A new builder with the compressors set.
         """
-    def data_type(self, data_type: DataType) -> ArrayBuilder:
+    def data_type(self, data_type: DataType, /) -> ArrayBuilder:
         """Return a new builder with the data type set.
 
         Args:
@@ -144,6 +146,7 @@ class ArrayBuilder:
     def dimension_names(
         self,
         dimension_names: Sequence[str | None] | None,
+        /,
     ) -> ArrayBuilder:
         """Return a new builder with the dimension names set (or cleared).
 
@@ -155,7 +158,7 @@ class ArrayBuilder:
         Returns:
             A new builder with the dimension names set.
         """
-    def filters(self, filters: Sequence[ArrayToArrayCodec]) -> ArrayBuilder:
+    def filters(self, filters: Sequence[ArrayToArrayCodec], /) -> ArrayBuilder:
         """Return a new builder with the array-to-array codecs ("filters") set.
 
         Args:
@@ -164,7 +167,7 @@ class ArrayBuilder:
         Returns:
             A new builder with the filters set.
         """
-    def serializer(self, serializer: ArrayToBytesCodec) -> ArrayBuilder:
+    def serializer(self, serializer: ArrayToBytesCodec, /) -> ArrayBuilder:
         """Return a new builder with the array-to-bytes codec ("serializer") set.
 
         Sharding is itself an array-to-bytes codec. Therefore you pass a
@@ -176,7 +179,7 @@ class ArrayBuilder:
         Returns:
             A new builder with the serializer set.
         """
-    def shape(self, shape: Sequence[int]) -> ArrayBuilder:
+    def shape(self, shape: Sequence[int], /) -> ArrayBuilder:
         """Return a new builder with the array shape set.
 
         This shape replaces the shape that the chunk grid gives.
@@ -190,6 +193,7 @@ class ArrayBuilder:
     def subchunk_shape(
         self,
         subchunk_shape: Sequence[int] | None,
+        /,
     ) -> ArrayBuilder:
         """Return a new builder with the inner (subchunk) shape, enabling sharding.
 

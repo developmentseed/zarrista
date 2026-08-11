@@ -18,7 +18,7 @@ class FillValue:
         Returns:
             The native-endian bytes of one fill value element.
         """
-    def equals_all(self, other: Buffer) -> bool:
+    def equals_all(self, other: Buffer, /) -> bool:
         """Return whether `other` contains only repetitions of this fill value.
 
         Args:

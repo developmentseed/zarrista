@@ -22,7 +22,7 @@ class ChunkKeyEncoding:
             ValueError: If `sep` is not `"."` or `"/"`.
         """
     @staticmethod
-    def from_metadata(metadata: ZarrV3NamedConfigJSON) -> ChunkKeyEncoding:
+    def from_metadata(metadata: ZarrV3NamedConfigJSON, /) -> ChunkKeyEncoding:
         """Construct a chunk key encoding from its Zarr v3 metadata.
 
         Args:

@@ -119,7 +119,7 @@ class Array:
     @property
     def chunk_grid_shape(self) -> list[int]:
         """The shape of the chunk grid (i.e. the number of chunks per dimension)."""
-    def chunk_key(self, chunk_indices: list[int]) -> str:
+    def chunk_key(self, chunk_indices: list[int], /) -> str:
         """Return the store key of the chunk at `chunk_indices`.
 
         This does not check `chunk_indices` against the chunk grid. It gives a
@@ -134,7 +134,7 @@ class Array:
     @property
     def chunk_key_encoding(self) -> ChunkKeyEncoding:
         """The chunk key encoding, mapping chunk grid indices to store keys."""
-    def chunk_origin(self, chunk_indices: list[int]) -> list[int]:
+    def chunk_origin(self, chunk_indices: list[int], /) -> list[int]:
         """Return the origin of the chunk at `chunk_indices`.
 
         Args:
@@ -147,7 +147,7 @@ class Array:
             ArrayError: If `chunk_indices` has a different number of dimensions
                 from the chunk grid.
         """
-    def chunk_shape(self, chunk_indices: list[int]) -> list[int]:
+    def chunk_shape(self, chunk_indices: list[int], /) -> list[int]:
         """Return the shape of the chunk at `chunk_indices`.
 
         Args:
@@ -160,7 +160,7 @@ class Array:
             ArrayError: If `chunk_indices` has a different number of dimensions
                 from the chunk grid.
         """
-    def chunk_subset(self, chunk_indices: list[int]) -> tuple[slice, ...]:
+    def chunk_subset(self, chunk_indices: list[int], /) -> tuple[slice, ...]:
         """Return the array subset spanned by the chunk at `chunk_indices`.
 
         Args:
@@ -243,7 +243,11 @@ class Array:
         Raises:
             TypeError: If a keyword argument is not a known codec option.
         """
-    def retrieve_encoded_chunk(self, chunk_indices: list[int]) -> EncodedChunk | None:
+    def retrieve_encoded_chunk(
+        self,
+        chunk_indices: list[int],
+        /,
+    ) -> EncodedChunk | None:
         """Read the raw, still-encoded bytes of the chunk at `chunk_indices`.
 
         The method reads the bytes and does not run the codec pipeline. To
@@ -519,7 +523,7 @@ class Array:
                 is read-only.
             TypeError: If a keyword argument is not a known codec option.
         """
-    def erase_chunk(self, chunk_indices: list[int]) -> None:
+    def erase_chunk(self, chunk_indices: list[int], /) -> None:
         """Delete the chunk at `chunk_indices` from the store.
 
         To erase a chunk that is absent does nothing.
@@ -530,7 +534,7 @@ class Array:
         Raises:
             StorageError: If the array is read-only.
         """
-    def erase_chunks(self, chunks: Selection) -> None:
+    def erase_chunks(self, chunks: Selection, /) -> None:
         """Delete the specified chunks from the store.
 
         `chunks` is a numpy-style selection in **chunk-grid** coordinates, not
@@ -565,7 +569,7 @@ class Array:
         Returns:
             A read-only view of this array.
         """
-    def with_chunk_grid(self, chunk_grid: ChunkGrid) -> Array:
+    def with_chunk_grid(self, chunk_grid: ChunkGrid, /) -> Array:
         """Return a new array reference with `chunk_grid`.
 
         This does not mutate the existing `array`.
@@ -603,7 +607,7 @@ class Array:
         Returns:
             A new array reference that uses `chunk_grid`.
         """
-    def with_attrs(self, attrs: Mapping[str, JSONValue]) -> Array:
+    def with_attrs(self, attrs: Mapping[str, JSONValue], /) -> Array:
         """Return a new array reference with `attrs`, leaving this one unchanged.
 
         The new attributes replace the old ones. Any key that `attrs` does not
@@ -641,7 +645,7 @@ class Array:
             TypeError: If a key is not a string, or if a value is not
                 JSON-serializable.
         """
-    def with_shape(self, shape: list[int]) -> Array:
+    def with_shape(self, shape: list[int], /) -> Array:
         """Return a new array reference with `shape`, leaving this one unchanged.
 
         Nothing is persisted to the store. Call
@@ -712,7 +716,7 @@ class Array:
     @property
     def subset_all(self) -> tuple[slice, ...]:
         """The array subset that spans the entire array, as a tuple of slices."""
-    def __getitem__(self, selection: Selection) -> Tensor:
+    def __getitem__(self, selection: Selection, /) -> Tensor:
         """Read a region with numpy-style basic indexing, e.g. `arr[0:10, :, 5]`.
 
         This is sugar for `retrieve_array_subset`.
@@ -787,7 +791,7 @@ class AsyncArray:
     @property
     def chunk_grid_shape(self) -> list[int]:
         """The shape of the chunk grid (i.e. the number of chunks per dimension)."""
-    def chunk_key(self, chunk_indices: list[int]) -> str:
+    def chunk_key(self, chunk_indices: list[int], /) -> str:
         """Return the store key of the chunk at `chunk_indices`.
 
         This does not check `chunk_indices` against the chunk grid. It gives a
@@ -802,7 +806,7 @@ class AsyncArray:
     @property
     def chunk_key_encoding(self) -> ChunkKeyEncoding:
         """The chunk key encoding, mapping chunk grid indices to store keys."""
-    def chunk_origin(self, chunk_indices: list[int]) -> list[int]:
+    def chunk_origin(self, chunk_indices: list[int], /) -> list[int]:
         """Return the origin of the chunk at `chunk_indices`.
 
         Args:
@@ -815,7 +819,7 @@ class AsyncArray:
             ArrayError: If `chunk_indices` has a different number of dimensions
                 from the chunk grid.
         """
-    def chunk_shape(self, chunk_indices: list[int]) -> list[int]:
+    def chunk_shape(self, chunk_indices: list[int], /) -> list[int]:
         """Return the shape of the chunk at `chunk_indices`.
 
         Args:
@@ -828,7 +832,7 @@ class AsyncArray:
             ArrayError: If `chunk_indices` has a different number of dimensions
                 from the chunk grid.
         """
-    def chunk_subset(self, chunk_indices: list[int]) -> tuple[slice, ...]:
+    def chunk_subset(self, chunk_indices: list[int], /) -> tuple[slice, ...]:
         """Return the array subset spanned by the chunk at `chunk_indices`.
 
         Args:
@@ -1192,7 +1196,7 @@ class AsyncArray:
                 is read-only.
             TypeError: If a keyword argument is not a known codec option.
         """
-    async def erase_chunk(self, chunk_indices: list[int]) -> None:
+    async def erase_chunk(self, chunk_indices: list[int], /) -> None:
         """Delete the chunk at `chunk_indices` from the store.
 
         To erase a chunk that is absent does nothing.
@@ -1203,7 +1207,7 @@ class AsyncArray:
         Raises:
             StorageError: If the array is read-only.
         """
-    async def erase_chunks(self, chunks: Selection) -> None:
+    async def erase_chunks(self, chunks: Selection, /) -> None:
         """Delete the specified chunks from the store.
 
         `chunks` is a numpy-style selection in **chunk-grid** coordinates, not
@@ -1238,7 +1242,7 @@ class AsyncArray:
         Returns:
             A read-only view of this array.
         """
-    def with_chunk_grid(self, chunk_grid: ChunkGrid) -> AsyncArray:
+    def with_chunk_grid(self, chunk_grid: ChunkGrid, /) -> AsyncArray:
         """Return a new array reference with `chunk_grid`, leaving this one unchanged.
 
         This method is synchronous: it performs no I/O. The new array's shape comes
@@ -1274,7 +1278,7 @@ class AsyncArray:
         Returns:
             A new array reference that uses `chunk_grid`.
         """
-    def with_attrs(self, attrs: Mapping[str, JSONValue]) -> AsyncArray:
+    def with_attrs(self, attrs: Mapping[str, JSONValue], /) -> AsyncArray:
         """Return a new array reference with `attrs`, leaving this one unchanged.
 
         The new attributes replace the old ones. Any key that `attrs` does not
@@ -1313,7 +1317,7 @@ class AsyncArray:
             TypeError: If a key is not a string, or if a value is not
                 JSON-serializable.
         """
-    def with_shape(self, shape: list[int]) -> AsyncArray:
+    def with_shape(self, shape: list[int], /) -> AsyncArray:
         """Return a new array reference with `shape`, leaving this one unchanged.
 
         This method is synchronous: it performs no I/O. Nothing is persisted to the
@@ -1385,7 +1389,7 @@ class AsyncArray:
     @property
     def subset_all(self) -> tuple[slice, ...]:
         """The array subset that spans the entire array, as a tuple of slices."""
-    async def __getitem__(self, selection: Selection) -> Tensor:
+    async def __getitem__(self, selection: Selection, /) -> Tensor:
         """Read a region with numpy-style basic indexing: `await arr[0:10, :, 5]`.
 
         This is sugar for `retrieve_array_subset`.

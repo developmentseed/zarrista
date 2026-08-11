@@ -47,6 +47,7 @@ impl PyBytesToBytesCodec {
 
     /// Build a codec from its Zarr v3 metadata,
     #[staticmethod]
+    #[pyo3(signature = (metadata, /))]
     fn from_config(metadata: PyMetadataV3) -> ZarristaResult<Self> {
         let codec = Codec::from_metadata(CodecMetadata::V3(metadata.as_ref()))?;
         match codec {
@@ -65,6 +66,7 @@ impl PyBytesToBytesCodec {
             .map(|config| config.into())
     }
 
+    #[pyo3(signature = (decoded_value, /))]
     fn encode(&self, py: Python, decoded_value: PyBytes) -> ZarristaResult<PyBytes> {
         crate::py::detach(py, || {
             let encoded = self.0.encode(

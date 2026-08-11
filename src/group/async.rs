@@ -87,6 +87,7 @@ impl PyAsyncGroup {
     }
 
     /// Open a direct child array or group by name.
+    #[pyo3(signature = (name, /))]
     fn child<'py>(&self, py: Python<'py>, name: String) -> PyResult<Bound<'py, PyAny>> {
         let inner = self.inner.clone();
         let storage = self.store.clone();

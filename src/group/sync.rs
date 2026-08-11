@@ -78,6 +78,7 @@ impl PyGroup {
         self.child(py, name)
     }
 
+    #[pyo3(signature = (name, /))]
     fn child(&self, py: Python, name: PyBackedStr) -> ZarristaResult<PyNode> {
         crate::py::detach(py, || {
             let children = self.inner.children(false)?;

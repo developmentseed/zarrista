@@ -130,6 +130,7 @@ impl PyAsyncArray {
         })
     }
 
+    #[pyo3(signature = (chunk_indices, /))]
     fn erase_chunk<'py>(
         &self,
         py: Python<'py>,
@@ -145,6 +146,7 @@ impl PyAsyncArray {
         })
     }
 
+    #[pyo3(signature = (chunks, /))]
     fn erase_chunks<'py>(
         &self,
         py: Python<'py>,
@@ -221,6 +223,7 @@ impl PyAsyncArray {
         })
     }
 
+    #[pyo3(signature = (chunk_indices, /))]
     fn retrieve_encoded_chunk<'py>(
         &self,
         py: Python<'py>,

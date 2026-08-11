@@ -47,6 +47,7 @@ impl PyChunkKeyEncoding {
     }
 
     #[staticmethod]
+    #[pyo3(signature = (metadata, /))]
     fn from_metadata(metadata: PyMetadataV3) -> ZarristaResult<Self> {
         Ok(Self::new(ChunkKeyEncoding::from_metadata(
             metadata.as_ref(),

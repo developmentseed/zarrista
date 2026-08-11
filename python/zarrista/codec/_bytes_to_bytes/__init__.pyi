@@ -13,7 +13,7 @@ class BytesToBytesCodec:
     def config(self) -> JSONValue | None:
         """The codec's Zarr v3 configuration as a dict, if any."""
     @staticmethod
-    def from_config(metadata: JSONValue) -> BytesToBytesCodec:
+    def from_config(metadata: JSONValue, /) -> BytesToBytesCodec:
         """Construct a codec from its Zarr v3 metadata.
 
         Args:
@@ -27,7 +27,7 @@ class BytesToBytesCodec:
             PluginCreateError: If the metadata names an unsupported codec, or
                 if the configuration is not valid for that codec.
         """
-    def encode(self, decoded_value: bytes) -> bytes:
+    def encode(self, decoded_value: bytes, /) -> bytes:
         """Encode chunk bytes with this codec.
 
         Args:

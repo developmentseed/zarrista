@@ -112,6 +112,7 @@ impl PyArray {
         })
     }
 
+    #[pyo3(signature = (chunk_indices, /))]
     fn erase_chunk(&self, py: Python, chunk_indices: PyChunkIndices) -> ZarristaResult<()> {
         crate::py::detach(py, || {
             self.inner.erase_chunk(&chunk_indices)?;
@@ -119,6 +120,7 @@ impl PyArray {
         })
     }
 
+    #[pyo3(signature = (chunks, /))]
     fn erase_chunks(&self, py: Python, chunks: PySelection) -> ZarristaResult<()> {
         crate::py::detach(py, move || {
             let chunks = self.chunk_grid_subset(&chunks)?;
@@ -176,6 +178,7 @@ impl PyArray {
         })
     }
 
+    #[pyo3(signature = (chunk_indices, /))]
     fn retrieve_encoded_chunk(
         &self,
         py: Python,

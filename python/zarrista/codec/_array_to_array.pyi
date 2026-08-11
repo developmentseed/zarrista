@@ -21,7 +21,7 @@ class ArrayToArrayCodec:
     def config(self) -> JSONValue | None:
         """The codec's Zarr v3 configuration as a dict, if any."""
     @staticmethod
-    def from_config(metadata: JSONValue) -> ArrayToArrayCodec:
+    def from_config(metadata: JSONValue, /) -> ArrayToArrayCodec:
         """Construct a codec from its Zarr v3 metadata.
 
         Args:
