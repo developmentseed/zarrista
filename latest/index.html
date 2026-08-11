@@ -402,17 +402,6 @@
   
 </li>
       
-        <li class="md-nav__item">
-  <a href="#development" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Development
-      
-    </span>
-  </a>
-  
-</li>
-      
     </ul>
   
 </nav>
@@ -429,6 +418,16 @@
   
     
     
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
       
         
       
@@ -499,6 +498,34 @@
     
   
     Array
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="api/builder/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Array creation
   
 
     
@@ -610,7 +637,7 @@
   <span class="md-ellipsis">
     
   
-    CodecChain
+    Codec
   
 
     
@@ -631,14 +658,42 @@
   
   
     <li class="md-nav__item">
-      <a href="api/data/" class="md-nav__link">
+      <a href="api/concurrency/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Data
+    Concurrency
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="api/decoded_array/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    DecodedArray
   
 
     
@@ -667,6 +722,90 @@
     
   
     DataType
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="api/encoded-chunk/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Encoded chunk
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="api/exceptions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Exceptions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="api/shard-cache/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Shard cache
   
 
     
@@ -845,17 +984,6 @@
   
 </li>
       
-        <li class="md-nav__item">
-  <a href="#development" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Development
-      
-    </span>
-  </a>
-  
-</li>
-      
     </ul>
   
 </nav>
@@ -882,18 +1010,18 @@
 <h1 id="zarrista">zarrista<a class="headerlink" href="#zarrista" title="Permanent link">&para;</a></h1>
 <p><a href="https://pypi.org/project/zarrista/"><img alt="PyPI" src="https://badge.fury.io/py/zarrista.svg" /></a></p>
 <p>A low-level <a href="https://zarr.dev/">Zarr</a> API for Python, inspired by <a href="https://zarrita.dev/">zarrita.js</a>, powered from Rust by <a href="https://zarrs.dev/">Zarrs</a>. Serving up Zarr chunks like your favorite barista!</p>
-<p>This has been <em>minimally</em> vibe-coded: <em>mostly</em> but not fully written by hand. Some areas were prototyped with Claude.</p>
-<p>This project is for <strong>evaluation</strong>, to consider whether natively binding to <a href="https://zarrs.dev/">Zarrs</a> can provide better performance. It is not yet production ready.</p>
+<p>This project is <em>minimally</em> vibe-coded. A person wrote most of the code by hand, and Claude prototyped some areas.</p>
+<p>This project is for <strong>evaluation</strong>. It examines whether a native binding to <a href="https://zarrs.dev/">Zarrs</a> gives better performance. It is not ready for production.</p>
 <h2 id="documentation">Documentation<a class="headerlink" href="#documentation" title="Permanent link">&para;</a></h2>
 <p><a href="https://developmentseed.org/zarrista/latest"><strong>Documentation website.</strong></a></p>
 <h2 id="features">Features<a class="headerlink" href="#features" title="Permanent link">&para;</a></h2>
 <ul>
-<li><strong>Low-level, explicit</strong> Zarr access: open arrays and groups, read chunks, and inspect metadata without hidden machinery.</li>
+<li><strong>Low-level, explicit</strong> Zarr access. Open arrays and groups, read chunks, and examine metadata. The API hides no machinery.</li>
 <li><strong>Both sync and async</strong> APIs ([<code>Array</code>] / [<code>AsyncArray</code>], [<code>Group</code>] / [<code>AsyncGroup</code>]).</li>
-<li><strong>Rust core</strong> via <a href="https://zarrs.dev/">Zarrs</a> for compiled performance.</li>
-<li><strong>NumPy integration</strong>: read data into <a href="https://numpy.org/">NumPy</a> arrays through the buffer protocol for zero-copy sharing between Rust and Python.</li>
+<li><strong>Rust core</strong> through <a href="https://zarrs.dev/">Zarrs</a>, for the performance of compiled code.</li>
+<li><strong>NumPy integration</strong>. Read data into <a href="https://numpy.org/">NumPy</a> arrays through the buffer protocol. Rust and Python share the memory without a copy.</li>
 <li><strong>Variety of data access</strong><ul>
-<li>AWS S3, Google Cloud Storage, Azure Storage via <a href="https://github.com/developmentseed/obstore">Obstore</a></li>
+<li>AWS S3, Google Cloud Storage, Azure Storage through <a href="https://github.com/developmentseed/obstore">Obstore</a></li>
 <li><a href="https://icechunk.io/">Icechunk</a> integration</li>
 </ul>
 </li>
@@ -901,7 +1029,8 @@
 </ul>
 <h2 id="example">Example<a class="headerlink" href="#example" title="Permanent link">&para;</a></h2>
 <p>Open a store, then open an <code>Array</code> from it:</p>
-<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">zarrista</span><span class="w"> </span><span class="kn">import</span> <span class="n">Array</span><span class="p">,</span> <span class="n">FilesystemStore</span>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">zarrista</span><span class="w"> </span><span class="kn">import</span> <span class="n">Array</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">zarrista.store</span><span class="w"> </span><span class="kn">import</span> <span class="n">FilesystemStore</span>
 
 <span class="n">store</span> <span class="o">=</span> <span class="n">FilesystemStore</span><span class="p">(</span><span class="s2">&quot;data/example.zarr&quot;</span><span class="p">)</span>
 <span class="n">array</span> <span class="o">=</span> <span class="n">Array</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">store</span><span class="p">,</span> <span class="n">path</span><span class="o">=</span><span class="s2">&quot;/temperature&quot;</span><span class="p">)</span>
@@ -911,12 +1040,12 @@
 <span class="c1"># [720, 1440]</span>
 
 <span class="n">array</span><span class="o">.</span><span class="n">dtype</span>
-<span class="c1"># DataType(float32)</span>
+<span class="c1"># DataType(float32 / &lt;f4)</span>
 
 <span class="n">array</span><span class="o">.</span><span class="n">dimension_names</span>
 <span class="c1"># [&quot;lat&quot;, &quot;lon&quot;]</span>
 </code></pre></div>
-<p>Read a subset of the array. Indexing returns a <code>Data</code> buffer, which converts to a <a href="https://numpy.org/">NumPy</a> array:</p>
+<p>Read a subset of the array. Indexing returns a [<code>DecodedArray</code>], which converts to a <a href="https://numpy.org/">NumPy</a> array:</p>
 <div class="highlight"><pre><span></span><code><span class="n">data</span> <span class="o">=</span> <span class="n">array</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">128</span><span class="p">,</span> <span class="mi">0</span><span class="p">:</span><span class="mi">128</span><span class="p">]</span>
 <span class="n">arr</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">()</span>
 <span class="n">arr</span><span class="o">.</span><span class="n">shape</span>
@@ -925,22 +1054,6 @@
 <p>You can also read individual chunks by their grid index:</p>
 <div class="highlight"><pre><span></span><code><span class="n">data</span> <span class="o">=</span> <span class="n">array</span><span class="o">.</span><span class="n">retrieve_chunk</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
 </code></pre></div>
-<h2 id="development">Development<a class="headerlink" href="#development" title="Permanent link">&para;</a></h2>
-<p>Requires a Rust toolchain and Python 3.11+. We use
-<a href="https://docs.astral.sh/uv/">uv</a> and <a href="https://www.maturin.rs/">maturin</a>.</p>
-<div class="highlight"><pre><span></span><code><span class="c1"># Create a dev environment and install the dev dependencies</span>
-uv<span class="w"> </span>sync<span class="w"> </span>--no-install-package<span class="w"> </span>zarrista
-
-<span class="c1"># Build the Rust extension and install it into the environment (debug build)</span>
-uv<span class="w"> </span>run<span class="w"> </span>--no-project<span class="w"> </span>maturin<span class="w"> </span>develop<span class="w"> </span>--uv
-
-<span class="c1"># Or, in release mode:</span>
-uv<span class="w"> </span>run<span class="w"> </span>--no-project<span class="w"> </span>maturin<span class="w"> </span>develop<span class="w"> </span>--uv<span class="w"> </span>--release
-
-<span class="c1"># Run the tests</span>
-uv<span class="w"> </span>run<span class="w"> </span>--no-project<span class="w"> </span>pytest
-</code></pre></div>
-<p>The <code>--no-project</code> is annoying but unavoidable in our current setup. Otherwise <code>uv</code> will try to build the rust library <em>in release mode, as a dependency of the project</em> before reaching <code>uv sync</code> or <code>uv run</code>.</p>
 
 
 

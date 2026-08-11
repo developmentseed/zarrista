@@ -2,38 +2,58 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <url>
          <loc>https://developmentseed.org/zarrista/latest/</loc>
-         <lastmod>2026-06-17</lastmod>
+         <lastmod>2026-08-07</lastmod>
     </url>
     <url>
          <loc>https://developmentseed.org/zarrista/latest/api/array/</loc>
-         <lastmod>2026-06-17</lastmod>
+         <lastmod>2026-08-07</lastmod>
+    </url>
+    <url>
+         <loc>https://developmentseed.org/zarrista/latest/api/builder/</loc>
+         <lastmod>2026-08-07</lastmod>
     </url>
     <url>
          <loc>https://developmentseed.org/zarrista/latest/api/chunk-grid/</loc>
-         <lastmod>2026-06-17</lastmod>
+         <lastmod>2026-08-07</lastmod>
     </url>
     <url>
          <loc>https://developmentseed.org/zarrista/latest/api/codec/</loc>
-         <lastmod>2026-06-17</lastmod>
+         <lastmod>2026-08-07</lastmod>
     </url>
     <url>
-         <loc>https://developmentseed.org/zarrista/latest/api/data/</loc>
-         <lastmod>2026-06-17</lastmod>
+         <loc>https://developmentseed.org/zarrista/latest/api/concurrency/</loc>
+         <lastmod>2026-08-07</lastmod>
+    </url>
+    <url>
+         <loc>https://developmentseed.org/zarrista/latest/api/decoded_array/</loc>
+         <lastmod>2026-08-07</lastmod>
     </url>
     <url>
          <loc>https://developmentseed.org/zarrista/latest/api/dtype/</loc>
-         <lastmod>2026-06-17</lastmod>
+         <lastmod>2026-08-07</lastmod>
+    </url>
+    <url>
+         <loc>https://developmentseed.org/zarrista/latest/api/encoded-chunk/</loc>
+         <lastmod>2026-08-07</lastmod>
+    </url>
+    <url>
+         <loc>https://developmentseed.org/zarrista/latest/api/exceptions/</loc>
+         <lastmod>2026-08-07</lastmod>
     </url>
     <url>
          <loc>https://developmentseed.org/zarrista/latest/api/group/</loc>
-         <lastmod>2026-06-17</lastmod>
+         <lastmod>2026-08-07</lastmod>
+    </url>
+    <url>
+         <loc>https://developmentseed.org/zarrista/latest/api/shard-cache/</loc>
+         <lastmod>2026-08-07</lastmod>
     </url>
     <url>
          <loc>https://developmentseed.org/zarrista/latest/api/store/</loc>
-         <lastmod>2026-06-17</lastmod>
+         <lastmod>2026-08-07</lastmod>
     </url>
     <url>
          <loc>https://developmentseed.org/zarrista/latest/blog/</loc>
-         <lastmod>2026-06-17</lastmod>
+         <lastmod>2026-08-07</lastmod>
     </url>
 </urlset>

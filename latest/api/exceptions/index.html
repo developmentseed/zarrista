@@ -12,13 +12,13 @@
         <meta name="author" content="Development Seed">
       
       
-        <link rel="canonical" href="https://developmentseed.org/zarrista/latest/api/dtype/">
+        <link rel="canonical" href="https://developmentseed.org/zarrista/latest/api/exceptions/">
       
       
-        <link rel="prev" href="../decoded_array/">
+        <link rel="prev" href="../encoded-chunk/">
       
       
-        <link rel="next" href="../encoded-chunk/">
+        <link rel="next" href="../shard-cache/">
       
       
         
@@ -29,7 +29,7 @@
     
     
       
-        <title>DataType - zarrista</title>
+        <title>Exceptions - zarrista</title>
       
     
     
@@ -67,17 +67,17 @@
     
   
 <meta property="og:type" content="website" />
-<meta property="og:title" content="DataType - zarrista" />
+<meta property="og:title" content="Exceptions - zarrista" />
 <meta property="og:description" content="A low-level Zarr API for Python, powered from Rust by zarrs." />
-<meta property="og:image" content="https://developmentseed.org/zarrista/latest/assets/images/social/api/dtype.png" />
+<meta property="og:image" content="https://developmentseed.org/zarrista/latest/assets/images/social/api/exceptions.png" />
 <meta property="og:image:type" content="image/png" />
 <meta property="og:image:width" content="1200" />
 <meta property="og:image:height" content="630" />
-<meta property="og:url" content="https://developmentseed.org/zarrista/latest/api/dtype/" />
+<meta property="og:url" content="https://developmentseed.org/zarrista/latest/api/exceptions/" />
 <meta property="twitter:card" content="summary_large_image" />
-<meta property="twitter:title" content="DataType - zarrista" />
+<meta property="twitter:title" content="Exceptions - zarrista" />
 <meta property="twitter:description" content="A low-level Zarr API for Python, powered from Rust by zarrs." />
-<meta property="twitter:image" content="https://developmentseed.org/zarrista/latest/assets/images/social/api/dtype.png" />
+<meta property="twitter:image" content="https://developmentseed.org/zarrista/latest/assets/images/social/api/exceptions.png" />
 </head>
   
   
@@ -97,7 +97,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#datatype" class="md-skip">
+        <a href="#exceptions" class="md-skip">
           Skip to content
         </a>
       
@@ -149,7 +149,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              DataType
+              Exceptions
             
           </span>
         </div>
@@ -635,37 +635,10 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    DataType
-  
-
-    
-  </span>
-  
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../dtype/" class="md-nav__link">
         
   
   
@@ -681,148 +654,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#zarrista.DataType" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;DataType
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label=" DataType">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#zarrista.DataType.name" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;name
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#zarrista.DataType.size" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;size
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#zarrista.DataType.from_metadata" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;from_metadata
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#zarrista.DataType.from_string" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;from_string
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#zarrista.FillValue" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;FillValue
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label=" FillValue">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#zarrista.FillValue.size" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;size
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#zarrista.FillValue.__init__" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;__init__
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#zarrista.FillValue.as_bytes" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;as_bytes
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#zarrista.FillValue.equals_all" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;equals_all
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -860,10 +691,37 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../exceptions/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Exceptions
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   
@@ -879,6 +737,186 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#zarrista.exceptions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-module"></code>&nbsp;exceptions
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label=" exceptions">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#zarrista.exceptions.ArrayCreateError" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;ArrayCreateError
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#zarrista.exceptions.ArrayError" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;ArrayError
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#zarrista.exceptions.ChunkGridCreateError" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;ChunkGridCreateError
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#zarrista.exceptions.CodecError" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;CodecError
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#zarrista.exceptions.GroupCreateError" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;GroupCreateError
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#zarrista.exceptions.IncompatibleDimensionalityError" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;IncompatibleDimensionalityError
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#zarrista.exceptions.NodeCreateError" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;NodeCreateError
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#zarrista.exceptions.NodePathError" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;NodePathError
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#zarrista.exceptions.PluginCreateError" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;PluginCreateError
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#zarrista.exceptions.SerializationError" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;SerializationError
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#zarrista.exceptions.StorageError" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;StorageError
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#zarrista.exceptions.TransposeOrderError" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;TransposeOrderError
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#zarrista.exceptions.ZarristaError" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;ZarristaError
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -1045,22 +1083,22 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#zarrista.DataType" class="md-nav__link">
+  <a href="#zarrista.exceptions" class="md-nav__link">
     <span class="md-ellipsis">
       
-        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;DataType
+        <code class="doc-symbol doc-symbol-toc doc-symbol-module"></code>&nbsp;exceptions
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label=" DataType">
+    <nav class="md-nav" aria-label=" exceptions">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#zarrista.DataType.name" class="md-nav__link">
+  <a href="#zarrista.exceptions.ArrayCreateError" class="md-nav__link">
     <span class="md-ellipsis">
       
-        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;name
+        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;ArrayCreateError
       
     </span>
   </a>
@@ -1068,10 +1106,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#zarrista.DataType.size" class="md-nav__link">
+  <a href="#zarrista.exceptions.ArrayError" class="md-nav__link">
     <span class="md-ellipsis">
       
-        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;size
+        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;ArrayError
       
     </span>
   </a>
@@ -1079,10 +1117,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#zarrista.DataType.from_metadata" class="md-nav__link">
+  <a href="#zarrista.exceptions.ChunkGridCreateError" class="md-nav__link">
     <span class="md-ellipsis">
       
-        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;from_metadata
+        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;ChunkGridCreateError
       
     </span>
   </a>
@@ -1090,38 +1128,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#zarrista.DataType.from_string" class="md-nav__link">
+  <a href="#zarrista.exceptions.CodecError" class="md-nav__link">
     <span class="md-ellipsis">
       
-        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;from_string
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#zarrista.FillValue" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;FillValue
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label=" FillValue">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#zarrista.FillValue.size" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;size
+        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;CodecError
       
     </span>
   </a>
@@ -1129,10 +1139,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#zarrista.FillValue.__init__" class="md-nav__link">
+  <a href="#zarrista.exceptions.GroupCreateError" class="md-nav__link">
     <span class="md-ellipsis">
       
-        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;__init__
+        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;GroupCreateError
       
     </span>
   </a>
@@ -1140,10 +1150,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#zarrista.FillValue.as_bytes" class="md-nav__link">
+  <a href="#zarrista.exceptions.IncompatibleDimensionalityError" class="md-nav__link">
     <span class="md-ellipsis">
       
-        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;as_bytes
+        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;IncompatibleDimensionalityError
       
     </span>
   </a>
@@ -1151,10 +1161,76 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#zarrista.FillValue.equals_all" class="md-nav__link">
+  <a href="#zarrista.exceptions.NodeCreateError" class="md-nav__link">
     <span class="md-ellipsis">
       
-        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;equals_all
+        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;NodeCreateError
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#zarrista.exceptions.NodePathError" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;NodePathError
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#zarrista.exceptions.PluginCreateError" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;PluginCreateError
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#zarrista.exceptions.SerializationError" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;SerializationError
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#zarrista.exceptions.StorageError" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;StorageError
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#zarrista.exceptions.TransposeOrderError" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;TransposeOrderError
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#zarrista.exceptions.ZarristaError" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;ZarristaError
       
     </span>
   </a>
@@ -1189,26 +1265,22 @@
   
 
 
-<h1 id="datatype">DataType<a class="headerlink" href="#datatype" title="Permanent link">&para;</a></h1>
+<h1 id="exceptions">Exceptions<a class="headerlink" href="#exceptions" title="Permanent link">&para;</a></h1>
 
 
-<div class="doc doc-object doc-class">
+<div class="doc doc-object doc-module">
 
 
 
-<h2 id="zarrista.DataType" class="doc doc-heading">
-            <span class="doc doc-object-name doc-class-name">zarrista.DataType</span>
+<h2 id="zarrista.exceptions" class="doc doc-heading">
+            <span class="doc doc-object-name doc-module-name">zarrista.exceptions</span>
 
 
-<a href="#zarrista.DataType" class="headerlink" title="Permanent link">&para;</a></h2>
-
+<a href="#zarrista.exceptions" class="headerlink" title="Permanent link">&para;</a></h2>
 
     <div class="doc doc-contents first">
 
-
-
-        <p>A Zarr v3 data type.</p>
-
+        <p>Exceptions.</p>
 
 
 
@@ -1227,183 +1299,34 @@
 
 
 
-<div class="doc doc-object doc-attribute">
+
+
+<div class="doc doc-object doc-class">
 
 
 
-<h3 id="zarrista.DataType.name" class="doc doc-heading">
-            <span class="doc doc-object-name doc-attribute-name">name</span>
+<h3 id="zarrista.exceptions.ArrayCreateError" class="doc doc-heading">
+            <span class="doc doc-object-name doc-class-name">ArrayCreateError</span>
 
 
-  <span class="doc doc-labels">
-      <small class="doc doc-label doc-label-property"><code>property</code></small>
-  </span>
+<a href="#zarrista.exceptions.ArrayCreateError" class="headerlink" title="Permanent link">&para;</a></h3>
 
-<a href="#zarrista.DataType.name" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature codehilite"><pre><span></span><code><span class="n">name</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span> <span class="o">|</span> <span class="kc">None</span>
-</code></pre></div>
 
     <div class="doc doc-contents ">
-
-        <p>The Zarr v3 data-type name (e.g. <code>"float64"</code>).</p>
-
-    </div>
-
-</div>
-
-<div class="doc doc-object doc-attribute">
+            <p class="doc doc-class-bases">
+              Bases: <code><a class="autorefs autorefs-internal" title="ZarristaError (zarrista.exceptions.ZarristaError)" href="#zarrista.exceptions.ZarristaError">ZarristaError</a></code></p>
 
 
 
-<h3 id="zarrista.DataType.size" class="doc doc-heading">
-            <span class="doc doc-object-name doc-attribute-name">size</span>
-
-
-  <span class="doc doc-labels">
-      <small class="doc doc-label doc-label-property"><code>property</code></small>
-  </span>
-
-<a href="#zarrista.DataType.size" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature codehilite"><pre><span></span><code><span class="n">size</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></span> <span class="o">|</span> <span class="kc">None</span>
-</code></pre></div>
-
-    <div class="doc doc-contents ">
-
-        <p>The fixed size in bytes, or <code>None</code> for variable-length data types.</p>
-
-    </div>
-
-</div>
+        <p>Raised when an array cannot be opened or created.</p>
 
 
 
 
-<div class="doc doc-object doc-function">
-
-
-<h3 id="zarrista.DataType.from_metadata" class="doc doc-heading">
-            <span class="doc doc-object-name doc-function-name">from_metadata</span>
-
-
-  <span class="doc doc-labels">
-      <small class="doc doc-label doc-label-staticmethod"><code>staticmethod</code></small>
-  </span>
-
-<a href="#zarrista.DataType.from_metadata" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature codehilite"><pre><span></span><code><span class="nf">from_metadata</span><span class="p">(</span><span class="n">metadata</span><span class="p">:</span> <span class="n"><span title="zarr_metadata.ZarrV3NamedConfigJSON">ZarrV3NamedConfigJSON</span></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-internal" title="zarrista.DataType (zarrista._dtype.DataType)" href="#zarrista.DataType">DataType</a></span>
-</code></pre></div>
-
-    <div class="doc doc-contents ">
-
-        <p>Construct a data type from its Zarr v3 metadata.</p>
-
-
-<p><span class="doc-section-title">Parameters:</span></p>
-    <ul>
-        <li class="doc-section-item field-body">
-            <b><code>metadata</code></b>
-              (<code><span title="zarr_metadata.ZarrV3NamedConfigJSON">ZarrV3NamedConfigJSON</span></code>)
-          –
-          <div class="doc-md-description">
-            <p>The Zarr v3 metadata of the data type.</p>
-          </div>
-        </li>
-    </ul>
-
-
-<p><span class="doc-section-title">Returns:</span></p>
-    <ul>
-        <li class="doc-section-item field-body">
-              <code><a class="autorefs autorefs-internal" title="zarrista.DataType (zarrista._dtype.DataType)" href="#zarrista.DataType">DataType</a></code>
-          –
-          <div class="doc-md-description">
-            <p>The new data type.</p>
-          </div>
-        </li>
-    </ul>
-
-
-<p><span class="doc-section-title">Raises:</span></p>
-    <ul>
-        <li class="doc-section-item field-body">
-              <code><span title="PluginCreateError">PluginCreateError</span></code>
-            –
-          <div class="doc-md-description">
-            <p>If the metadata names an unsupported data type,
-or if the configuration is not valid for it.</p>
-          </div>
-        </li>
-    </ul>
-
-
-    </div>
-
-</div>
-
-<div class="doc doc-object doc-function">
-
-
-<h3 id="zarrista.DataType.from_string" class="doc doc-heading">
-            <span class="doc doc-object-name doc-function-name">from_string</span>
-
-
-  <span class="doc doc-labels">
-      <small class="doc doc-label doc-label-staticmethod"><code>staticmethod</code></small>
-  </span>
-
-<a href="#zarrista.DataType.from_string" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature codehilite"><pre><span></span><code><span class="nf">from_string</span><span class="p">(</span><span class="n">name</span><span class="p">:</span> <span class="n"><span title="zarrista._dtype.DataTypeName">DataTypeName</span></span> <span class="o">|</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-internal" title="zarrista.DataType (zarrista._dtype.DataType)" href="#zarrista.DataType">DataType</a></span>
-</code></pre></div>
-
-    <div class="doc doc-contents ">
-
-        <p>Construct a data type from its Zarr v3 name (e.g. <code>"float32"</code>).</p>
-
-
-<p><span class="doc-section-title">Parameters:</span></p>
-    <ul>
-        <li class="doc-section-item field-body">
-            <b><code>name</code></b>
-              (<code><span title="zarrista._dtype.DataTypeName">DataTypeName</span> | <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></code>)
-          –
-          <div class="doc-md-description">
-            <p>The Zarr v3 name of the data type.</p>
-          </div>
-        </li>
-    </ul>
-
-
-<p><span class="doc-section-title">Returns:</span></p>
-    <ul>
-        <li class="doc-section-item field-body">
-              <code><a class="autorefs autorefs-internal" title="zarrista.DataType (zarrista._dtype.DataType)" href="#zarrista.DataType">DataType</a></code>
-          –
-          <div class="doc-md-description">
-            <p>The new data type.</p>
-          </div>
-        </li>
-    </ul>
-
-
-<p><span class="doc-section-title">Raises:</span></p>
-    <ul>
-        <li class="doc-section-item field-body">
-              <code><span title="PluginCreateError">PluginCreateError</span></code>
-            –
-          <div class="doc-md-description">
-            <p>If <code>name</code> is not a supported data type.</p>
-          </div>
-        </li>
-    </ul>
-
-
-    </div>
-
-</div>
 
 
 
-  </div>
+
 
     </div>
 
@@ -1413,187 +1336,375 @@ or if the configuration is not valid for it.</p>
 
 
 
-<h2 id="zarrista.FillValue" class="doc doc-heading">
-            <span class="doc doc-object-name doc-class-name">zarrista.FillValue</span>
+<h3 id="zarrista.exceptions.ArrayError" class="doc doc-heading">
+            <span class="doc doc-object-name doc-class-name">ArrayError</span>
 
 
-<a href="#zarrista.FillValue" class="headerlink" title="Permanent link">&para;</a></h2>
+<a href="#zarrista.exceptions.ArrayError" class="headerlink" title="Permanent link">&para;</a></h3>
 
-
-    <div class="doc doc-contents first">
-
-
-
-        <p>An array's fill value, stored as native-endian bytes.</p>
-
-
-
-
-
-
-
-
-
-
-
-<div class="doc doc-children">
-
-
-
-
-
-
-
-<div class="doc doc-object doc-attribute">
-
-
-
-<h3 id="zarrista.FillValue.size" class="doc doc-heading">
-            <span class="doc doc-object-name doc-attribute-name">size</span>
-
-
-  <span class="doc doc-labels">
-      <small class="doc doc-label doc-label-property"><code>property</code></small>
-  </span>
-
-<a href="#zarrista.FillValue.size" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature codehilite"><pre><span></span><code><span class="n">size</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></span>
-</code></pre></div>
 
     <div class="doc doc-contents ">
-
-        <p>The size of the fill value in bytes.</p>
-
-    </div>
-
-</div>
+            <p class="doc doc-class-bases">
+              Bases: <code><a class="autorefs autorefs-internal" title="ZarristaError (zarrista.exceptions.ZarristaError)" href="#zarrista.exceptions.ZarristaError">ZarristaError</a></code></p>
 
 
 
-
-<div class="doc doc-object doc-function">
-
-
-<h3 id="zarrista.FillValue.__init__" class="doc doc-heading">
-            <span class="doc doc-object-name doc-function-name">__init__</span>
+        <p>Raised on an error reading from or operating on an array.</p>
 
 
-<a href="#zarrista.FillValue.__init__" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature codehilite"><pre><span></span><code><span class="nf">__init__</span><span class="p">(</span><span class="nb">bytes</span><span class="p">:</span> <span class="n"><span title="zarrista._fill_value.FillValue(bytes)">bytes</span></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span>
-</code></pre></div>
-
-    <div class="doc doc-contents ">
-
-        <p>Construct a fill value from its native-endian bytes.</p>
 
 
-<p><span class="doc-section-title">Parameters:</span></p>
-    <ul>
-        <li class="doc-section-item field-body">
-            <b><code>bytes</code></b>
-              (<code><span title="zarrista._fill_value.FillValue(bytes)">bytes</span></code>)
-          –
-          <div class="doc-md-description">
-            <p>The native-endian bytes of one fill value element.</p>
-          </div>
-        </li>
-    </ul>
+
+
+
 
 
     </div>
 
 </div>
 
-<div class="doc doc-object doc-function">
+<div class="doc doc-object doc-class">
 
 
-<h3 id="zarrista.FillValue.as_bytes" class="doc doc-heading">
-            <span class="doc doc-object-name doc-function-name">as_bytes</span>
+
+<h3 id="zarrista.exceptions.ChunkGridCreateError" class="doc doc-heading">
+            <span class="doc doc-object-name doc-class-name">ChunkGridCreateError</span>
 
 
-<a href="#zarrista.FillValue.as_bytes" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature codehilite"><pre><span></span><code><span class="nf">as_bytes</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#bytes">bytes</a></span>
-</code></pre></div>
+<a href="#zarrista.exceptions.ChunkGridCreateError" class="headerlink" title="Permanent link">&para;</a></h3>
+
 
     <div class="doc doc-contents ">
+            <p class="doc doc-class-bases">
+              Bases: <code><a class="autorefs autorefs-internal" title="ZarristaError (zarrista.exceptions.ZarristaError)" href="#zarrista.exceptions.ZarristaError">ZarristaError</a></code></p>
 
-        <p>Return the fill value as native-endian bytes.</p>
 
 
-<p><span class="doc-section-title">Returns:</span></p>
-    <ul>
-        <li class="doc-section-item field-body">
-              <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#bytes">bytes</a></code>
-          –
-          <div class="doc-md-description">
-            <p>The native-endian bytes of one fill value element.</p>
-          </div>
-        </li>
-    </ul>
+        <p>Raised when a chunk grid cannot be created from the given shapes.</p>
+
+
+
+
+
+
+
 
 
     </div>
 
 </div>
 
-<div class="doc doc-object doc-function">
+<div class="doc doc-object doc-class">
 
 
-<h3 id="zarrista.FillValue.equals_all" class="doc doc-heading">
-            <span class="doc doc-object-name doc-function-name">equals_all</span>
+
+<h3 id="zarrista.exceptions.CodecError" class="doc doc-heading">
+            <span class="doc doc-object-name doc-class-name">CodecError</span>
 
 
-<a href="#zarrista.FillValue.equals_all" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature codehilite"><pre><span></span><code><span class="nf">equals_all</span><span class="p">(</span><span class="n">other</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="collections.abc.Buffer" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Buffer">Buffer</a></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></span>
-</code></pre></div>
+<a href="#zarrista.exceptions.CodecError" class="headerlink" title="Permanent link">&para;</a></h3>
+
 
     <div class="doc doc-contents ">
-
-        <p>Return whether <code>other</code> contains only repetitions of this fill value.</p>
-
-
-<p><span class="doc-section-title">Parameters:</span></p>
-    <ul>
-        <li class="doc-section-item field-body">
-            <b><code>other</code></b>
-              (<code><a class="autorefs autorefs-external" title="collections.abc.Buffer" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Buffer">Buffer</a></code>)
-          –
-          <div class="doc-md-description">
-            <p>The bytes to compare against this fill value.</p>
-          </div>
-        </li>
-    </ul>
+            <p class="doc doc-class-bases">
+              Bases: <code><a class="autorefs autorefs-internal" title="ZarristaError (zarrista.exceptions.ZarristaError)" href="#zarrista.exceptions.ZarristaError">ZarristaError</a></code></p>
 
 
-<p><span class="doc-section-title">Returns:</span></p>
-    <ul>
-        <li class="doc-section-item field-body">
-              <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></code>
-          –
-          <div class="doc-md-description">
-            <p><code>True</code> if <code>other</code> is a whole number of copies of this fill value.</p>
-          </div>
-        </li>
-        <li class="doc-section-item field-body">
-              <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></code>
-          –
-          <div class="doc-md-description">
-            <p><code>False</code> if the bytes differ, or if the length of <code>other</code> is not a</p>
-          </div>
-        </li>
-        <li class="doc-section-item field-body">
-              <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></code>
-          –
-          <div class="doc-md-description">
-            <p>multiple of <code>size</code>.</p>
-          </div>
-        </li>
-    </ul>
+
+        <p>Raised on a codec encode/decode error.</p>
+
+
+
+
+
+
+
 
 
     </div>
 
 </div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h3 id="zarrista.exceptions.GroupCreateError" class="doc doc-heading">
+            <span class="doc doc-object-name doc-class-name">GroupCreateError</span>
+
+
+<a href="#zarrista.exceptions.GroupCreateError" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+            <p class="doc doc-class-bases">
+              Bases: <code><a class="autorefs autorefs-internal" title="ZarristaError (zarrista.exceptions.ZarristaError)" href="#zarrista.exceptions.ZarristaError">ZarristaError</a></code></p>
+
+
+
+        <p>Raised when a group cannot be opened or created.</p>
+
+
+
+
+
+
+
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h3 id="zarrista.exceptions.IncompatibleDimensionalityError" class="doc doc-heading">
+            <span class="doc doc-object-name doc-class-name">IncompatibleDimensionalityError</span>
+
+
+<a href="#zarrista.exceptions.IncompatibleDimensionalityError" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+            <p class="doc doc-class-bases">
+              Bases: <code><a class="autorefs autorefs-internal" title="ZarristaError (zarrista.exceptions.ZarristaError)" href="#zarrista.exceptions.ZarristaError">ZarristaError</a></code></p>
+
+
+
+        <p>Raised when a shape's dimensionality is incompatible with another.</p>
+
+
+
+
+
+
+
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h3 id="zarrista.exceptions.NodeCreateError" class="doc doc-heading">
+            <span class="doc doc-object-name doc-class-name">NodeCreateError</span>
+
+
+<a href="#zarrista.exceptions.NodeCreateError" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+            <p class="doc doc-class-bases">
+              Bases: <code><a class="autorefs autorefs-internal" title="ZarristaError (zarrista.exceptions.ZarristaError)" href="#zarrista.exceptions.ZarristaError">ZarristaError</a></code></p>
+
+
+
+        <p>Raised when a child node cannot be enumerated or created.</p>
+
+
+
+
+
+
+
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h3 id="zarrista.exceptions.NodePathError" class="doc doc-heading">
+            <span class="doc doc-object-name doc-class-name">NodePathError</span>
+
+
+<a href="#zarrista.exceptions.NodePathError" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+            <p class="doc doc-class-bases">
+              Bases: <code><a class="autorefs autorefs-internal" title="ZarristaError (zarrista.exceptions.ZarristaError)" href="#zarrista.exceptions.ZarristaError">ZarristaError</a></code></p>
+
+
+
+        <p>Raised when a node path is invalid.</p>
+
+
+
+
+
+
+
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h3 id="zarrista.exceptions.PluginCreateError" class="doc doc-heading">
+            <span class="doc doc-object-name doc-class-name">PluginCreateError</span>
+
+
+<a href="#zarrista.exceptions.PluginCreateError" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+            <p class="doc doc-class-bases">
+              Bases: <code><a class="autorefs autorefs-internal" title="ZarristaError (zarrista.exceptions.ZarristaError)" href="#zarrista.exceptions.ZarristaError">ZarristaError</a></code></p>
+
+
+
+        <p>Raised when a codec or other plugin cannot be created from its configuration.</p>
+
+
+
+
+
+
+
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h3 id="zarrista.exceptions.SerializationError" class="doc doc-heading">
+            <span class="doc doc-object-name doc-class-name">SerializationError</span>
+
+
+<a href="#zarrista.exceptions.SerializationError" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+            <p class="doc doc-class-bases">
+              Bases: <code><a class="autorefs autorefs-internal" title="ZarristaError (zarrista.exceptions.ZarristaError)" href="#zarrista.exceptions.ZarristaError">ZarristaError</a></code></p>
+
+
+
+        <p>Raised when (de)serializing JSON or converting to/from Python objects fails.</p>
+
+
+
+
+
+
+
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h3 id="zarrista.exceptions.StorageError" class="doc doc-heading">
+            <span class="doc doc-object-name doc-class-name">StorageError</span>
+
+
+<a href="#zarrista.exceptions.StorageError" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+            <p class="doc doc-class-bases">
+              Bases: <code><a class="autorefs autorefs-internal" title="ZarristaError (zarrista.exceptions.ZarristaError)" href="#zarrista.exceptions.ZarristaError">ZarristaError</a></code></p>
+
+
+
+        <p>Raised on an error from the underlying storage backend.</p>
+<p>This also covers failures opening a filesystem store.</p>
+
+
+
+
+
+
+
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h3 id="zarrista.exceptions.TransposeOrderError" class="doc doc-heading">
+            <span class="doc doc-object-name doc-class-name">TransposeOrderError</span>
+
+
+<a href="#zarrista.exceptions.TransposeOrderError" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+            <p class="doc doc-class-bases">
+              Bases: <code><a class="autorefs autorefs-internal" title="ZarristaError (zarrista.exceptions.ZarristaError)" href="#zarrista.exceptions.ZarristaError">ZarristaError</a></code></p>
+
+
+
+        <p>Raised when a transpose codec order is invalid.</p>
+
+
+
+
+
+
+
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h3 id="zarrista.exceptions.ZarristaError" class="doc doc-heading">
+            <span class="doc doc-object-name doc-class-name">ZarristaError</span>
+
+
+<a href="#zarrista.exceptions.ZarristaError" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+            <p class="doc doc-class-bases">
+              Bases: <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/exceptions.html#Exception">Exception</a></code></p>
+
+
+
+        <p>Base class for all zarrista exceptions.</p>
+
+
+
+
+
+
+
+
+
+    </div>
+
+</div>
+
 
 
 

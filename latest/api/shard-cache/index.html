@@ -12,13 +12,13 @@
         <meta name="author" content="Development Seed">
       
       
-        <link rel="canonical" href="https://developmentseed.org/zarrista/latest/api/dtype/">
+        <link rel="canonical" href="https://developmentseed.org/zarrista/latest/api/shard-cache/">
       
       
-        <link rel="prev" href="../decoded_array/">
+        <link rel="prev" href="../exceptions/">
       
       
-        <link rel="next" href="../encoded-chunk/">
+        <link rel="next" href="../../blog/">
       
       
         
@@ -29,7 +29,7 @@
     
     
       
-        <title>DataType - zarrista</title>
+        <title>Shard cache - zarrista</title>
       
     
     
@@ -67,17 +67,17 @@
     
   
 <meta property="og:type" content="website" />
-<meta property="og:title" content="DataType - zarrista" />
+<meta property="og:title" content="Shard cache - zarrista" />
 <meta property="og:description" content="A low-level Zarr API for Python, powered from Rust by zarrs." />
-<meta property="og:image" content="https://developmentseed.org/zarrista/latest/assets/images/social/api/dtype.png" />
+<meta property="og:image" content="https://developmentseed.org/zarrista/latest/assets/images/social/api/shard-cache.png" />
 <meta property="og:image:type" content="image/png" />
 <meta property="og:image:width" content="1200" />
 <meta property="og:image:height" content="630" />
-<meta property="og:url" content="https://developmentseed.org/zarrista/latest/api/dtype/" />
+<meta property="og:url" content="https://developmentseed.org/zarrista/latest/api/shard-cache/" />
 <meta property="twitter:card" content="summary_large_image" />
-<meta property="twitter:title" content="DataType - zarrista" />
+<meta property="twitter:title" content="Shard cache - zarrista" />
 <meta property="twitter:description" content="A low-level Zarr API for Python, powered from Rust by zarrs." />
-<meta property="twitter:image" content="https://developmentseed.org/zarrista/latest/assets/images/social/api/dtype.png" />
+<meta property="twitter:image" content="https://developmentseed.org/zarrista/latest/assets/images/social/api/shard-cache.png" />
 </head>
   
   
@@ -97,7 +97,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#datatype" class="md-skip">
+        <a href="#shard-cache" class="md-skip">
           Skip to content
         </a>
       
@@ -149,7 +149,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              DataType
+              Shard cache
             
           </span>
         </div>
@@ -635,37 +635,10 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    DataType
-  
-
-    
-  </span>
-  
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../dtype/" class="md-nav__link">
         
   
   
@@ -681,148 +654,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#zarrista.DataType" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;DataType
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label=" DataType">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#zarrista.DataType.name" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;name
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#zarrista.DataType.size" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;size
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#zarrista.DataType.from_metadata" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;from_metadata
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#zarrista.DataType.from_string" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;from_string
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#zarrista.FillValue" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;FillValue
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label=" FillValue">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#zarrista.FillValue.size" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;size
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#zarrista.FillValue.__init__" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;__init__
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#zarrista.FillValue.as_bytes" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;as_bytes
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#zarrista.FillValue.equals_all" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;equals_all
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -888,10 +719,37 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../shard-cache/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Shard cache
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   
@@ -907,6 +765,126 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#zarrista.ShardCache" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;ShardCache
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label=" ShardCache">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#zarrista.ShardCache.clear" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;clear
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#zarrista.ShardCache.is_empty" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;is_empty
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#zarrista.ShardCache.size" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;size
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#zarrista.AsyncShardCache" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;AsyncShardCache
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label=" AsyncShardCache">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#zarrista.AsyncShardCache.clear" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;clear
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#zarrista.AsyncShardCache.is_empty" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;is_empty
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#zarrista.AsyncShardCache.size" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;size
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -1045,22 +1023,22 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#zarrista.DataType" class="md-nav__link">
+  <a href="#zarrista.ShardCache" class="md-nav__link">
     <span class="md-ellipsis">
       
-        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;DataType
+        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;ShardCache
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label=" DataType">
+    <nav class="md-nav" aria-label=" ShardCache">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#zarrista.DataType.name" class="md-nav__link">
+  <a href="#zarrista.ShardCache.clear" class="md-nav__link">
     <span class="md-ellipsis">
       
-        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;name
+        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;clear
       
     </span>
   </a>
@@ -1068,10 +1046,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#zarrista.DataType.size" class="md-nav__link">
+  <a href="#zarrista.ShardCache.is_empty" class="md-nav__link">
     <span class="md-ellipsis">
       
-        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;size
+        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;is_empty
       
     </span>
   </a>
@@ -1079,21 +1057,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#zarrista.DataType.from_metadata" class="md-nav__link">
+  <a href="#zarrista.ShardCache.size" class="md-nav__link">
     <span class="md-ellipsis">
       
-        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;from_metadata
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#zarrista.DataType.from_string" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;from_string
+        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;size
       
     </span>
   </a>
@@ -1106,22 +1073,22 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#zarrista.FillValue" class="md-nav__link">
+  <a href="#zarrista.AsyncShardCache" class="md-nav__link">
     <span class="md-ellipsis">
       
-        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;FillValue
+        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;AsyncShardCache
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label=" FillValue">
+    <nav class="md-nav" aria-label=" AsyncShardCache">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#zarrista.FillValue.size" class="md-nav__link">
+  <a href="#zarrista.AsyncShardCache.clear" class="md-nav__link">
     <span class="md-ellipsis">
       
-        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;size
+        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;clear
       
     </span>
   </a>
@@ -1129,10 +1096,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#zarrista.FillValue.__init__" class="md-nav__link">
+  <a href="#zarrista.AsyncShardCache.is_empty" class="md-nav__link">
     <span class="md-ellipsis">
       
-        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;__init__
+        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;is_empty
       
     </span>
   </a>
@@ -1140,21 +1107,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#zarrista.FillValue.as_bytes" class="md-nav__link">
+  <a href="#zarrista.AsyncShardCache.size" class="md-nav__link">
     <span class="md-ellipsis">
       
-        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;as_bytes
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#zarrista.FillValue.equals_all" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;equals_all
+        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;size
       
     </span>
   </a>
@@ -1189,25 +1145,56 @@
   
 
 
-<h1 id="datatype">DataType<a class="headerlink" href="#datatype" title="Permanent link">&para;</a></h1>
+<h1 id="shard-cache">Shard cache<a class="headerlink" href="#shard-cache" title="Permanent link">&para;</a></h1>
 
 
 <div class="doc doc-object doc-class">
 
 
 
-<h2 id="zarrista.DataType" class="doc doc-heading">
-            <span class="doc doc-object-name doc-class-name">zarrista.DataType</span>
+<h2 id="zarrista.ShardCache" class="doc doc-heading">
+            <span class="doc doc-object-name doc-class-name">zarrista.ShardCache</span>
 
 
-<a href="#zarrista.DataType" class="headerlink" title="Permanent link">&para;</a></h2>
+<a href="#zarrista.ShardCache" class="headerlink" title="Permanent link">&para;</a></h2>
 
 
     <div class="doc doc-contents first">
 
 
 
-        <p>A Zarr v3 data type.</p>
+        <p>A cache of the shard indexes of one array.</p>
+<p>A sharded array holds many subchunks inside one shard. Every shard starts
+with a shard index. The shard index is a table that gives the byte offset
+and the byte length of each subchunk in that shard. To read one subchunk,
+zarrista must first read the shard index of the shard that contains it.</p>
+<p>A <code>ShardCache</code> keeps the shard index of each shard that zarrista read
+through it. It does <strong>not</strong> keep the subchunk data, and it does <strong>not</strong>
+keep the shard data. A later read of a different subchunk of the same shard
+reuses the cached shard index. That read gets the subchunk bytes directly,
+and does not read the shard index again.</p>
+<p>Each entry holds two 64-bit integers for every subchunk in the shard. A
+shard of 1024 subchunks therefore costs about 16 KiB.</p>
+<p>Use <a class="autorefs autorefs-internal" title="shard_cache" href="../array/#zarrista.Array.shard_cache"><code>Array.shard_cache</code></a> to create a
+cache. A cache belongs to the array that created it, because it stores
+byte offsets into that array's shards. Do not use a cache with a different
+array. zarrista cannot detect this, and the read returns incorrect data.</p>
+<p>Pass the cache to
+<a class="autorefs autorefs-internal" title="retrieve_subchunk" href="../array/#zarrista.Array.retrieve_subchunk"><code>Array.retrieve_subchunk</code></a> or
+<a class="autorefs autorefs-internal" title="retrieve_encoded_subchunk" href="../array/#zarrista.Array.retrieve_encoded_subchunk"><code>Array.retrieve_encoded_subchunk</code></a>.
+If you do not pass a cache, each call creates a cache, uses it once, and
+discards it. Then every call reads the shard index again.</p>
+<p>A cache is safe to share between threads. Reads through one cache take an
+internal lock, so they do not run at the same time. Give each thread its own
+cache if you want the reads to run in parallel.</p>
+
+
+<p><span class="doc-section-title">Examples:</span></p>
+    <p>Read every subchunk of a shard, and read the shard index only once:</p>
+<div class="highlight"><pre><span></span><code><span class="n">cache</span> <span class="o">=</span> <span class="n">arr</span><span class="o">.</span><span class="n">shard_cache</span><span class="p">()</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">arr</span><span class="o">.</span><span class="n">subchunk_grid_shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
+    <span class="n">sub</span> <span class="o">=</span> <span class="n">arr</span><span class="o">.</span><span class="n">retrieve_subchunk</span><span class="p">([</span><span class="n">i</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">shard_cache</span><span class="o">=</span><span class="n">cache</span><span class="p">)</span>
+</code></pre></div>
 
 
 
@@ -1227,110 +1214,53 @@
 
 
 
-<div class="doc doc-object doc-attribute">
-
-
-
-<h3 id="zarrista.DataType.name" class="doc doc-heading">
-            <span class="doc doc-object-name doc-attribute-name">name</span>
-
-
-  <span class="doc doc-labels">
-      <small class="doc doc-label doc-label-property"><code>property</code></small>
-  </span>
-
-<a href="#zarrista.DataType.name" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature codehilite"><pre><span></span><code><span class="n">name</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span> <span class="o">|</span> <span class="kc">None</span>
-</code></pre></div>
-
-    <div class="doc doc-contents ">
-
-        <p>The Zarr v3 data-type name (e.g. <code>"float64"</code>).</p>
-
-    </div>
-
-</div>
-
-<div class="doc doc-object doc-attribute">
-
-
-
-<h3 id="zarrista.DataType.size" class="doc doc-heading">
-            <span class="doc doc-object-name doc-attribute-name">size</span>
-
-
-  <span class="doc doc-labels">
-      <small class="doc doc-label doc-label-property"><code>property</code></small>
-  </span>
-
-<a href="#zarrista.DataType.size" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature codehilite"><pre><span></span><code><span class="n">size</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></span> <span class="o">|</span> <span class="kc">None</span>
-</code></pre></div>
-
-    <div class="doc doc-contents ">
-
-        <p>The fixed size in bytes, or <code>None</code> for variable-length data types.</p>
-
-    </div>
-
-</div>
-
 
 
 
 <div class="doc doc-object doc-function">
 
 
-<h3 id="zarrista.DataType.from_metadata" class="doc doc-heading">
-            <span class="doc doc-object-name doc-function-name">from_metadata</span>
+<h3 id="zarrista.ShardCache.clear" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">clear</span>
 
 
-  <span class="doc doc-labels">
-      <small class="doc doc-label doc-label-staticmethod"><code>staticmethod</code></small>
-  </span>
-
-<a href="#zarrista.DataType.from_metadata" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature codehilite"><pre><span></span><code><span class="nf">from_metadata</span><span class="p">(</span><span class="n">metadata</span><span class="p">:</span> <span class="n"><span title="zarr_metadata.ZarrV3NamedConfigJSON">ZarrV3NamedConfigJSON</span></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-internal" title="zarrista.DataType (zarrista._dtype.DataType)" href="#zarrista.DataType">DataType</a></span>
+<a href="#zarrista.ShardCache.clear" class="headerlink" title="Permanent link">&para;</a></h3>
+<div class="doc-signature codehilite"><pre><span></span><code><span class="nf">clear</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
 
-        <p>Construct a data type from its Zarr v3 metadata.</p>
+        <p>Remove every shard index from the cache.</p>
+<p>Use this to release the memory of the cache. The cache stays usable.</p>
 
 
-<p><span class="doc-section-title">Parameters:</span></p>
-    <ul>
-        <li class="doc-section-item field-body">
-            <b><code>metadata</code></b>
-              (<code><span title="zarr_metadata.ZarrV3NamedConfigJSON">ZarrV3NamedConfigJSON</span></code>)
-          –
-          <div class="doc-md-description">
-            <p>The Zarr v3 metadata of the data type.</p>
-          </div>
-        </li>
-    </ul>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="zarrista.ShardCache.is_empty" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">is_empty</span>
+
+
+<a href="#zarrista.ShardCache.is_empty" class="headerlink" title="Permanent link">&para;</a></h3>
+<div class="doc-signature codehilite"><pre><span></span><code><span class="nf">is_empty</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Return whether the cache holds no shard index.</p>
 
 
 <p><span class="doc-section-title">Returns:</span></p>
     <ul>
         <li class="doc-section-item field-body">
-              <code><a class="autorefs autorefs-internal" title="zarrista.DataType (zarrista._dtype.DataType)" href="#zarrista.DataType">DataType</a></code>
+              <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></code>
           –
           <div class="doc-md-description">
-            <p>The new data type.</p>
-          </div>
-        </li>
-    </ul>
-
-
-<p><span class="doc-section-title">Raises:</span></p>
-    <ul>
-        <li class="doc-section-item field-body">
-              <code><span title="PluginCreateError">PluginCreateError</span></code>
-            –
-          <div class="doc-md-description">
-            <p>If the metadata names an unsupported data type,
-or if the configuration is not valid for it.</p>
+            <p><code>True</code> if the cache is empty.</p>
           </div>
         </li>
     </ul>
@@ -1343,55 +1273,26 @@ or if the configuration is not valid for it.</p>
 <div class="doc doc-object doc-function">
 
 
-<h3 id="zarrista.DataType.from_string" class="doc doc-heading">
-            <span class="doc doc-object-name doc-function-name">from_string</span>
+<h3 id="zarrista.ShardCache.size" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">size</span>
 
 
-  <span class="doc doc-labels">
-      <small class="doc doc-label doc-label-staticmethod"><code>staticmethod</code></small>
-  </span>
-
-<a href="#zarrista.DataType.from_string" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature codehilite"><pre><span></span><code><span class="nf">from_string</span><span class="p">(</span><span class="n">name</span><span class="p">:</span> <span class="n"><span title="zarrista._dtype.DataTypeName">DataTypeName</span></span> <span class="o">|</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-internal" title="zarrista.DataType (zarrista._dtype.DataType)" href="#zarrista.DataType">DataType</a></span>
+<a href="#zarrista.ShardCache.size" class="headerlink" title="Permanent link">&para;</a></h3>
+<div class="doc-signature codehilite"><pre><span></span><code><span class="nf">size</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
 
-        <p>Construct a data type from its Zarr v3 name (e.g. <code>"float32"</code>).</p>
-
-
-<p><span class="doc-section-title">Parameters:</span></p>
-    <ul>
-        <li class="doc-section-item field-body">
-            <b><code>name</code></b>
-              (<code><span title="zarrista._dtype.DataTypeName">DataTypeName</span> | <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></code>)
-          –
-          <div class="doc-md-description">
-            <p>The Zarr v3 name of the data type.</p>
-          </div>
-        </li>
-    </ul>
+        <p>Return the number of shard indexes in the cache.</p>
 
 
 <p><span class="doc-section-title">Returns:</span></p>
     <ul>
         <li class="doc-section-item field-body">
-              <code><a class="autorefs autorefs-internal" title="zarrista.DataType (zarrista._dtype.DataType)" href="#zarrista.DataType">DataType</a></code>
+              <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></code>
           –
           <div class="doc-md-description">
-            <p>The new data type.</p>
-          </div>
-        </li>
-    </ul>
-
-
-<p><span class="doc-section-title">Raises:</span></p>
-    <ul>
-        <li class="doc-section-item field-body">
-              <code><span title="PluginCreateError">PluginCreateError</span></code>
-            –
-          <div class="doc-md-description">
-            <p>If <code>name</code> is not a supported data type.</p>
+            <p>The number of shards that the cache holds an index for.</p>
           </div>
         </li>
     </ul>
@@ -1413,18 +1314,33 @@ or if the configuration is not valid for it.</p>
 
 
 
-<h2 id="zarrista.FillValue" class="doc doc-heading">
-            <span class="doc doc-object-name doc-class-name">zarrista.FillValue</span>
+<h2 id="zarrista.AsyncShardCache" class="doc doc-heading">
+            <span class="doc doc-object-name doc-class-name">zarrista.AsyncShardCache</span>
 
 
-<a href="#zarrista.FillValue" class="headerlink" title="Permanent link">&para;</a></h2>
+<a href="#zarrista.AsyncShardCache" class="headerlink" title="Permanent link">&para;</a></h2>
 
 
     <div class="doc doc-contents first">
 
 
 
-        <p>An array's fill value, stored as native-endian bytes.</p>
+        <p>A cache of the shard indexes of one array, for use with <code>AsyncArray</code>.</p>
+<p>This is the <code>AsyncArray</code> form of
+<a class="autorefs autorefs-internal" title="zarrista.ShardCache" href="#zarrista.ShardCache"><code>ShardCache</code></a>. The methods are coroutines, because the
+cache uses an asynchronous lock.</p>
+<p>Use <a class="autorefs autorefs-internal" title="shard_cache" href="../array/#zarrista.AsyncArray.shard_cache"><code>AsyncArray.shard_cache</code></a> to
+create a cache. Read
+<a class="autorefs autorefs-internal" title="zarrista.ShardCache" href="#zarrista.ShardCache"><code>ShardCache</code></a> for what the cache holds and for the
+rules that apply to it.</p>
+
+
+<p><span class="doc-section-title">Examples:</span></p>
+    <p>Read every subchunk of a shard, and read the shard index only once:</p>
+<div class="highlight"><pre><span></span><code><span class="n">cache</span> <span class="o">=</span> <span class="n">arr</span><span class="o">.</span><span class="n">shard_cache</span><span class="p">()</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">arr</span><span class="o">.</span><span class="n">subchunk_grid_shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
+    <span class="n">sub</span> <span class="o">=</span> <span class="k">await</span> <span class="n">arr</span><span class="o">.</span><span class="n">retrieve_subchunk</span><span class="p">([</span><span class="n">i</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">shard_cache</span><span class="o">=</span><span class="n">cache</span><span class="p">)</span>
+</code></pre></div>
 
 
 
@@ -1444,60 +1360,28 @@ or if the configuration is not valid for it.</p>
 
 
 
-<div class="doc doc-object doc-attribute">
 
 
 
-<h3 id="zarrista.FillValue.size" class="doc doc-heading">
-            <span class="doc doc-object-name doc-attribute-name">size</span>
+<div class="doc doc-object doc-function">
+
+
+<h3 id="zarrista.AsyncShardCache.clear" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">clear</span>
 
 
   <span class="doc doc-labels">
-      <small class="doc doc-label doc-label-property"><code>property</code></small>
+      <small class="doc doc-label doc-label-async"><code>async</code></small>
   </span>
 
-<a href="#zarrista.FillValue.size" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature codehilite"><pre><span></span><code><span class="n">size</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></span>
+<a href="#zarrista.AsyncShardCache.clear" class="headerlink" title="Permanent link">&para;</a></h3>
+<div class="doc-signature codehilite"><pre><span></span><code><span class="nf">clear</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
 
-        <p>The size of the fill value in bytes.</p>
-
-    </div>
-
-</div>
-
-
-
-
-<div class="doc doc-object doc-function">
-
-
-<h3 id="zarrista.FillValue.__init__" class="doc doc-heading">
-            <span class="doc doc-object-name doc-function-name">__init__</span>
-
-
-<a href="#zarrista.FillValue.__init__" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature codehilite"><pre><span></span><code><span class="nf">__init__</span><span class="p">(</span><span class="nb">bytes</span><span class="p">:</span> <span class="n"><span title="zarrista._fill_value.FillValue(bytes)">bytes</span></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span>
-</code></pre></div>
-
-    <div class="doc doc-contents ">
-
-        <p>Construct a fill value from its native-endian bytes.</p>
-
-
-<p><span class="doc-section-title">Parameters:</span></p>
-    <ul>
-        <li class="doc-section-item field-body">
-            <b><code>bytes</code></b>
-              (<code><span title="zarrista._fill_value.FillValue(bytes)">bytes</span></code>)
-          –
-          <div class="doc-md-description">
-            <p>The native-endian bytes of one fill value element.</p>
-          </div>
-        </li>
-    </ul>
+        <p>Remove every shard index from the cache.</p>
+<p>Use this to release the memory of the cache. The cache stays usable.</p>
 
 
     </div>
@@ -1507,62 +1391,21 @@ or if the configuration is not valid for it.</p>
 <div class="doc doc-object doc-function">
 
 
-<h3 id="zarrista.FillValue.as_bytes" class="doc doc-heading">
-            <span class="doc doc-object-name doc-function-name">as_bytes</span>
+<h3 id="zarrista.AsyncShardCache.is_empty" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">is_empty</span>
 
 
-<a href="#zarrista.FillValue.as_bytes" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature codehilite"><pre><span></span><code><span class="nf">as_bytes</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#bytes">bytes</a></span>
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-async"><code>async</code></small>
+  </span>
+
+<a href="#zarrista.AsyncShardCache.is_empty" class="headerlink" title="Permanent link">&para;</a></h3>
+<div class="doc-signature codehilite"><pre><span></span><code><span class="nf">is_empty</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
 
-        <p>Return the fill value as native-endian bytes.</p>
-
-
-<p><span class="doc-section-title">Returns:</span></p>
-    <ul>
-        <li class="doc-section-item field-body">
-              <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#bytes">bytes</a></code>
-          –
-          <div class="doc-md-description">
-            <p>The native-endian bytes of one fill value element.</p>
-          </div>
-        </li>
-    </ul>
-
-
-    </div>
-
-</div>
-
-<div class="doc doc-object doc-function">
-
-
-<h3 id="zarrista.FillValue.equals_all" class="doc doc-heading">
-            <span class="doc doc-object-name doc-function-name">equals_all</span>
-
-
-<a href="#zarrista.FillValue.equals_all" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature codehilite"><pre><span></span><code><span class="nf">equals_all</span><span class="p">(</span><span class="n">other</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="collections.abc.Buffer" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Buffer">Buffer</a></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></span>
-</code></pre></div>
-
-    <div class="doc doc-contents ">
-
-        <p>Return whether <code>other</code> contains only repetitions of this fill value.</p>
-
-
-<p><span class="doc-section-title">Parameters:</span></p>
-    <ul>
-        <li class="doc-section-item field-body">
-            <b><code>other</code></b>
-              (<code><a class="autorefs autorefs-external" title="collections.abc.Buffer" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Buffer">Buffer</a></code>)
-          –
-          <div class="doc-md-description">
-            <p>The bytes to compare against this fill value.</p>
-          </div>
-        </li>
-    </ul>
+        <p>Return whether the cache holds no shard index.</p>
 
 
 <p><span class="doc-section-title">Returns:</span></p>
@@ -1571,21 +1414,43 @@ or if the configuration is not valid for it.</p>
               <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></code>
           –
           <div class="doc-md-description">
-            <p><code>True</code> if <code>other</code> is a whole number of copies of this fill value.</p>
+            <p><code>True</code> if the cache is empty.</p>
           </div>
         </li>
+    </ul>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="zarrista.AsyncShardCache.size" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">size</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-async"><code>async</code></small>
+  </span>
+
+<a href="#zarrista.AsyncShardCache.size" class="headerlink" title="Permanent link">&para;</a></h3>
+<div class="doc-signature codehilite"><pre><span></span><code><span class="nf">size</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Return the number of shard indexes in the cache.</p>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
         <li class="doc-section-item field-body">
-              <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></code>
+              <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></code>
           –
           <div class="doc-md-description">
-            <p><code>False</code> if the bytes differ, or if the length of <code>other</code> is not a</p>
-          </div>
-        </li>
-        <li class="doc-section-item field-body">
-              <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></code>
-          –
-          <div class="doc-md-description">
-            <p>multiple of <code>size</code>.</p>
+            <p>The number of shards that the cache holds an index for.</p>
           </div>
         </li>
     </ul>
