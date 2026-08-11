@@ -742,6 +742,31 @@ class Array:
             IndexError: If `selection` has more entries than the array has
                 dimensions.
         """
+    def __setitem__(self, selection: Selection, data: DataInput, /) -> None:
+        """Encode `data` and write it to a region, e.g. `arr[0:10, :] = data`.
+
+        This is sugar for
+        [`Array.store_array_subset`][zarrista.Array.store_array_subset]. To pass
+        codec options, call that method instead.
+
+        The write goes to the store immediately. `data` must cover exactly the
+        elements that `selection` spans.
+
+        Args:
+            selection: The region to write, in element coordinates.
+            data: The data to encode and write. Its shape must match the region
+                that `selection` spans.
+
+        Raises:
+            TypeError: If `data` has a different data type from the array.
+            ValueError: If `data` has a different shape from the selected
+                region, or if it is not C-contiguous.
+            NotImplementedError: If `selection` uses a slice with a step that is
+                not 1, or if it uses `None` (`np.newaxis`).
+            IndexError: If `selection` has more entries than the array has
+                dimensions.
+            ArrayError: If the array is read-only.
+        """
 
 class AsyncArray:
     """A Zarr array backed by an async store."""

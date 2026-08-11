@@ -64,6 +64,16 @@ impl PyArray {
         self.retrieve_array_subset(py, selection, None)
     }
 
+    /// Encode `data` and write it to the region, e.g. `arr[0:10, :] = data`.
+    fn __setitem__(
+        &self,
+        py: Python,
+        selection: PySelection,
+        data: PyDataInput,
+    ) -> ZarristaResult<()> {
+        self.store_array_subset(py, selection, data, None)
+    }
+
     fn __repr__(&self, py: Python) -> PyResult<String> {
         let path = PyNodePath::from(self.inner.path().clone());
         array_repr(py, "Array", &path, self.inner.shape(), &self.dtype())
