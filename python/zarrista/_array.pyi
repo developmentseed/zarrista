@@ -4,6 +4,8 @@ from typing import Protocol, TypeAlias, Unpack
 
 from zarr_metadata import JSONValue, ZarrV3ArrayMetadataJSON
 
+from zarrista.store import AsyncStore, SyncStore
+
 from ._array_bytes import ArrayBytes
 from ._chunk_key_encoding import ChunkKeyEncoding
 from ._chunks import ChunkGrid
@@ -11,7 +13,6 @@ from ._dtype import DataType
 from ._encoded_chunk import EncodedChunk
 from ._fill_value import FillValue
 from ._shard_cache import AsyncShardCache, ShardCache
-from ._store import AsyncStore, SyncStore
 from ._tensor import Tensor
 from .codec import CodecChain, CodecOptions
 

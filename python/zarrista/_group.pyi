@@ -6,8 +6,9 @@ from zarr_metadata import (
     ZarrV3GroupMetadataJSON,
 )
 
+from zarrista.store import AsyncStore, SyncStore
+
 from ._array import Array, AsyncArray
-from ._store import AsyncStore, SyncStore
 
 class Group:
     """A Zarr group."""
