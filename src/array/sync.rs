@@ -97,7 +97,7 @@ impl PyArray {
         Ok(Self::new(Arc::new(inner), store))
     }
 
-    #[pyo3(signature = (chunk_indices, **codec_options))]
+    #[pyo3(signature = (chunk_indices, /, **codec_options))]
     fn compact_chunk(
         &self,
         py: Python,
@@ -150,6 +150,7 @@ impl PyArray {
     /// Returns one of the decoded result classes (`FixedLengthTensor`,
     /// `VariableLengthTensor`, `OptionalFixedLengthTensor`,
     /// `OptionalVariableLengthTensor`) depending on the dtype layout.
+    #[pyo3(signature = (selection, /))]
     fn retrieve_array_subset(
         &self,
         py: Python,
@@ -161,7 +162,7 @@ impl PyArray {
         })
     }
 
-    #[pyo3(signature = (chunk_indices, **codec_options))]
+    #[pyo3(signature = (chunk_indices, /, **codec_options))]
     fn retrieve_chunk(
         &self,
         py: Python,
@@ -199,7 +200,7 @@ impl PyArray {
         })
     }
 
-    #[pyo3(signature = (subchunk_indices, *, shard_cache = None))]
+    #[pyo3(signature = (subchunk_indices, /, *, shard_cache = None))]
     fn retrieve_encoded_subchunk(
         &self,
         py: Python,
@@ -234,7 +235,7 @@ impl PyArray {
         })
     }
 
-    #[pyo3(signature = (subchunk_indices, *, shard_cache = None, **codec_options))]
+    #[pyo3(signature = (subchunk_indices, /, *, shard_cache = None, **codec_options))]
     fn retrieve_subchunk(
         &self,
         py: Python,
@@ -261,7 +262,7 @@ impl PyArray {
         self.store.clone()
     }
 
-    #[pyo3(signature = (selection, data, **codec_options))]
+    #[pyo3(signature = (selection, data, /, **codec_options))]
     fn store_array_subset(
         &self,
         py: Python,
@@ -281,7 +282,7 @@ impl PyArray {
         })
     }
 
-    #[pyo3(signature = (chunk_indices, decoded_chunk, **codec_options))]
+    #[pyo3(signature = (chunk_indices, decoded_chunk, /, **codec_options))]
     fn store_chunk(
         &self,
         py: Python,
@@ -302,7 +303,7 @@ impl PyArray {
         })
     }
 
-    #[pyo3(signature = (chunks, data, **codec_options))]
+    #[pyo3(signature = (chunks, data, /, **codec_options))]
     fn store_chunks(
         &self,
         py: Python,
@@ -325,6 +326,7 @@ impl PyArray {
         })
     }
 
+    #[pyo3(signature = (chunk_indices, encoded_chunk, /))]
     fn store_encoded_chunk(
         &self,
         py: Python,

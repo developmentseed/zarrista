@@ -109,7 +109,7 @@ impl PyAsyncArray {
         })
     }
 
-    #[pyo3(signature = (chunk_indices, **codec_options))]
+    #[pyo3(signature = (chunk_indices, /, **codec_options))]
     fn compact_chunk<'py>(
         &self,
         py: Python<'py>,
@@ -185,6 +185,7 @@ impl PyAsyncArray {
     }
 
     /// Read a region of the array as `Data`, using numpy-style basic indexing.
+    #[pyo3(signature = (selection, /))]
     fn retrieve_array_subset<'py>(
         &self,
         py: Python<'py>,
@@ -202,7 +203,7 @@ impl PyAsyncArray {
         })
     }
 
-    #[pyo3(signature = (chunk_indices, **codec_options))]
+    #[pyo3(signature = (chunk_indices, /, **codec_options))]
     fn retrieve_chunk<'py>(
         &self,
         py: Python<'py>,
@@ -250,7 +251,7 @@ impl PyAsyncArray {
         })
     }
 
-    #[pyo3(signature = (subchunk_indices, *, shard_cache = None))]
+    #[pyo3(signature = (subchunk_indices, /, *, shard_cache = None))]
     fn retrieve_encoded_subchunk<'py>(
         &self,
         py: Python<'py>,
@@ -287,7 +288,7 @@ impl PyAsyncArray {
         })
     }
 
-    #[pyo3(signature = (subchunk_indices, *, shard_cache = None, **codec_options))]
+    #[pyo3(signature = (subchunk_indices, /, *, shard_cache = None, **codec_options))]
     fn retrieve_subchunk<'py>(
         &self,
         py: Python<'py>,
@@ -319,7 +320,7 @@ impl PyAsyncArray {
         self.store.clone()
     }
 
-    #[pyo3(signature = (selection, data, **codec_options))]
+    #[pyo3(signature = (selection, data, /, **codec_options))]
     fn store_array_subset<'py>(
         &self,
         py: Python<'py>,
@@ -346,7 +347,7 @@ impl PyAsyncArray {
         })
     }
 
-    #[pyo3(signature = (chunk_indices, decoded_chunk, **codec_options))]
+    #[pyo3(signature = (chunk_indices, decoded_chunk, /, **codec_options))]
     fn store_chunk<'py>(
         &self,
         py: Python<'py>,
@@ -372,7 +373,7 @@ impl PyAsyncArray {
         })
     }
 
-    #[pyo3(signature = (chunks, data, **codec_options))]
+    #[pyo3(signature = (chunks, data, /, **codec_options))]
     fn store_chunks<'py>(
         &self,
         py: Python<'py>,
@@ -404,6 +405,7 @@ impl PyAsyncArray {
         })
     }
 
+    #[pyo3(signature = (chunk_indices, encoded_chunk, /))]
     fn store_encoded_chunk<'py>(
         &self,
         py: Python<'py>,

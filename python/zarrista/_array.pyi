@@ -202,6 +202,7 @@ class Array:
     def retrieve_array_subset(
         self,
         selection: Selection,
+        /,
         **codec_options: Unpack[CodecOptions],
     ) -> Tensor:
         """Read and decode an array region selected with numpy-style basic indexing.
@@ -228,6 +229,7 @@ class Array:
     def retrieve_chunk(
         self,
         chunk_indices: list[int],
+        /,
         **codec_options: Unpack[CodecOptions],
     ) -> Tensor:
         """Read and decode the chunk at the given chunk grid indices.
@@ -264,6 +266,7 @@ class Array:
     def retrieve_subchunk(
         self,
         subchunk_indices: list[int],
+        /,
         *,
         shard_cache: ShardCache | None = None,
         **codec_options: Unpack[CodecOptions],
@@ -296,6 +299,7 @@ class Array:
     def retrieve_encoded_subchunk(
         self,
         subchunk_indices: list[int],
+        /,
         *,
         shard_cache: ShardCache | None = None,
     ) -> EncodedChunk | None:
@@ -351,6 +355,7 @@ class Array:
         self,
         selection: Selection,
         data: DataInput,
+        /,
         **codec_options: Unpack[CodecOptions],
     ) -> None:
         """Encode `data` and write it to the region selected by `selection`.
@@ -383,6 +388,7 @@ class Array:
         self,
         chunk_indices: list[int],
         decoded_chunk: ArrayBytes,
+        /,
         **codec_options: Unpack[CodecOptions],
     ) -> None:
         """Encode `decoded_chunk` and write it as the chunk at `chunk_indices`.
@@ -406,6 +412,7 @@ class Array:
         self,
         chunks: Selection,
         data: DataInput,
+        /,
         **codec_options: Unpack[CodecOptions],
     ) -> None:
         """Encode `data` and write it to the chunks selected by `chunks`.
@@ -473,6 +480,7 @@ class Array:
         self,
         chunk_indices: list[int],
         encoded_chunk: Buffer,
+        /,
     ) -> None:
         """Write already-encoded bytes directly as the chunk at `chunk_indices`.
 
@@ -502,6 +510,7 @@ class Array:
     def compact_chunk(
         self,
         chunk_indices: list[int],
+        /,
         **codec_options: Unpack[CodecOptions],
     ) -> bool:
         """Re-encode the stored chunk in place, and report whether it changed.
@@ -874,6 +883,7 @@ class AsyncArray:
     async def retrieve_array_subset(
         self,
         selection: Selection,
+        /,
         **codec_options: Unpack[CodecOptions],
     ) -> Tensor:
         """Read and decode an array region selected with numpy-style basic indexing.
@@ -900,6 +910,7 @@ class AsyncArray:
     async def retrieve_chunk(
         self,
         chunk_indices: list[int],
+        /,
         **codec_options: Unpack[CodecOptions],
     ) -> Tensor:
         """Read and decode the chunk at the given chunk grid indices.
@@ -935,6 +946,7 @@ class AsyncArray:
     async def retrieve_subchunk(
         self,
         subchunk_indices: list[int],
+        /,
         *,
         shard_cache: AsyncShardCache | None = None,
         **codec_options: Unpack[CodecOptions],
@@ -967,6 +979,7 @@ class AsyncArray:
     async def retrieve_encoded_subchunk(
         self,
         subchunk_indices: list[int],
+        /,
         *,
         shard_cache: AsyncShardCache | None = None,
     ) -> EncodedChunk | None:
@@ -1024,6 +1037,7 @@ class AsyncArray:
         self,
         selection: Selection,
         data: DataInput,
+        /,
         **codec_options: Unpack[CodecOptions],
     ) -> None:
         """Encode `data` and write it to the region selected by `selection`.
@@ -1056,6 +1070,7 @@ class AsyncArray:
         self,
         chunk_indices: list[int],
         decoded_chunk: ArrayBytes,
+        /,
         **codec_options: Unpack[CodecOptions],
     ) -> None:
         """Encode `decoded_chunk` and write it as the chunk at `chunk_indices`.
@@ -1079,6 +1094,7 @@ class AsyncArray:
         self,
         chunks: Selection,
         data: DataInput,
+        /,
         **codec_options: Unpack[CodecOptions],
     ) -> None:
         """Encode `data` and write it to the chunks selected by `chunks`.
@@ -1146,6 +1162,7 @@ class AsyncArray:
         self,
         chunk_indices: list[int],
         encoded_chunk: Buffer,
+        /,
     ) -> None:
         """Write already-encoded bytes directly as the chunk at `chunk_indices`.
 
@@ -1175,6 +1192,7 @@ class AsyncArray:
     async def compact_chunk(
         self,
         chunk_indices: list[int],
+        /,
         **codec_options: Unpack[CodecOptions],
     ) -> bool:
         """Re-encode the stored chunk in place, and report whether it changed.
