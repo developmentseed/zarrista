@@ -37,7 +37,7 @@ This allows for significant performance improvements compared to Zarr-Python. Se
 
 However, to avoid fracturing the ecosystem, we **plan to integrate Zarrista as a native backend into Zarr-Python**.
 
-We hope that a Zarrista backend for Zarr-Python will keep most of the performance improvements, avoiding any need for end users to change their code, while benefiting from speedups. Follow Zarr-Python PR [#4064](https://github.com/zarr-developers/zarr-python/pull/4064), which prototypes generic backends and adds a Zarrista driver.
+We hope that a Zarrista backend for Zarr-Python can deliver these performance improvements without any need for end users to change their code. Follow Zarr-Python PR [#4064](https://github.com/zarr-developers/zarr-python/pull/4064), which uses Zarrista to prototype generic backends for Zarr-Python.
 
 ### Standalone library for lower-level APIs
 
