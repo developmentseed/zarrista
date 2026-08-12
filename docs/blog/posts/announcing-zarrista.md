@@ -14,7 +14,7 @@ _This blog post was fully written by humans._
 
 We're releasing Zarrista, a new high-performance Python library for interfacing with [Zarr] data, the pre-eminent open data format for storing chunked N-dimensional arrays. Zarrista is powered by Rust and the [Zarrs] library.
 
-Zarrista is directly usable by intermediate-to-advanced users, but we also plan to integrate it into [Zarr-Python], so that all users can benefit from improved performance, without needing code changes.
+Advanced Zarr users can start working with Zarrista today, but we plan to integrate it into [Zarr-Python], so that all users can benefit from improved performance, without needing code changes.
 
 [Zarr]: https://zarr.dev/
 [Zarrs]: https://zarrs.dev/
