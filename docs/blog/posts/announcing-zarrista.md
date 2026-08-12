@@ -27,7 +27,7 @@ Advanced Zarr users can start working with Zarrista today, but we plan to integr
 
 [Zarr-Python], the reference Python library for working with Zarr, is primarily _written in Python_. Aside from a few compiled dependencies, all of Zarr-Python's own source code is Python.
 
-In contrast, Zarrista is _fully compiled_. Only the user interface is Python; everything else is compiled Rust code. When you read data from a Zarr [`Array`][zarrista.Array] object, the entire sequence of operations is happening in compiled code.
+In contrast, Zarrista is _fully compiled_. There's a thin layer of type definitions in Python but the rest is compiled Rust code.
 
 This allows for significant performance improvements compared to Zarr-Python. See the [Benchmarks](#benchmarks) section for more information.
 
