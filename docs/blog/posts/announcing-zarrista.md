@@ -107,7 +107,37 @@ Icechunk is an open-source, cloud-native, transactional storage engine for Zarr 
 
 Pass an Icechunk [`Session`][icechunk.session.Session] directly to any API that accepts [`AsyncStore`][zarrista.store.AsyncStore] such as [`AsyncArray.open`][zarrista.AsyncArray.open] or [`AsyncGroup.open`][zarrista.AsyncGroup.open].
 
-## Zero-copy data exchange
+## Supporting all Zarr data types
+
+Zarr and Zarr extensions define myriad data types that arrays can contain.
+
+Included are the standard fixed-width types like `uint8`, `int32`, and `float64`, but also more exotic types like variable-width string, and specialized floating-point variants like `Float8E5M2` or `ComplexFloat6E3M2FN`.
+
+Though not all Zarr data types are easily expressed in Numpy arrays, Zarrista aims to support all Zarr data types by defining _generic containers_ representing Rust memory and offering multiple exchange mechanisms to access the raw data.
+
+Reading arrays with fixed-width types will return [`FixedLengthTensor`][zarrista.FixedLengthTensor], while arrays with variable-width types return [`VariableLengthTensor`][zarrista.VariableLengthTensor]. Each of these classes represent regions of Rust memory and offer various ways to access the raw data.
+
+(The tensor containers should support all data types in principle, but we need more testing to validate some of the more exotic types are working as they should.)
+
+### Zero-copy data exchange
+
+Zarrista supports zero-copy data exchange between Rust and Python wherever possible.
+
+|                   | [`FixedLengthTensor`][zarrista.FixedLengthTensor] | [`VariableLengthTensor`][zarrista.VariableLengthTensor] |
+| ----------------- | ------------------------------------------------- | ------------------------------------------------------- |
+| [Buffer Protocol] | :white_check_mark:                                | :x:                                                     |
+| [DLPack]          | :white_check_mark:                                | :x:                                                     |
+| Numpy             | :white_check_mark:                                | :x: [^1]                                                |
+| [Apache Arrow]    | :x:                                               | :white_check_mark:                                      |
+
+Numpy conversion relies on the Buffer protocol under the hood.
+
+[Buffer Protocol]: https://docs.python.org/3/c-api/buffer.html
+[DLPack]: https://dmlc.github.io/dlpack/latest/
+[Apache Arrow]: https://arrow.apache.org/docs/format
+
+
+[^1]: Though we support reading variable-width strings to Numpy arrays, it is not zero copy.
 
 ## Usage Example
 
@@ -151,6 +181,43 @@ data = array.retrieve_chunk([0, 0])
 
 ### Async example
 
+
+```py
+from zarrista import AsyncArray
+from obstore.store import S3Store
+
+store = S3Store("bucket", region="us-west-2")
+array = await AsyncArray.open(store, path="/temperature")
+```
+
+Inspect the array's metadata:
+
+```py
+array.shape
+# [720, 1440]
+
+array.dtype
+# DataType(float32 / <f4)
+
+array.dimension_names
+# ["lat", "lon"]
+```
+
+Read a subset of the array. Indexing returns a [`Tensor`], which converts to a [NumPy] array:
+
+```py
+data = await array[0:128, 0:128]
+arr = data.to_numpy()
+arr.shape
+# (128, 128)
+```
+
+You can also read individual chunks by their grid index:
+
+```py
+data = await array.retrieve_chunk([0, 0])
+```
+
 ## AI Usage
 
 Zarrista's source code is _minimally_ vibe-coded.
@@ -163,3 +230,9 @@ Almost all current tests were written by Claude.
 
 ## Future Work
 
+We plan future work on:
+
+- Integration into Zarr-Python
+- Improved APIs for splitting IO-bound and CPU-bound work
+- Expanded indexing/selection support
+- Async benchmarks with data on object store
