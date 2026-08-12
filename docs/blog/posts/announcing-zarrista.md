@@ -6,9 +6,6 @@ categories:
 authors:
   - kylebarron
   - d-v-b
-# links:
-#     # TODO: update changelog link
-#   - CHANGELOG.md#0130-2025-11-05
 ---
 
 # Zarrista: Faster Zarr for Python
@@ -67,9 +64,11 @@ Keeping Zarrista separate from Zarr-Python also simplifies Zarr-Python's mainten
 
 ## Benchmarks
 
-In [our PR](https://github.com/zarrs/zarr_benchmarks/pull/12) to [`zarr_benchmarks`](https://github.com/zarrs/zarr_benchmarks), Zarrista is the fastest Python chunked array library, in line with Google's [Tensorstore]. It's surpassed only by the Rust [Zarrs] library, which Zarrista uses internally.
+Zarrista is the fastest Python chunked array library, in line with Google's [Tensorstore]. It's surpassed only by the Rust [Zarrs] library, which Zarrista uses internally.
 
 These benchmarks only use the synchronous local file system APIs. We'd like to benchmark remote object store performance in the future.
+
+Refer to [our PR](https://github.com/zarrs/zarr_benchmarks/pull/12) to [`zarr_benchmarks`](https://github.com/zarrs/zarr_benchmarks) for more information.
 
 [Zarrs]: https://zarrs.dev/
 [Tensorstore]: https://github.com/google/tensorstore
@@ -92,13 +91,23 @@ The minimum time and peak memory usage to read a dataset subchunk-by-subchunk in
 
 ![](../../assets/benchmark_read_subchunks.svg)
 
-### Zero-copy data exchange
-
 ## Integrations
+
+Zarrista integrates into existing tooling to keep the interface as simple as possible.
 
 ### Obstore
 
+[Obstore](https://developmentseed.org/obstore/latest/) is a high-performance interface to object stores like Amazon S3, Google Cloud Storage, and Azure Storage.
+
+Pass an Obstore store instance, such as an [`S3Store`][obstore.store.S3Store], [`GCSStore`][obstore.store.GCSStore] or [`AzureStore`][obstore.store.AzureStore], directly to any API that accepts [`AsyncStore`][zarrista.store.AsyncStore] such as [`AsyncArray.open`][zarrista.AsyncArray.open] or [`AsyncGroup.open`][zarrista.AsyncGroup.open].
+
 ### Icechunk
+
+Icechunk is an open-source, cloud-native, transactional storage engine for Zarr data.
+
+Pass an Icechunk [`Session`][icechunk.session.Session] directly to any API that accepts [`AsyncStore`][zarrista.store.AsyncStore] such as [`AsyncArray.open`][zarrista.AsyncArray.open] or [`AsyncGroup.open`][zarrista.AsyncGroup.open].
+
+## Zero-copy data exchange
 
 ## Usage Example
 
