@@ -1,0 +1,3663 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="A low-level Zarr API for Python, powered from Rust by zarrs.">
+      
+      
+        <meta name="author" content="Development Seed">
+      
+      
+        <link rel="canonical" href="https://developmentseed.org/zarrista/latest/api/codec/">
+      
+      
+        <link rel="prev" href="../chunk-grid/">
+      
+      
+        <link rel="next" href="../concurrency/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>Codec - zarrista</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/_mkdocstrings.css">
+    
+      <link rel="stylesheet" href="../../overrides/stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  
+<meta property="og:type" content="website" />
+<meta property="og:title" content="Codec - zarrista" />
+<meta property="og:description" content="A low-level Zarr API for Python, powered from Rust by zarrs." />
+<meta property="og:image" content="https://developmentseed.org/zarrista/latest/assets/images/social/api/codec.png" />
+<meta property="og:image:type" content="image/png" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta property="og:url" content="https://developmentseed.org/zarrista/latest/api/codec/" />
+<meta property="twitter:card" content="summary_large_image" />
+<meta property="twitter:title" content="Codec - zarrista" />
+<meta property="twitter:description" content="A low-level Zarr API for Python, powered from Rust by zarrs." />
+<meta property="twitter:image" content="https://developmentseed.org/zarrista/latest/assets/images/social/api/codec.png" />
+</head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#codec" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+      <div data-md-color-scheme="default" data-md-component="outdated" hidden>
+        
+          <aside class="md-banner md-banner--warning">
+            <div class="md-banner__inner md-grid md-typeset">
+              
+  You're not viewing the latest version.
+  <a href="../../..">
+    <strong>Click here to go to latest.</strong>
+  </a>
+
+            </div>
+            <script>var el=document.querySelector("[data-md-component=outdated]"),base=new URL("../.."),outdated=__md_get("__outdated",sessionStorage,base);!0===outdated&&el&&(el.hidden=!1)</script>
+          </aside>
+        
+      </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="zarrista" class="md-header__button md-logo" aria-label="zarrista" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            zarrista
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Codec
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme)" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m14.3 16-.7-2h-3.2l-.7 2H7.8L11 7h2l3.2 9zM20 8.69V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12zm-9.15 3.96h2.3L12 9z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="brown" data-md-color-accent="teal"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_2" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="brown" data-md-color-accent="teal"  aria-label="Switch to system preference"  type="radio" name="__palette" id="__palette_2">
+    
+      <label class="md-header__button md-icon" title="Switch to system preference" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+          <a href="javascript:void(0)" class="md-search__icon md-icon" title="Share" aria-label="Share" data-clipboard data-clipboard-text="" data-md-component="search-share" tabindex="-1">
+            
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9a3 3 0 0 0-3 3 3 3 0 0 0 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.15c-.05.21-.08.43-.08.66 0 1.61 1.31 2.91 2.92 2.91s2.92-1.3 2.92-2.91A2.92 2.92 0 0 0 18 16.08"/></svg>
+          </a>
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/developmentseed/zarrista" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    developmentseed/zarrista
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="zarrista" class="md-nav__button md-logo" aria-label="zarrista" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    zarrista
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/developmentseed/zarrista" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    developmentseed/zarrista
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    zarrista
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    API Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../array/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Array
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../builder/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Array creation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../group/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Group
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../store/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Store
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../chunk-grid/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ChunkGrid
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Codec
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Codec
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#zarrista.codec" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-module"></code>&nbsp;codec
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#zarrista.codec.ArrayToArrayCodec" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;ArrayToArrayCodec
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label=" ArrayToArrayCodec">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#zarrista.codec.ArrayToArrayCodec.config" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;config
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#zarrista.codec.ArrayToArrayCodec.name" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;name
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#zarrista.codec.ArrayToArrayCodec.decode" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;decode
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#zarrista.codec.ArrayToArrayCodec.decoded_shape" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;decoded_shape
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#zarrista.codec.ArrayToArrayCodec.encode" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;encode
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#zarrista.codec.ArrayToArrayCodec.encoded_data_type" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;encoded_data_type
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#zarrista.codec.ArrayToArrayCodec.encoded_fill_value" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;encoded_fill_value
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#zarrista.codec.ArrayToArrayCodec.encoded_shape" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;encoded_shape
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#zarrista.codec.ArrayToArrayCodec.from_config" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;from_config
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#zarrista.codec.ArrayToBytesCodec" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;ArrayToBytesCodec
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label=" ArrayToBytesCodec">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#zarrista.codec.ArrayToBytesCodec.config" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;config
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#zarrista.codec.ArrayToBytesCodec.name" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;name
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#zarrista.codec.ArrayToBytesCodec.from_config" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;from_config
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#zarrista.codec.BytesToBytesCodec" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;BytesToBytesCodec
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label=" BytesToBytesCodec">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#zarrista.codec.BytesToBytesCodec.config" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;config
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#zarrista.codec.BytesToBytesCodec.name" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;name
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#zarrista.codec.BytesToBytesCodec.encode" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;encode
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#zarrista.codec.BytesToBytesCodec.from_config" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;from_config
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#zarrista.codec.CodecChain" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;CodecChain
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label=" CodecChain">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#zarrista.codec.CodecChain.compressors" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;compressors
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#zarrista.codec.CodecChain.filters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;filters
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#zarrista.codec.CodecChain.serializer" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;serializer
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#zarrista.codec.bitround" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-function"></code>&nbsp;bitround
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#zarrista.codec.blosc" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-function"></code>&nbsp;blosc
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#zarrista.codec.crc32c" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-function"></code>&nbsp;crc32c
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#zarrista.codec.gzip" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-function"></code>&nbsp;gzip
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#zarrista.codec.transpose" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-function"></code>&nbsp;transpose
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#zarrista.codec.zstd" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-function"></code>&nbsp;zstd
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#zarrista.codec.CodecOptions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;CodecOptions
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label=" CodecOptions">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#zarrista.codec.CodecOptions.chunk_concurrent_minimum" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;chunk_concurrent_minimum
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#zarrista.codec.CodecOptions.concurrent_target" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;concurrent_target
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#zarrista.codec.CodecOptions.experimental_partial_encoding" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;experimental_partial_encoding
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#zarrista.codec.CodecOptions.store_empty_chunks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;store_empty_chunks
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#zarrista.codec.CodecOptions.validate_checksums" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;validate_checksums
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#codec-configuration-types" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Codec configuration types
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#zarrista.codec._bytes_to_bytes._blosc.BloscCompressor" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;BloscCompressor
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#zarrista.codec._bytes_to_bytes._blosc.BloscShuffle" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;BloscShuffle
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../concurrency/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Concurrency
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../dtype/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    DataType
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../encoded-chunk/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Encoded chunk
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../exceptions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Exceptions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../shard-cache/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Shard cache
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../tensor/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Tensor
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../blog/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Blog
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_3" id="__nav_3_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Blog
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Archive
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#zarrista.codec" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-module"></code>&nbsp;codec
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#zarrista.codec.ArrayToArrayCodec" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;ArrayToArrayCodec
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label=" ArrayToArrayCodec">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#zarrista.codec.ArrayToArrayCodec.config" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;config
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#zarrista.codec.ArrayToArrayCodec.name" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;name
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#zarrista.codec.ArrayToArrayCodec.decode" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;decode
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#zarrista.codec.ArrayToArrayCodec.decoded_shape" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;decoded_shape
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#zarrista.codec.ArrayToArrayCodec.encode" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;encode
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#zarrista.codec.ArrayToArrayCodec.encoded_data_type" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;encoded_data_type
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#zarrista.codec.ArrayToArrayCodec.encoded_fill_value" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;encoded_fill_value
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#zarrista.codec.ArrayToArrayCodec.encoded_shape" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;encoded_shape
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#zarrista.codec.ArrayToArrayCodec.from_config" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;from_config
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#zarrista.codec.ArrayToBytesCodec" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;ArrayToBytesCodec
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label=" ArrayToBytesCodec">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#zarrista.codec.ArrayToBytesCodec.config" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;config
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#zarrista.codec.ArrayToBytesCodec.name" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;name
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#zarrista.codec.ArrayToBytesCodec.from_config" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;from_config
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#zarrista.codec.BytesToBytesCodec" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;BytesToBytesCodec
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label=" BytesToBytesCodec">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#zarrista.codec.BytesToBytesCodec.config" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;config
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#zarrista.codec.BytesToBytesCodec.name" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;name
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#zarrista.codec.BytesToBytesCodec.encode" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;encode
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#zarrista.codec.BytesToBytesCodec.from_config" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;from_config
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#zarrista.codec.CodecChain" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;CodecChain
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label=" CodecChain">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#zarrista.codec.CodecChain.compressors" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;compressors
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#zarrista.codec.CodecChain.filters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;filters
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#zarrista.codec.CodecChain.serializer" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;serializer
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#zarrista.codec.bitround" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-function"></code>&nbsp;bitround
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#zarrista.codec.blosc" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-function"></code>&nbsp;blosc
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#zarrista.codec.crc32c" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-function"></code>&nbsp;crc32c
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#zarrista.codec.gzip" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-function"></code>&nbsp;gzip
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#zarrista.codec.transpose" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-function"></code>&nbsp;transpose
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#zarrista.codec.zstd" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-function"></code>&nbsp;zstd
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#zarrista.codec.CodecOptions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;CodecOptions
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label=" CodecOptions">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#zarrista.codec.CodecOptions.chunk_concurrent_minimum" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;chunk_concurrent_minimum
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#zarrista.codec.CodecOptions.concurrent_target" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;concurrent_target
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#zarrista.codec.CodecOptions.experimental_partial_encoding" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;experimental_partial_encoding
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#zarrista.codec.CodecOptions.store_empty_chunks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;store_empty_chunks
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#zarrista.codec.CodecOptions.validate_checksums" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;validate_checksums
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#codec-configuration-types" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Codec configuration types
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#zarrista.codec._bytes_to_bytes._blosc.BloscCompressor" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;BloscCompressor
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#zarrista.codec._bytes_to_bytes._blosc.BloscShuffle" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;BloscShuffle
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+
+
+
+                  
+
+
+  
+  
+
+
+<h1 id="codec">Codec<a class="headerlink" href="#codec" title="Permanent link">&para;</a></h1>
+
+
+<div class="doc doc-object doc-module">
+
+
+
+<a id="zarrista.codec"></a>
+    <div class="doc doc-contents first">
+
+        <p>Zarr v3 codecs for array-to-array, array-to-bytes, and bytes-to-bytes transforms.</p>
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="zarrista.codec.ArrayToArrayCodec" class="doc doc-heading">
+            <span class="doc doc-object-name doc-class-name">ArrayToArrayCodec</span>
+
+
+<a href="#zarrista.codec.ArrayToArrayCodec" class="headerlink" title="Permanent link">&para;</a></h2>
+
+
+    <div class="doc doc-contents ">
+
+
+
+        <p>A Zarr v3 array-to-array codec.</p>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="zarrista.codec.ArrayToArrayCodec.config" class="doc doc-heading">
+            <span class="doc doc-object-name doc-attribute-name">config</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+<a href="#zarrista.codec.ArrayToArrayCodec.config" class="headerlink" title="Permanent link">&para;</a></h3>
+<div class="doc-signature codehilite"><pre><span></span><code><span class="n">config</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="zarr_metadata.JSONValue" href="https://zarr.readthedocs.io/projects/zarr-metadata/en/latest/api/#zarr_metadata.JSONValue">JSONValue</a></span> <span class="o">|</span> <span class="kc">None</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>The codec's Zarr v3 configuration as a dict, if any.</p>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="zarrista.codec.ArrayToArrayCodec.name" class="doc doc-heading">
+            <span class="doc doc-object-name doc-attribute-name">name</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+<a href="#zarrista.codec.ArrayToArrayCodec.name" class="headerlink" title="Permanent link">&para;</a></h3>
+<div class="doc-signature codehilite"><pre><span></span><code><span class="n">name</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span> <span class="o">|</span> <span class="kc">None</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>The codec's Zarr v3 name (e.g. <code>"transpose"</code>), if any.</p>
+
+    </div>
+
+</div>
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="zarrista.codec.ArrayToArrayCodec.decode" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">decode</span>
+
+
+<a href="#zarrista.codec.ArrayToArrayCodec.decode" class="headerlink" title="Permanent link">&para;</a></h3>
+<div class="doc-signature codehilite"><pre><span></span><code><span class="nf">decode</span><span class="p">(</span>
+    <span class="n">value</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="zarrista.ArrayBytes (zarrista._array_bytes.ArrayBytes)" href="../builder/#zarrista.ArrayBytes">ArrayBytes</a></span><span class="p">,</span>
+    <span class="o">/</span><span class="p">,</span>
+    <span class="n">shape</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#list">list</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></span><span class="p">],</span>
+    <span class="n">data_type</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="zarrista.DataType (zarrista._dtype.DataType)" href="../dtype/#zarrista.DataType">DataType</a></span><span class="p">,</span>
+    <span class="n">fill_value</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="zarrista.FillValue (zarrista._fill_value.FillValue)" href="../dtype/#zarrista.FillValue">FillValue</a></span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-internal" title="zarrista.ArrayBytes (zarrista._array_bytes.ArrayBytes)" href="../builder/#zarrista.ArrayBytes">ArrayBytes</a></span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Decode chunk bytes with this codec.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>value</code></b>
+              (<code><a class="autorefs autorefs-internal" title="zarrista.ArrayBytes (zarrista._array_bytes.ArrayBytes)" href="../builder/#zarrista.ArrayBytes">ArrayBytes</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The encoded chunk bytes.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>shape</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#list">list</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a>]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The shape of the encoded chunk, in elements along each
+dimension.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>data_type</code></b>
+              (<code><a class="autorefs autorefs-internal" title="zarrista.DataType (zarrista._dtype.DataType)" href="../dtype/#zarrista.DataType">DataType</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The data type of the encoded chunk.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>fill_value</code></b>
+              (<code><a class="autorefs autorefs-internal" title="zarrista.FillValue (zarrista._fill_value.FillValue)" href="../dtype/#zarrista.FillValue">FillValue</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The fill value of the encoded chunk.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+              <code><a class="autorefs autorefs-internal" title="zarrista.ArrayBytes (zarrista._array_bytes.ArrayBytes)" href="../builder/#zarrista.ArrayBytes">ArrayBytes</a></code>
+          –
+          <div class="doc-md-description">
+            <p>The decoded chunk bytes.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Raises:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+              <code><a class="autorefs autorefs-internal" title="CodecError (zarrista.exceptions.CodecError)" href="../exceptions/#zarrista.exceptions.CodecError">CodecError</a></code>
+            –
+          <div class="doc-md-description">
+            <p>If <code>value</code> does not agree with <code>shape</code> and <code>data_type</code>,
+or if the codec cannot decode the chunk.</p>
+          </div>
+        </li>
+    </ul>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="zarrista.codec.ArrayToArrayCodec.decoded_shape" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">decoded_shape</span>
+
+
+<a href="#zarrista.codec.ArrayToArrayCodec.decoded_shape" class="headerlink" title="Permanent link">&para;</a></h3>
+<div class="doc-signature codehilite"><pre><span></span><code><span class="nf">decoded_shape</span><span class="p">(</span><span class="n">encoded_shape</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#list">list</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#list">list</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Return the chunk shape that decodes to <code>encoded_shape</code>.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>encoded_shape</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#list">list</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a>]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The shape of the encoded chunk, in elements along
+each dimension.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+              <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#list">list</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a>] | None</code>
+          –
+          <div class="doc-md-description">
+            <p>The shape of the decoded chunk, or <code>None</code> if the codec cannot
+determine it.</p>
+          </div>
+        </li>
+    </ul>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="zarrista.codec.ArrayToArrayCodec.encode" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">encode</span>
+
+
+<a href="#zarrista.codec.ArrayToArrayCodec.encode" class="headerlink" title="Permanent link">&para;</a></h3>
+<div class="doc-signature codehilite"><pre><span></span><code><span class="nf">encode</span><span class="p">(</span>
+    <span class="n">value</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="zarrista.ArrayBytes (zarrista._array_bytes.ArrayBytes)" href="../builder/#zarrista.ArrayBytes">ArrayBytes</a></span><span class="p">,</span>
+    <span class="o">/</span><span class="p">,</span>
+    <span class="n">shape</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#list">list</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></span><span class="p">],</span>
+    <span class="n">data_type</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="zarrista.DataType (zarrista._dtype.DataType)" href="../dtype/#zarrista.DataType">DataType</a></span><span class="p">,</span>
+    <span class="n">fill_value</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="zarrista.FillValue (zarrista._fill_value.FillValue)" href="../dtype/#zarrista.FillValue">FillValue</a></span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-internal" title="zarrista.ArrayBytes (zarrista._array_bytes.ArrayBytes)" href="../builder/#zarrista.ArrayBytes">ArrayBytes</a></span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Encode chunk bytes with this codec.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>value</code></b>
+              (<code><a class="autorefs autorefs-internal" title="zarrista.ArrayBytes (zarrista._array_bytes.ArrayBytes)" href="../builder/#zarrista.ArrayBytes">ArrayBytes</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The decoded chunk bytes.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>shape</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#list">list</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a>]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The shape of the decoded chunk, in elements along each
+dimension.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>data_type</code></b>
+              (<code><a class="autorefs autorefs-internal" title="zarrista.DataType (zarrista._dtype.DataType)" href="../dtype/#zarrista.DataType">DataType</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The data type of the decoded chunk.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>fill_value</code></b>
+              (<code><a class="autorefs autorefs-internal" title="zarrista.FillValue (zarrista._fill_value.FillValue)" href="../dtype/#zarrista.FillValue">FillValue</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The fill value of the decoded chunk.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+              <code><a class="autorefs autorefs-internal" title="zarrista.ArrayBytes (zarrista._array_bytes.ArrayBytes)" href="../builder/#zarrista.ArrayBytes">ArrayBytes</a></code>
+          –
+          <div class="doc-md-description">
+            <p>The encoded chunk bytes.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Raises:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+              <code><a class="autorefs autorefs-internal" title="CodecError (zarrista.exceptions.CodecError)" href="../exceptions/#zarrista.exceptions.CodecError">CodecError</a></code>
+            –
+          <div class="doc-md-description">
+            <p>If <code>value</code> does not agree with <code>shape</code> and <code>data_type</code>,
+or if the codec cannot encode the chunk.</p>
+          </div>
+        </li>
+    </ul>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="zarrista.codec.ArrayToArrayCodec.encoded_data_type" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">encoded_data_type</span>
+
+
+<a href="#zarrista.codec.ArrayToArrayCodec.encoded_data_type" class="headerlink" title="Permanent link">&para;</a></h3>
+<div class="doc-signature codehilite"><pre><span></span><code><span class="nf">encoded_data_type</span><span class="p">(</span><span class="n">decoded_data_type</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="zarrista.DataType (zarrista._dtype.DataType)" href="../dtype/#zarrista.DataType">DataType</a></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-internal" title="zarrista.DataType (zarrista._dtype.DataType)" href="../dtype/#zarrista.DataType">DataType</a></span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Return the data type that this codec produces when it encodes.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>decoded_data_type</code></b>
+              (<code><a class="autorefs autorefs-internal" title="zarrista.DataType (zarrista._dtype.DataType)" href="../dtype/#zarrista.DataType">DataType</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The data type of the decoded chunk.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+              <code><a class="autorefs autorefs-internal" title="zarrista.DataType (zarrista._dtype.DataType)" href="../dtype/#zarrista.DataType">DataType</a></code>
+          –
+          <div class="doc-md-description">
+            <p>The data type of the encoded chunk.</p>
+          </div>
+        </li>
+    </ul>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="zarrista.codec.ArrayToArrayCodec.encoded_fill_value" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">encoded_fill_value</span>
+
+
+<a href="#zarrista.codec.ArrayToArrayCodec.encoded_fill_value" class="headerlink" title="Permanent link">&para;</a></h3>
+<div class="doc-signature codehilite"><pre><span></span><code><span class="nf">encoded_fill_value</span><span class="p">(</span>
+    <span class="n">decoded_data_type</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="zarrista.DataType (zarrista._dtype.DataType)" href="../dtype/#zarrista.DataType">DataType</a></span><span class="p">,</span> <span class="n">decoded_fill_value</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="zarrista.FillValue (zarrista._fill_value.FillValue)" href="../dtype/#zarrista.FillValue">FillValue</a></span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-internal" title="zarrista.FillValue (zarrista._fill_value.FillValue)" href="../dtype/#zarrista.FillValue">FillValue</a></span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Return the fill value that this codec produces when it encodes.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>decoded_data_type</code></b>
+              (<code><a class="autorefs autorefs-internal" title="zarrista.DataType (zarrista._dtype.DataType)" href="../dtype/#zarrista.DataType">DataType</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The data type of the decoded chunk.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>decoded_fill_value</code></b>
+              (<code><a class="autorefs autorefs-internal" title="zarrista.FillValue (zarrista._fill_value.FillValue)" href="../dtype/#zarrista.FillValue">FillValue</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The fill value of the decoded chunk.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+              <code><a class="autorefs autorefs-internal" title="zarrista.FillValue (zarrista._fill_value.FillValue)" href="../dtype/#zarrista.FillValue">FillValue</a></code>
+          –
+          <div class="doc-md-description">
+            <p>The fill value of the encoded chunk.</p>
+          </div>
+        </li>
+    </ul>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="zarrista.codec.ArrayToArrayCodec.encoded_shape" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">encoded_shape</span>
+
+
+<a href="#zarrista.codec.ArrayToArrayCodec.encoded_shape" class="headerlink" title="Permanent link">&para;</a></h3>
+<div class="doc-signature codehilite"><pre><span></span><code><span class="nf">encoded_shape</span><span class="p">(</span><span class="n">decoded_shape</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#list">list</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#list">list</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></span><span class="p">]</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Return the chunk shape that this codec produces when it encodes.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>decoded_shape</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#list">list</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a>]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The shape of the decoded chunk, in elements along
+each dimension.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+              <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#list">list</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a>]</code>
+          –
+          <div class="doc-md-description">
+            <p>The shape of the encoded chunk.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Raises:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+              <code><a class="autorefs autorefs-internal" title="CodecError (zarrista.exceptions.CodecError)" href="../exceptions/#zarrista.exceptions.CodecError">CodecError</a></code>
+            –
+          <div class="doc-md-description">
+            <p>If <code>decoded_shape</code> has a number of dimensions that the
+codec does not support.</p>
+          </div>
+        </li>
+    </ul>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="zarrista.codec.ArrayToArrayCodec.from_config" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">from_config</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-staticmethod"><code>staticmethod</code></small>
+  </span>
+
+<a href="#zarrista.codec.ArrayToArrayCodec.from_config" class="headerlink" title="Permanent link">&para;</a></h3>
+<div class="doc-signature codehilite"><pre><span></span><code><span class="nf">from_config</span><span class="p">(</span><span class="n">metadata</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="zarr_metadata.JSONValue" href="https://zarr.readthedocs.io/projects/zarr-metadata/en/latest/api/#zarr_metadata.JSONValue">JSONValue</a></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-internal" title="ArrayToArrayCodec (zarrista.codec._array_to_array.ArrayToArrayCodec)" href="#zarrista.codec.ArrayToArrayCodec">ArrayToArrayCodec</a></span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Construct a codec from its Zarr v3 metadata.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>metadata</code></b>
+              (<code><a class="autorefs autorefs-external" title="zarr_metadata.JSONValue" href="https://zarr.readthedocs.io/projects/zarr-metadata/en/latest/api/#zarr_metadata.JSONValue">JSONValue</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The Zarr v3 metadata of the codec, for example
+<code>{"name": "transpose", "configuration": {"order": [1, 0]}}</code>.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+              <code><a class="autorefs autorefs-internal" title="ArrayToArrayCodec (zarrista.codec._array_to_array.ArrayToArrayCodec)" href="#zarrista.codec.ArrayToArrayCodec">ArrayToArrayCodec</a></code>
+          –
+          <div class="doc-md-description">
+            <p>The new codec.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Raises:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+              <code><a class="autorefs autorefs-internal" title="PluginCreateError (zarrista.exceptions.PluginCreateError)" href="../exceptions/#zarrista.exceptions.PluginCreateError">PluginCreateError</a></code>
+            –
+          <div class="doc-md-description">
+            <p>If the metadata names an unsupported codec, or
+if the configuration is not valid for that codec.</p>
+          </div>
+        </li>
+    </ul>
+
+
+    </div>
+
+</div>
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="zarrista.codec.ArrayToBytesCodec" class="doc doc-heading">
+            <span class="doc doc-object-name doc-class-name">ArrayToBytesCodec</span>
+
+
+<a href="#zarrista.codec.ArrayToBytesCodec" class="headerlink" title="Permanent link">&para;</a></h2>
+
+
+    <div class="doc doc-contents ">
+
+
+
+        <p>A Zarr v3 array-to-bytes codec (the "serializer").</p>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="zarrista.codec.ArrayToBytesCodec.config" class="doc doc-heading">
+            <span class="doc doc-object-name doc-attribute-name">config</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+<a href="#zarrista.codec.ArrayToBytesCodec.config" class="headerlink" title="Permanent link">&para;</a></h3>
+<div class="doc-signature codehilite"><pre><span></span><code><span class="n">config</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="zarr_metadata.JSONValue" href="https://zarr.readthedocs.io/projects/zarr-metadata/en/latest/api/#zarr_metadata.JSONValue">JSONValue</a></span> <span class="o">|</span> <span class="kc">None</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>The codec's Zarr v3 configuration as a dict, if any.</p>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="zarrista.codec.ArrayToBytesCodec.name" class="doc doc-heading">
+            <span class="doc doc-object-name doc-attribute-name">name</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+<a href="#zarrista.codec.ArrayToBytesCodec.name" class="headerlink" title="Permanent link">&para;</a></h3>
+<div class="doc-signature codehilite"><pre><span></span><code><span class="n">name</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span> <span class="o">|</span> <span class="kc">None</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>The codec's Zarr v3 name (e.g. <code>"bytes"</code>, <code>"sharding_indexed"</code>), if any.</p>
+
+    </div>
+
+</div>
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="zarrista.codec.ArrayToBytesCodec.from_config" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">from_config</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-staticmethod"><code>staticmethod</code></small>
+  </span>
+
+<a href="#zarrista.codec.ArrayToBytesCodec.from_config" class="headerlink" title="Permanent link">&para;</a></h3>
+<div class="doc-signature codehilite"><pre><span></span><code><span class="nf">from_config</span><span class="p">(</span><span class="n">metadata</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="zarr_metadata.JSONValue" href="https://zarr.readthedocs.io/projects/zarr-metadata/en/latest/api/#zarr_metadata.JSONValue">JSONValue</a></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-internal" title="ArrayToBytesCodec (zarrista.codec._array_to_bytes.ArrayToBytesCodec)" href="#zarrista.codec.ArrayToBytesCodec">ArrayToBytesCodec</a></span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Construct a codec from its Zarr v3 metadata.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>metadata</code></b>
+              (<code><a class="autorefs autorefs-external" title="zarr_metadata.JSONValue" href="https://zarr.readthedocs.io/projects/zarr-metadata/en/latest/api/#zarr_metadata.JSONValue">JSONValue</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The Zarr v3 metadata of the codec, for example
+<code>{"name": "bytes", "configuration": {"endian": "little"}}</code>.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+              <code><a class="autorefs autorefs-internal" title="ArrayToBytesCodec (zarrista.codec._array_to_bytes.ArrayToBytesCodec)" href="#zarrista.codec.ArrayToBytesCodec">ArrayToBytesCodec</a></code>
+          –
+          <div class="doc-md-description">
+            <p>The new codec.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Raises:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+              <code><a class="autorefs autorefs-internal" title="PluginCreateError (zarrista.exceptions.PluginCreateError)" href="../exceptions/#zarrista.exceptions.PluginCreateError">PluginCreateError</a></code>
+            –
+          <div class="doc-md-description">
+            <p>If the metadata names an unsupported codec, or
+if the configuration is not valid for that codec.</p>
+          </div>
+        </li>
+    </ul>
+
+
+    </div>
+
+</div>
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="zarrista.codec.BytesToBytesCodec" class="doc doc-heading">
+            <span class="doc doc-object-name doc-class-name">BytesToBytesCodec</span>
+
+
+<a href="#zarrista.codec.BytesToBytesCodec" class="headerlink" title="Permanent link">&para;</a></h2>
+
+
+    <div class="doc doc-contents ">
+
+
+
+        <p>A Zarr v3 bytes-to-bytes codec.</p>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="zarrista.codec.BytesToBytesCodec.config" class="doc doc-heading">
+            <span class="doc doc-object-name doc-attribute-name">config</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+<a href="#zarrista.codec.BytesToBytesCodec.config" class="headerlink" title="Permanent link">&para;</a></h3>
+<div class="doc-signature codehilite"><pre><span></span><code><span class="n">config</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="zarr_metadata.JSONValue" href="https://zarr.readthedocs.io/projects/zarr-metadata/en/latest/api/#zarr_metadata.JSONValue">JSONValue</a></span> <span class="o">|</span> <span class="kc">None</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>The codec's Zarr v3 configuration as a dict, if any.</p>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="zarrista.codec.BytesToBytesCodec.name" class="doc doc-heading">
+            <span class="doc doc-object-name doc-attribute-name">name</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+<a href="#zarrista.codec.BytesToBytesCodec.name" class="headerlink" title="Permanent link">&para;</a></h3>
+<div class="doc-signature codehilite"><pre><span></span><code><span class="n">name</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span> <span class="o">|</span> <span class="kc">None</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>The codec's Zarr v3 name (e.g. <code>"blosc"</code>), if any.</p>
+
+    </div>
+
+</div>
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="zarrista.codec.BytesToBytesCodec.encode" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">encode</span>
+
+
+<a href="#zarrista.codec.BytesToBytesCodec.encode" class="headerlink" title="Permanent link">&para;</a></h3>
+<div class="doc-signature codehilite"><pre><span></span><code><span class="nf">encode</span><span class="p">(</span><span class="n">decoded_value</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#bytes">bytes</a></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#bytes">bytes</a></span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Encode chunk bytes with this codec.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>decoded_value</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#bytes">bytes</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The decoded chunk bytes.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+              <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#bytes">bytes</a></code>
+          –
+          <div class="doc-md-description">
+            <p>The encoded chunk bytes.</p>
+          </div>
+        </li>
+    </ul>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="zarrista.codec.BytesToBytesCodec.from_config" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">from_config</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-staticmethod"><code>staticmethod</code></small>
+  </span>
+
+<a href="#zarrista.codec.BytesToBytesCodec.from_config" class="headerlink" title="Permanent link">&para;</a></h3>
+<div class="doc-signature codehilite"><pre><span></span><code><span class="nf">from_config</span><span class="p">(</span><span class="n">metadata</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="zarr_metadata.JSONValue" href="https://zarr.readthedocs.io/projects/zarr-metadata/en/latest/api/#zarr_metadata.JSONValue">JSONValue</a></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-internal" title="BytesToBytesCodec (zarrista.codec._bytes_to_bytes.BytesToBytesCodec)" href="#zarrista.codec.BytesToBytesCodec">BytesToBytesCodec</a></span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Construct a codec from its Zarr v3 metadata.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>metadata</code></b>
+              (<code><a class="autorefs autorefs-external" title="zarr_metadata.JSONValue" href="https://zarr.readthedocs.io/projects/zarr-metadata/en/latest/api/#zarr_metadata.JSONValue">JSONValue</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The Zarr v3 metadata of the codec, for example
+<code>{"name": "gzip", "configuration": {"level": 5}}</code>.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+              <code><a class="autorefs autorefs-internal" title="BytesToBytesCodec (zarrista.codec._bytes_to_bytes.BytesToBytesCodec)" href="#zarrista.codec.BytesToBytesCodec">BytesToBytesCodec</a></code>
+          –
+          <div class="doc-md-description">
+            <p>The new codec.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Raises:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+              <code><a class="autorefs autorefs-internal" title="PluginCreateError (zarrista.exceptions.PluginCreateError)" href="../exceptions/#zarrista.exceptions.PluginCreateError">PluginCreateError</a></code>
+            –
+          <div class="doc-md-description">
+            <p>If the metadata names an unsupported codec, or
+if the configuration is not valid for that codec.</p>
+          </div>
+        </li>
+    </ul>
+
+
+    </div>
+
+</div>
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="zarrista.codec.CodecChain" class="doc doc-heading">
+            <span class="doc doc-object-name doc-class-name">CodecChain</span>
+
+
+<a href="#zarrista.codec.CodecChain" class="headerlink" title="Permanent link">&para;</a></h2>
+
+
+    <div class="doc doc-contents ">
+
+
+
+        <p>A full Zarr v3 codec pipeline.</p>
+<p>A codec chain holds:</p>
+<ul>
+<li>the array-to-array codecs ("filters")</li>
+<li>one array-to-bytes codec ("serializer")</li>
+<li>the bytes-to-bytes codecs ("compressors")</li>
+</ul>
+<p>The chain applies them in that order to encode, and in the reverse order to decode.</p>
+<p>An array carries the codec chain that encodes its chunks. To decode chunk
+bytes with it, use <a class="autorefs autorefs-internal" title="zarrista.EncodedChunk" href="../encoded-chunk/#zarrista.EncodedChunk"><code>EncodedChunk</code></a>, which holds the
+bytes and the chain together.</p>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="zarrista.codec.CodecChain.compressors" class="doc doc-heading">
+            <span class="doc doc-object-name doc-attribute-name">compressors</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+<a href="#zarrista.codec.CodecChain.compressors" class="headerlink" title="Permanent link">&para;</a></h3>
+<div class="doc-signature codehilite"><pre><span></span><code><span class="n">compressors</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#list">list</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title="BytesToBytesCodec (zarrista.codec._bytes_to_bytes.BytesToBytesCodec)" href="#zarrista.codec.BytesToBytesCodec">BytesToBytesCodec</a></span><span class="p">]</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>The bytes-to-bytes codecs ("compressors").</p>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="zarrista.codec.CodecChain.filters" class="doc doc-heading">
+            <span class="doc doc-object-name doc-attribute-name">filters</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+<a href="#zarrista.codec.CodecChain.filters" class="headerlink" title="Permanent link">&para;</a></h3>
+<div class="doc-signature codehilite"><pre><span></span><code><span class="n">filters</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#list">list</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title="ArrayToArrayCodec (zarrista.codec._array_to_array.ArrayToArrayCodec)" href="#zarrista.codec.ArrayToArrayCodec">ArrayToArrayCodec</a></span><span class="p">]</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>The array-to-array codecs ("filters").</p>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="zarrista.codec.CodecChain.serializer" class="doc doc-heading">
+            <span class="doc doc-object-name doc-attribute-name">serializer</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+<a href="#zarrista.codec.CodecChain.serializer" class="headerlink" title="Permanent link">&para;</a></h3>
+<div class="doc-signature codehilite"><pre><span></span><code><span class="n">serializer</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="ArrayToBytesCodec (zarrista.codec._array_to_bytes.ArrayToBytesCodec)" href="#zarrista.codec.ArrayToBytesCodec">ArrayToBytesCodec</a></span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>The array-to-bytes codec ("serializer").</p>
+<p>For a sharded array, this is the <code>sharding_indexed</code> codec.</p>
+
+    </div>
+
+</div>
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="zarrista.codec.bitround" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">bitround</span>
+
+
+<a href="#zarrista.codec.bitround" class="headerlink" title="Permanent link">&para;</a></h2>
+<div class="doc-signature codehilite"><pre><span></span><code><span class="nf">bitround</span><span class="p">(</span><span class="n">keepbits</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-internal" title="ArrayToArrayCodec (zarrista.codec._array_to_array.ArrayToArrayCodec)" href="#zarrista.codec.ArrayToArrayCodec">ArrayToArrayCodec</a></span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Construct a bit-rounding codec that keeps <code>keepbits</code> mantissa bits.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>keepbits</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The number of mantissa bits to keep.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+              <code><a class="autorefs autorefs-internal" title="ArrayToArrayCodec (zarrista.codec._array_to_array.ArrayToArrayCodec)" href="#zarrista.codec.ArrayToArrayCodec">ArrayToArrayCodec</a></code>
+          –
+          <div class="doc-md-description">
+            <p>The new codec.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Raises:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+              <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/exceptions.html#OverflowError">OverflowError</a></code>
+            –
+          <div class="doc-md-description">
+            <p>If <code>keepbits</code> is negative.</p>
+          </div>
+        </li>
+    </ul>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="zarrista.codec.blosc" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">blosc</span>
+
+
+<a href="#zarrista.codec.blosc" class="headerlink" title="Permanent link">&para;</a></h2>
+<div class="doc-signature codehilite"><pre><span></span><code><span class="nf">blosc</span><span class="p">(</span>
+    <span class="n">cname</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="zarrista.codec._bytes_to_bytes._blosc.BloscCompressor
+
+
+  
+      module-attribute
+  " href="#zarrista.codec._bytes_to_bytes._blosc.BloscCompressor">BloscCompressor</a></span><span class="p">,</span>
+    <span class="n">clevel</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></span><span class="p">,</span>
+    <span class="n">shuffle_mode</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="zarrista.codec._bytes_to_bytes._blosc.BloscShuffle
+
+
+  
+      module-attribute
+  " href="#zarrista.codec._bytes_to_bytes._blosc.BloscShuffle">BloscShuffle</a></span><span class="p">,</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">blocksize</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">typesize</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-internal" title="BytesToBytesCodec (zarrista.codec._bytes_to_bytes.BytesToBytesCodec)" href="#zarrista.codec.BytesToBytesCodec">BytesToBytesCodec</a></span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Construct a <code>blosc</code> codec from its parameters.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>cname</code></b>
+              (<code><a class="autorefs autorefs-internal" title="zarrista.codec._bytes_to_bytes._blosc.BloscCompressor
+
+
+  
+      module-attribute
+  " href="#zarrista.codec._bytes_to_bytes._blosc.BloscCompressor">BloscCompressor</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The name of the internal compressor.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>clevel</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The compression level, from 0 (no compression) to 9 (most
+compression).</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>shuffle_mode</code></b>
+              (<code><a class="autorefs autorefs-internal" title="zarrista.codec._bytes_to_bytes._blosc.BloscShuffle
+
+
+  
+      module-attribute
+  " href="#zarrista.codec._bytes_to_bytes._blosc.BloscShuffle">BloscShuffle</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The shuffle mode to apply before compression.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Keyword Arguments:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+          <b><code>blocksize</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a> | None</code>)
+          –
+          <div class="doc-md-description">
+            <p>The block size in bytes. Give <code>None</code> or <code>0</code> to let blosc
+choose the block size.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+          <b><code>typesize</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a> | None</code>)
+          –
+          <div class="doc-md-description">
+            <p>The size of one element in bytes. This must be a positive
+integer if <code>shuffle_mode</code> is not <code>"noshuffle"</code>.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+              <code><a class="autorefs autorefs-internal" title="BytesToBytesCodec (zarrista.codec._bytes_to_bytes.BytesToBytesCodec)" href="#zarrista.codec.BytesToBytesCodec">BytesToBytesCodec</a></code>
+          –
+          <div class="doc-md-description">
+            <p>The new codec.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Raises:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+              <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/exceptions.html#ValueError">ValueError</a></code>
+            –
+          <div class="doc-md-description">
+            <p>If <code>cname</code> is not a known compressor, or if <code>clevel</code> is
+outside the range 0 to 9.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+              <code><a class="autorefs autorefs-internal" title="PluginCreateError (zarrista.exceptions.PluginCreateError)" href="../exceptions/#zarrista.exceptions.PluginCreateError">PluginCreateError</a></code>
+            –
+          <div class="doc-md-description">
+            <p>If <code>shuffle_mode</code> is not <code>"noshuffle"</code> and
+<code>typesize</code> is <code>None</code> or <code>0</code>.</p>
+          </div>
+        </li>
+    </ul>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="zarrista.codec.crc32c" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">crc32c</span>
+
+
+<a href="#zarrista.codec.crc32c" class="headerlink" title="Permanent link">&para;</a></h2>
+<div class="doc-signature codehilite"><pre><span></span><code><span class="nf">crc32c</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-internal" title="BytesToBytesCodec (zarrista.codec._bytes_to_bytes.BytesToBytesCodec)" href="#zarrista.codec.BytesToBytesCodec">BytesToBytesCodec</a></span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Construct a <code>crc32c</code> codec.</p>
+<p>The codec appends a CRC32C checksum to the encoded bytestream.</p>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+              <code><a class="autorefs autorefs-internal" title="BytesToBytesCodec (zarrista.codec._bytes_to_bytes.BytesToBytesCodec)" href="#zarrista.codec.BytesToBytesCodec">BytesToBytesCodec</a></code>
+          –
+          <div class="doc-md-description">
+            <p>The new codec.</p>
+          </div>
+        </li>
+    </ul>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="zarrista.codec.gzip" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">gzip</span>
+
+
+<a href="#zarrista.codec.gzip" class="headerlink" title="Permanent link">&para;</a></h2>
+<div class="doc-signature codehilite"><pre><span></span><code><span class="nf">gzip</span><span class="p">(</span><span class="n">level</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-internal" title="BytesToBytesCodec (zarrista.codec._bytes_to_bytes.BytesToBytesCodec)" href="#zarrista.codec.BytesToBytesCodec">BytesToBytesCodec</a></span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Construct a <code>gzip</code> codec.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>level</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The compression level, from 0 (no compression) to 9 (most
+compression).</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+              <code><a class="autorefs autorefs-internal" title="BytesToBytesCodec (zarrista.codec._bytes_to_bytes.BytesToBytesCodec)" href="#zarrista.codec.BytesToBytesCodec">BytesToBytesCodec</a></code>
+          –
+          <div class="doc-md-description">
+            <p>The new codec.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Raises:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+              <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/exceptions.html#ValueError">ValueError</a></code>
+            –
+          <div class="doc-md-description">
+            <p>If <code>level</code> is more than 9.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+              <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/exceptions.html#OverflowError">OverflowError</a></code>
+            –
+          <div class="doc-md-description">
+            <p>If <code>level</code> is negative.</p>
+          </div>
+        </li>
+    </ul>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="zarrista.codec.transpose" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">transpose</span>
+
+
+<a href="#zarrista.codec.transpose" class="headerlink" title="Permanent link">&para;</a></h2>
+<div class="doc-signature codehilite"><pre><span></span><code><span class="nf">transpose</span><span class="p">(</span><span class="n">order</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#list">list</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-internal" title="ArrayToArrayCodec (zarrista.codec._array_to_array.ArrayToArrayCodec)" href="#zarrista.codec.ArrayToArrayCodec">ArrayToArrayCodec</a></span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Construct a transpose codec with the given axis order.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>order</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#list">list</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a>]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The new order of the axes. This must be a permutation of the
+axis indices, from 0 to one less than the number of dimensions.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+              <code><a class="autorefs autorefs-internal" title="ArrayToArrayCodec (zarrista.codec._array_to_array.ArrayToArrayCodec)" href="#zarrista.codec.ArrayToArrayCodec">ArrayToArrayCodec</a></code>
+          –
+          <div class="doc-md-description">
+            <p>The new codec.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Raises:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+              <code><a class="autorefs autorefs-internal" title="TransposeOrderError (zarrista.exceptions.TransposeOrderError)" href="../exceptions/#zarrista.exceptions.TransposeOrderError">TransposeOrderError</a></code>
+            –
+          <div class="doc-md-description">
+            <p>If <code>order</code> is not a permutation of the axis
+indices.</p>
+          </div>
+        </li>
+    </ul>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="zarrista.codec.zstd" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">zstd</span>
+
+
+<a href="#zarrista.codec.zstd" class="headerlink" title="Permanent link">&para;</a></h2>
+<div class="doc-signature codehilite"><pre><span></span><code><span class="nf">zstd</span><span class="p">(</span><span class="n">level</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></span><span class="p">,</span> <span class="n">checksum</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-internal" title="BytesToBytesCodec (zarrista.codec._bytes_to_bytes.BytesToBytesCodec)" href="#zarrista.codec.BytesToBytesCodec">BytesToBytesCodec</a></span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Construct a <code>zstd</code> codec.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>level</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The compression level. The codec does not check the range, and
+zstd clamps the value to the range that it supports.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>checksum</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>Whether to write a checksum to the encoded bytestream. The
+codec verifies this checksum when it decodes the bytestream.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+              <code><a class="autorefs autorefs-internal" title="BytesToBytesCodec (zarrista.codec._bytes_to_bytes.BytesToBytesCodec)" href="#zarrista.codec.BytesToBytesCodec">BytesToBytesCodec</a></code>
+          –
+          <div class="doc-md-description">
+            <p>The new codec.</p>
+          </div>
+        </li>
+    </ul>
+
+
+    </div>
+
+</div>
+
+
+
+  </div>
+
+    </div>
+
+</div><!--
+`CodecOptions` is a type-check-only `TypedDict` with no runtime object, so it is
+not in `zarrista.codec.__all__` and the block above does not render it. We render
+it explicitly to give the `[CodecOptions][zarrista.codec.CodecOptions]`
+cross-references in the array read/write docstrings a target (required under
+`mkdocs build --strict`).
+-->
+
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="zarrista.codec.CodecOptions" class="doc doc-heading">
+            <span class="doc doc-object-name doc-class-name">zarrista.codec.CodecOptions</span>
+
+
+<a href="#zarrista.codec.CodecOptions" class="headerlink" title="Permanent link">&para;</a></h2>
+
+
+    <div class="doc doc-contents first">
+            <p class="doc doc-class-bases">
+              Bases: <code><a class="autorefs autorefs-external" title="typing.TypedDict" href="https://docs.python.org/3/library/typing.html#typing.TypedDict">TypedDict</a></code></p>
+
+
+
+        <p>Per-operation codec options for encoding and decoding.</p>
+<p>These control runtime behaviour such as concurrency limits and checksum
+validation. They are passed as keyword arguments to the array read/write
+methods, e.g. <code>arr.retrieve_chunk([0, 0], validate_checksums=False)</code>. All
+keys are optional; omitted keys fall back to the defaults noted below.</p>
+<div class="admonition warning">
+<p class="admonition-title">Not importable at runtime</p>
+<p>To use this type hint in your code, import it within a <code>TYPE_CHECKING</code>
+block:</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">TYPE_CHECKING</span>
+<span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">zarrista.codec</span><span class="w"> </span><span class="kn">import</span> <span class="n">CodecOptions</span>
+</code></pre></div>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="zarrista.codec.CodecOptions.chunk_concurrent_minimum" class="doc doc-heading">
+            <span class="doc doc-object-name doc-attribute-name">chunk_concurrent_minimum</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
+  </span>
+
+<a href="#zarrista.codec.CodecOptions.chunk_concurrent_minimum" class="headerlink" title="Permanent link">&para;</a></h3>
+<div class="doc-signature codehilite"><pre><span></span><code><span class="n">chunk_concurrent_minimum</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Preferred minimum chunk concurrency for multi-chunk operations. The
+concurrency of internal codecs is adjusted to accommodate the chunk
+concurrency in accordance with <code>concurrent_target</code>. Defaults to <code>4</code>.</p>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="zarrista.codec.CodecOptions.concurrent_target" class="doc doc-heading">
+            <span class="doc doc-object-name doc-attribute-name">concurrent_target</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
+  </span>
+
+<a href="#zarrista.codec.CodecOptions.concurrent_target" class="headerlink" title="Permanent link">&para;</a></h3>
+<div class="doc-signature codehilite"><pre><span></span><code><span class="n">concurrent_target</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Preferred number of concurrent operations. Defaults to the number of
+threads in the Rust thread pool.</p>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="zarrista.codec.CodecOptions.experimental_partial_encoding" class="doc doc-heading">
+            <span class="doc doc-object-name doc-attribute-name">experimental_partial_encoding</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
+  </span>
+
+<a href="#zarrista.codec.CodecOptions.experimental_partial_encoding" class="headerlink" title="Permanent link">&para;</a></h3>
+<div class="doc-signature codehilite"><pre><span></span><code><span class="n">experimental_partial_encoding</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Whether to use experimental partial encoding. Defaults to <code>False</code>.</p>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="zarrista.codec.CodecOptions.store_empty_chunks" class="doc doc-heading">
+            <span class="doc doc-object-name doc-attribute-name">store_empty_chunks</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
+  </span>
+
+<a href="#zarrista.codec.CodecOptions.store_empty_chunks" class="headerlink" title="Permanent link">&para;</a></h3>
+<div class="doc-signature codehilite"><pre><span></span><code><span class="n">store_empty_chunks</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Whether to store chunks that are entirely the fill value. Defaults to <code>False</code>.</p>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="zarrista.codec.CodecOptions.validate_checksums" class="doc doc-heading">
+            <span class="doc doc-object-name doc-attribute-name">validate_checksums</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
+  </span>
+
+<a href="#zarrista.codec.CodecOptions.validate_checksums" class="headerlink" title="Permanent link">&para;</a></h3>
+<div class="doc-signature codehilite"><pre><span></span><code><span class="n">validate_checksums</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Whether to validate checksums when decoding. Defaults to <code>True</code>.</p>
+
+    </div>
+
+</div>
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+</div><h2 id="codec-configuration-types">Codec configuration types<a class="headerlink" href="#codec-configuration-types" title="Permanent link">&para;</a></h2>
+
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h2 id="zarrista.codec._bytes_to_bytes._blosc.BloscCompressor" class="doc doc-heading">
+            <span class="doc doc-object-name doc-attribute-name">zarrista.codec._bytes_to_bytes._blosc.BloscCompressor</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-module-attribute"><code>module-attribute</code></small>
+  </span>
+
+<a href="#zarrista.codec._bytes_to_bytes._blosc.BloscCompressor" class="headerlink" title="Permanent link">&para;</a></h2>
+<div class="doc-signature codehilite"><pre><span></span><code><span class="n">BloscCompressor</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="typing.TypeAlias" href="https://docs.python.org/3/library/typing.html#typing.TypeAlias">TypeAlias</a></span> <span class="o">=</span> <span class="n"><a class="autorefs autorefs-external" title="typing.Literal" href="https://docs.python.org/3/library/typing.html#typing.Literal">Literal</a></span><span class="p">[</span>
+    <span class="s2">&quot;blosclz&quot;</span><span class="p">,</span> <span class="s2">&quot;lz4&quot;</span><span class="p">,</span> <span class="s2">&quot;lz4hc&quot;</span><span class="p">,</span> <span class="s2">&quot;snappy&quot;</span><span class="p">,</span> <span class="s2">&quot;zlib&quot;</span><span class="p">,</span> <span class="s2">&quot;zstd&quot;</span>
+<span class="p">]</span>
+</code></pre></div>
+
+    <div class="doc doc-contents first">
+
+        <p>A <code>blosc</code> compressor name.</p>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h2 id="zarrista.codec._bytes_to_bytes._blosc.BloscShuffle" class="doc doc-heading">
+            <span class="doc doc-object-name doc-attribute-name">zarrista.codec._bytes_to_bytes._blosc.BloscShuffle</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-module-attribute"><code>module-attribute</code></small>
+  </span>
+
+<a href="#zarrista.codec._bytes_to_bytes._blosc.BloscShuffle" class="headerlink" title="Permanent link">&para;</a></h2>
+<div class="doc-signature codehilite"><pre><span></span><code><span class="n">BloscShuffle</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="typing.TypeAlias" href="https://docs.python.org/3/library/typing.html#typing.TypeAlias">TypeAlias</a></span> <span class="o">=</span> <span class="n"><a class="autorefs autorefs-external" title="typing.Literal" href="https://docs.python.org/3/library/typing.html#typing.Literal">Literal</a></span><span class="p">[</span><span class="s1">&#39;noshuffle&#39;</span><span class="p">,</span> <span class="s1">&#39;shuffle&#39;</span><span class="p">,</span> <span class="s1">&#39;bitshuffle&#39;</span><span class="p">]</span>
+</code></pre></div>
+
+    <div class="doc doc-contents first">
+
+        <p>A <code>blosc</code> shuffle mode.</p>
+
+    </div>
+
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+        
+<div class="md-social">
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://github.com/developmentseed" target="_blank" rel="noopener" title="github.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+    </a>
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://www.linkedin.com/company/development-seed" target="_blank" rel="noopener" title="www.linkedin.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M416 32H31.9C14.3 32 0 46.5 0 64.3v383.4C0 465.5 14.3 480 31.9 480H416c17.6 0 32-14.5 32-32.3V64.3c0-17.8-14.4-32.3-32-32.3M135.4 416H69V202.2h66.5V416zM102.2 96a38.5 38.5 0 1 1 0 77 38.5 38.5 0 1 1 0-77m282.1 320h-66.4V312c0-24.8-.5-56.7-34.5-56.7-34.6 0-39.9 27-39.9 54.9V416h-66.4V202.2h63.7v29.2h.9c8.9-16.8 30.6-34.5 62.9-34.5 67.2 0 79.7 44.3 79.7 101.9z"/></svg>
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["content.code.annotate", "content.code.copy", "navigation.indexes", "navigation.instant", "navigation.tracking", "search.suggest", "search.share"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"alias": true, "provider": "mike"}}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>
