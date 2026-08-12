@@ -7,7 +7,7 @@
 
 A fast, low-level [Zarr] API for Python, powered from Rust by [Zarrs].
 
-[Very early benchmarking](https://github.com/developmentseed/zarrista/pull/151) suggests potential 17-35x faster read throughput than [Zarr-Python].
+[Initial benchmarks](https://github.com/zarrs/zarr_benchmarks/pull/12) suggest Zarrista is **1.9x to 2.7x faster** than [Zarr-Python] for reading compressed or compressed+sharded data, respectively, from a local file system. We expect future async-focused benchmarks to be even faster.
 
 While Zarrista will exist as a standalone Python library and can be used directly, the goal is to integrate Zarrista directly into [Zarr-Python] so that existing users can get improved performance out of the box and to avoid fracturing the ecosystem.
 
@@ -46,6 +46,29 @@ This library is beta-quality. The underlying [Zarrs] library is reliable and bro
 [`Tensor`]: https://developmentseed.org/zarrista/latest/api/tensor/#zarrista.Tensor
 [DLPack]: https://dmlc.github.io/dlpack/latest/
 [`ml_dtypes`]: https://github.com/jax-ml/ml_dtypes
+[Tensorstore]: https://github.com/google/tensorstore
+
+## Benchmarks
+
+In [our PR](https://github.com/zarrs/zarr_benchmarks/pull/12) to [`zarr_benchmarks`](https://github.com/zarrs/zarr_benchmarks), zarrista is the fastest Python chunked array library, in line with Google's [Tensorstore]. It's surpassed only by the Rust [Zarrs] library, which Zarrista uses internally.
+
+### Read All
+
+The minimum time and peak memory usage to read an entire dataset into memory.
+
+![](assets/benchmark_read_all.svg)
+
+### Read Chunk-By-Chunk
+
+The minimum time and peak memory usage to read a dataset chunk-by-chunk into memory.
+
+![](assets/benchmark_read_chunks.svg)
+
+### Read Subchunk-By-Subchunk
+
+The minimum time and peak memory usage to read a dataset subchunk-by-subchunk into memory.
+
+![](assets/benchmark_read_subchunks.svg)
 
 ## Example
 

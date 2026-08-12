@@ -35,6 +35,7 @@ nav:
       - api/tensor.md
   - Blog:
       - blog/index.md
+  - Changelog: CHANGELOG.md
 
 watch:
   - python/
