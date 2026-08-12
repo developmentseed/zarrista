@@ -3,7 +3,6 @@ draft: false
 date: 2026-08-13
 categories:
   - Release
-  - Feature
 authors:
   - kylebarron
   - d-v-b
@@ -12,26 +11,24 @@ authors:
 #   - CHANGELOG.md#0130-2025-11-05
 ---
 
-# Zarrista: Faster Zarr Interface for Python
+# Zarrista: Faster Zarr for Python
 
 _This blog post was fully written by humans._
 
-[Zarr] is the pre-eminent open data format for storing chunked N-dimensional arrays.
+We're releasing Zarrista, a new high-performance Python library for interfacing with [Zarr] data, the pre-eminent open data format for storing chunked N-dimensional arrays. Zarrista is powered by Rust and the [Zarrs] library.
 
-We're releasing Zarrista, a new high-performance Python library for interfacing with [Zarr] data, powered by Rust and the [Zarrs] library.
+Zarrista is directly usable by intermediate-to-advanced users, but we also plan to integrate it into [Zarr-Python], so that all users can benefit from improved performance, without needing code changes.
 
 [Zarr]: https://zarr.dev/
 [Zarrs]: https://zarrs.dev/
 
 <!-- more -->
 
-## A new library, but planned integration into Zarr-Python
-
-Zarrista is developed as an independent library, but we plan to update Zarr-Python to support using Zarrista under the hood.
+## Why a new library?
 
 ### Improved performance with compiled code
 
-[Zarr-Python], the current canonical Python library for working with Zarr, is primarily _written in Python_. Aside from a few compiled dependencies for working with codecs, all of Zarr-Python's own source code is Python.
+[Zarr-Python], the current canonical Python library for working with Zarr, is primarily _written in Python_. Aside from a few compiled dependencies, all of Zarr-Python's own source code is Python.
 
 In contrast, Zarrista is _fully compiled_. Only the user interface is Python; everything else is compiled Rust code. When you read data from a Zarr [`Array`][zarrista.Array] object, the entire sequence of operations is happening in compiled code.
 
@@ -43,7 +40,7 @@ This allows for significant performance improvements compared to Zarr-Python. Se
 
 However, to avoid fracturing the ecosystem, we **plan to integrate Zarrista as a native backend into Zarr-Python**.
 
-We hope to bring most of the performance potential into Zarr-Python directly, so that existing users can get speedups without learning a new API. The Zarr-Python PR [#4064](https://github.com/zarr-developers/zarr-python/pull/4064) prototypes generic backends to allow opting in to a Zarrista driver.
+We hope that a Zarrista backend for Zarr-Python will keep most of the performance improvements, avoiding any need for end users to change their code, while benefiting from speedups. Follow Zarr-Python PR [#4064](https://github.com/zarr-developers/zarr-python/pull/4064), which prototypes generic backends and adds a Zarrista driver.
 
 ### Standalone library for lower-level APIs
 
@@ -53,23 +50,22 @@ For example, Zarrista allows users to separate IO-bound network operations and C
 
 Zarrista also offers full async and sync counterparts for users to choose what works best for them.
 
-### Keeping Zarr-Python maintainable without Rust source code
+### A complete stack: Zarrs, Zarrista, and Zarr-Python
 
-Zarrista began after seeing Davis [exploring bringing Rust into Zarr-Python directly](https://github.com/zarr-developers/zarr-python/pull/4064).
+Zarrista is built as a "dumb, direct" binding to [Zarrs], the Rust Zarr library. Zarrista exposes as many APIs as possible from Zarrs, while avoiding creating its own APIs from scratch.
 
-Building
+This means that Zarrista's source code contains _no Zarr-specific logic at all_. All Zarr-specific logic is either lower-level in Zarrs or higher-level in Zarr-Python. This keeps Zarrista itself maintainable and means that any improvements can be submitted to Zarrs directly, which benefit both Rust and Python users.
 
+The only functionality that Zarrista adds _on top of_ Zarrs is specific to Python integration:
 
-Kyle
+- Interpreting numpy-like indexing
+- Efficient data exchange with Python
+- Asyncio support
+- Pythonic API patterns
 
-In terms of build system, testing, etc. It's easier to have the underlying Rust
+Keeping Zarrista separate from Zarr-Python also simplifies Zarr-Python's maintenance and ensures Zarr-Python doesn't need a build process for Rust code.
 
-
-### Lower-level APIs
-
-## Performance
-
-### Benchmarks
+## Benchmarks
 
 In [our PR](https://github.com/zarrs/zarr_benchmarks/pull/12) to [`zarr_benchmarks`](https://github.com/zarrs/zarr_benchmarks), Zarrista is the fastest Python chunked array library, in line with Google's [Tensorstore]. It's surpassed only by the Rust [Zarrs] library, which Zarrista uses internally.
 
@@ -78,19 +74,19 @@ These benchmarks only use the synchronous local file system APIs. We'd like to b
 [Zarrs]: https://zarrs.dev/
 [Tensorstore]: https://github.com/google/tensorstore
 
-#### Read All
+### Read All
 
 The minimum time and peak memory usage to read an entire dataset into memory.
 
 ![](../../assets/benchmark_read_all.svg)
 
-#### Read Chunk-By-Chunk
+### Read Chunk-By-Chunk
 
 The minimum time and peak memory usage to read a dataset chunk-by-chunk into memory.
 
 ![](../../assets/benchmark_read_chunks.svg)
 
-#### Read Subchunk-By-Subchunk
+### Read Subchunk-By-Subchunk
 
 The minimum time and peak memory usage to read a dataset subchunk-by-subchunk into memory.
 
@@ -105,6 +101,46 @@ The minimum time and peak memory usage to read a dataset subchunk-by-subchunk in
 ### Icechunk
 
 ## Usage Example
+
+Open a store, then open an `Array` from it:
+
+```py
+from zarrista import Array
+from zarrista.store import FilesystemStore
+
+store = FilesystemStore("data/example.zarr")
+array = Array.open(store, path="/temperature")
+```
+
+Inspect the array's metadata:
+
+```py
+array.shape
+# [720, 1440]
+
+array.dtype
+# DataType(float32 / <f4)
+
+array.dimension_names
+# ["lat", "lon"]
+```
+
+Read a subset of the array. Indexing returns a [`Tensor`], which converts to a [NumPy] array:
+
+```py
+data = array[0:128, 0:128]
+arr = data.to_numpy()
+arr.shape
+# (128, 128)
+```
+
+You can also read individual chunks by their grid index:
+
+```py
+data = array.retrieve_chunk([0, 0])
+```
+
+### Async example
 
 ## AI Usage
 
