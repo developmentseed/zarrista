@@ -110,11 +110,11 @@ You can also read individual chunks by their grid index:
 data = array.retrieve_chunk([0, 0])
 ```
 
-## AI Policy
+## AI Usage
 
-This project is _minimally_ vibe-coded.
+Zarrista's source code is _minimally_ vibe-coded.
 
-Most of the library code was written by hand by @kylebarron, sometimes in conversation with Claude.
+Most of the library code was written by hand by Kyle, sometimes resulting from a conversation with Claude.
 
 Documentation and type stubs are mixed. Much documentation is written by hand but Python type stubs are partially kept up to date via Claude.
 
