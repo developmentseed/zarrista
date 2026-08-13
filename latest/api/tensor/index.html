@@ -12,13 +12,13 @@
         <meta name="author" content="Development Seed">
       
       
-        <link rel="canonical" href="https://developmentseed.org/zarrista/latest/api/decoded_array/">
+        <link rel="canonical" href="https://developmentseed.org/zarrista/latest/api/tensor/">
       
       
-        <link rel="prev" href="../concurrency/">
+        <link rel="prev" href="../shard-cache/">
       
       
-        <link rel="next" href="../dtype/">
+        <link rel="next" href="../../blog/">
       
       
         
@@ -29,7 +29,7 @@
     
     
       
-        <title>DecodedArray - zarrista</title>
+        <title>Tensor - zarrista</title>
       
     
     
@@ -67,17 +67,17 @@
     
   
 <meta property="og:type" content="website" />
-<meta property="og:title" content="DecodedArray - zarrista" />
+<meta property="og:title" content="Tensor - zarrista" />
 <meta property="og:description" content="A low-level Zarr API for Python, powered from Rust by zarrs." />
-<meta property="og:image" content="https://developmentseed.org/zarrista/latest/assets/images/social/api/decoded_array.png" />
+<meta property="og:image" content="https://developmentseed.org/zarrista/latest/assets/images/social/api/tensor.png" />
 <meta property="og:image:type" content="image/png" />
 <meta property="og:image:width" content="1200" />
 <meta property="og:image:height" content="630" />
-<meta property="og:url" content="https://developmentseed.org/zarrista/latest/api/decoded_array/" />
+<meta property="og:url" content="https://developmentseed.org/zarrista/latest/api/tensor/" />
 <meta property="twitter:card" content="summary_large_image" />
-<meta property="twitter:title" content="DecodedArray - zarrista" />
+<meta property="twitter:title" content="Tensor - zarrista" />
 <meta property="twitter:description" content="A low-level Zarr API for Python, powered from Rust by zarrs." />
-<meta property="twitter:image" content="https://developmentseed.org/zarrista/latest/assets/images/social/api/decoded_array.png" />
+<meta property="twitter:image" content="https://developmentseed.org/zarrista/latest/assets/images/social/api/tensor.png" />
 </head>
   
   
@@ -97,7 +97,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#decodedarray" class="md-skip">
+        <a href="#tensor" class="md-skip">
           Skip to content
         </a>
       
@@ -149,7 +149,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              DecodedArray
+              Tensor
             
           </span>
         </div>
@@ -505,7 +505,7 @@
   <span class="md-ellipsis">
     
   
-    Stores
+    Store
   
 
     
@@ -598,402 +598,6 @@
   
 
       </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-    
-  
-  
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    DecodedArray
-  
-
-    
-  </span>
-  
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    DecodedArray
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#zarrista.DecodedArray" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;DecodedArray
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#zarrista.Tensor" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;Tensor
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label=" Tensor">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#zarrista.Tensor.dtype" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;dtype
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#zarrista.Tensor.shape" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;shape
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#zarrista.Tensor.__array__" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;__array__
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#zarrista.Tensor.__buffer__" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;__buffer__
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#zarrista.Tensor.__dlpack__" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;__dlpack__
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#zarrista.Tensor.__dlpack_device__" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;__dlpack_device__
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#zarrista.Tensor.buffer" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;buffer
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#zarrista.Tensor.to_numpy" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;to_numpy
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#zarrista.VariableArray" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;VariableArray
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label=" VariableArray">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#zarrista.VariableArray.dtype" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;dtype
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#zarrista.VariableArray.shape" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;shape
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#zarrista.VariableArray.__array__" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;__array__
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#zarrista.VariableArray.__arrow_c_array__" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;__arrow_c_array__
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#zarrista.VariableArray.__arrow_c_schema__" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;__arrow_c_schema__
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#zarrista.VariableArray.to_numpy" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;to_numpy
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#zarrista.MaskedTensor" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;MaskedTensor
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label=" MaskedTensor">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#zarrista.MaskedTensor.data" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;data
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#zarrista.MaskedTensor.dtype" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;dtype
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#zarrista.MaskedTensor.mask" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;mask
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#zarrista.MaskedTensor.shape" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;shape
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#zarrista.MaskedTensor.__array__" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;__array__
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#zarrista.MaskedTensor.to_numpy" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;to_numpy
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#zarrista.MaskedVariableArray" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;MaskedVariableArray
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label=" MaskedVariableArray">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#zarrista.MaskedVariableArray.dtype" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;dtype
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#zarrista.MaskedVariableArray.shape" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;shape
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -1106,6 +710,402 @@
   
 
       </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Tensor
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Tensor
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#zarrista.Tensor" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;Tensor
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#zarrista.FixedLengthTensor" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;FixedLengthTensor
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label=" FixedLengthTensor">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#zarrista.FixedLengthTensor.dtype" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;dtype
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#zarrista.FixedLengthTensor.shape" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;shape
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#zarrista.FixedLengthTensor.__array__" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;__array__
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#zarrista.FixedLengthTensor.__buffer__" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;__buffer__
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#zarrista.FixedLengthTensor.__dlpack__" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;__dlpack__
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#zarrista.FixedLengthTensor.__dlpack_device__" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;__dlpack_device__
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#zarrista.FixedLengthTensor.buffer" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;buffer
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#zarrista.FixedLengthTensor.to_numpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;to_numpy
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#zarrista.VariableLengthTensor" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;VariableLengthTensor
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label=" VariableLengthTensor">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#zarrista.VariableLengthTensor.dtype" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;dtype
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#zarrista.VariableLengthTensor.shape" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;shape
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#zarrista.VariableLengthTensor.__array__" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;__array__
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#zarrista.VariableLengthTensor.__arrow_c_array__" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;__arrow_c_array__
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#zarrista.VariableLengthTensor.__arrow_c_schema__" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;__arrow_c_schema__
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#zarrista.VariableLengthTensor.to_numpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;to_numpy
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#zarrista.OptionalFixedLengthTensor" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;OptionalFixedLengthTensor
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label=" OptionalFixedLengthTensor">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#zarrista.OptionalFixedLengthTensor.data" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;data
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#zarrista.OptionalFixedLengthTensor.dtype" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;dtype
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#zarrista.OptionalFixedLengthTensor.mask" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;mask
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#zarrista.OptionalFixedLengthTensor.shape" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;shape
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#zarrista.OptionalFixedLengthTensor.__array__" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;__array__
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#zarrista.OptionalFixedLengthTensor.to_numpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;to_numpy
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#zarrista.OptionalVariableLengthTensor" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;OptionalVariableLengthTensor
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label=" OptionalVariableLengthTensor">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#zarrista.OptionalVariableLengthTensor.dtype" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;dtype
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#zarrista.OptionalVariableLengthTensor.shape" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;shape
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -1244,10 +1244,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#zarrista.DecodedArray" class="md-nav__link">
+  <a href="#zarrista.Tensor" class="md-nav__link">
     <span class="md-ellipsis">
       
-        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;DecodedArray
+        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;Tensor
       
     </span>
   </a>
@@ -1255,19 +1255,19 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#zarrista.Tensor" class="md-nav__link">
+  <a href="#zarrista.FixedLengthTensor" class="md-nav__link">
     <span class="md-ellipsis">
       
-        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;Tensor
+        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;FixedLengthTensor
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label=" Tensor">
+    <nav class="md-nav" aria-label=" FixedLengthTensor">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#zarrista.Tensor.dtype" class="md-nav__link">
+  <a href="#zarrista.FixedLengthTensor.dtype" class="md-nav__link">
     <span class="md-ellipsis">
       
         <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;dtype
@@ -1278,7 +1278,7 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#zarrista.Tensor.shape" class="md-nav__link">
+  <a href="#zarrista.FixedLengthTensor.shape" class="md-nav__link">
     <span class="md-ellipsis">
       
         <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;shape
@@ -1289,7 +1289,7 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#zarrista.Tensor.__array__" class="md-nav__link">
+  <a href="#zarrista.FixedLengthTensor.__array__" class="md-nav__link">
     <span class="md-ellipsis">
       
         <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;__array__
@@ -1300,7 +1300,7 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#zarrista.Tensor.__buffer__" class="md-nav__link">
+  <a href="#zarrista.FixedLengthTensor.__buffer__" class="md-nav__link">
     <span class="md-ellipsis">
       
         <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;__buffer__
@@ -1311,7 +1311,7 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#zarrista.Tensor.__dlpack__" class="md-nav__link">
+  <a href="#zarrista.FixedLengthTensor.__dlpack__" class="md-nav__link">
     <span class="md-ellipsis">
       
         <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;__dlpack__
@@ -1322,7 +1322,7 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#zarrista.Tensor.__dlpack_device__" class="md-nav__link">
+  <a href="#zarrista.FixedLengthTensor.__dlpack_device__" class="md-nav__link">
     <span class="md-ellipsis">
       
         <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;__dlpack_device__
@@ -1333,7 +1333,7 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#zarrista.Tensor.buffer" class="md-nav__link">
+  <a href="#zarrista.FixedLengthTensor.buffer" class="md-nav__link">
     <span class="md-ellipsis">
       
         <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;buffer
@@ -1344,7 +1344,7 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#zarrista.Tensor.to_numpy" class="md-nav__link">
+  <a href="#zarrista.FixedLengthTensor.to_numpy" class="md-nav__link">
     <span class="md-ellipsis">
       
         <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;to_numpy
@@ -1360,19 +1360,19 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#zarrista.VariableArray" class="md-nav__link">
+  <a href="#zarrista.VariableLengthTensor" class="md-nav__link">
     <span class="md-ellipsis">
       
-        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;VariableArray
+        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;VariableLengthTensor
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label=" VariableArray">
+    <nav class="md-nav" aria-label=" VariableLengthTensor">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#zarrista.VariableArray.dtype" class="md-nav__link">
+  <a href="#zarrista.VariableLengthTensor.dtype" class="md-nav__link">
     <span class="md-ellipsis">
       
         <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;dtype
@@ -1383,7 +1383,7 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#zarrista.VariableArray.shape" class="md-nav__link">
+  <a href="#zarrista.VariableLengthTensor.shape" class="md-nav__link">
     <span class="md-ellipsis">
       
         <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;shape
@@ -1394,7 +1394,7 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#zarrista.VariableArray.__array__" class="md-nav__link">
+  <a href="#zarrista.VariableLengthTensor.__array__" class="md-nav__link">
     <span class="md-ellipsis">
       
         <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;__array__
@@ -1405,7 +1405,7 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#zarrista.VariableArray.__arrow_c_array__" class="md-nav__link">
+  <a href="#zarrista.VariableLengthTensor.__arrow_c_array__" class="md-nav__link">
     <span class="md-ellipsis">
       
         <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;__arrow_c_array__
@@ -1416,7 +1416,7 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#zarrista.VariableArray.__arrow_c_schema__" class="md-nav__link">
+  <a href="#zarrista.VariableLengthTensor.__arrow_c_schema__" class="md-nav__link">
     <span class="md-ellipsis">
       
         <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;__arrow_c_schema__
@@ -1427,7 +1427,7 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#zarrista.VariableArray.to_numpy" class="md-nav__link">
+  <a href="#zarrista.VariableLengthTensor.to_numpy" class="md-nav__link">
     <span class="md-ellipsis">
       
         <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;to_numpy
@@ -1443,19 +1443,19 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#zarrista.MaskedTensor" class="md-nav__link">
+  <a href="#zarrista.OptionalFixedLengthTensor" class="md-nav__link">
     <span class="md-ellipsis">
       
-        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;MaskedTensor
+        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;OptionalFixedLengthTensor
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label=" MaskedTensor">
+    <nav class="md-nav" aria-label=" OptionalFixedLengthTensor">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#zarrista.MaskedTensor.data" class="md-nav__link">
+  <a href="#zarrista.OptionalFixedLengthTensor.data" class="md-nav__link">
     <span class="md-ellipsis">
       
         <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;data
@@ -1466,7 +1466,7 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#zarrista.MaskedTensor.dtype" class="md-nav__link">
+  <a href="#zarrista.OptionalFixedLengthTensor.dtype" class="md-nav__link">
     <span class="md-ellipsis">
       
         <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;dtype
@@ -1477,7 +1477,7 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#zarrista.MaskedTensor.mask" class="md-nav__link">
+  <a href="#zarrista.OptionalFixedLengthTensor.mask" class="md-nav__link">
     <span class="md-ellipsis">
       
         <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;mask
@@ -1488,7 +1488,7 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#zarrista.MaskedTensor.shape" class="md-nav__link">
+  <a href="#zarrista.OptionalFixedLengthTensor.shape" class="md-nav__link">
     <span class="md-ellipsis">
       
         <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;shape
@@ -1499,7 +1499,7 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#zarrista.MaskedTensor.__array__" class="md-nav__link">
+  <a href="#zarrista.OptionalFixedLengthTensor.__array__" class="md-nav__link">
     <span class="md-ellipsis">
       
         <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;__array__
@@ -1510,7 +1510,7 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#zarrista.MaskedTensor.to_numpy" class="md-nav__link">
+  <a href="#zarrista.OptionalFixedLengthTensor.to_numpy" class="md-nav__link">
     <span class="md-ellipsis">
       
         <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;to_numpy
@@ -1526,19 +1526,19 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#zarrista.MaskedVariableArray" class="md-nav__link">
+  <a href="#zarrista.OptionalVariableLengthTensor" class="md-nav__link">
     <span class="md-ellipsis">
       
-        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;MaskedVariableArray
+        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;OptionalVariableLengthTensor
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label=" MaskedVariableArray">
+    <nav class="md-nav" aria-label=" OptionalVariableLengthTensor">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#zarrista.MaskedVariableArray.dtype" class="md-nav__link">
+  <a href="#zarrista.OptionalVariableLengthTensor.dtype" class="md-nav__link">
     <span class="md-ellipsis">
       
         <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;dtype
@@ -1549,7 +1549,7 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#zarrista.MaskedVariableArray.shape" class="md-nav__link">
+  <a href="#zarrista.OptionalVariableLengthTensor.shape" class="md-nav__link">
     <span class="md-ellipsis">
       
         <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;shape
@@ -1587,19 +1587,20 @@
   
 
 
-<h1 id="decodedarray">DecodedArray<a class="headerlink" href="#decodedarray" title="Permanent link">&para;</a></h1>
-<p>A read from an <a class="autorefs autorefs-internal" title="zarrista.Array" href="../array/#zarrista.Array"><code>Array</code></a> returns a <code>DecodedArray</code>. This applies to
-<code>retrieve_array_subset</code>, <code>retrieve_chunk</code>, and <code>[...]</code>. A <code>DecodedArray</code> is one of
+<h1 id="tensor">Tensor<a class="headerlink" href="#tensor" title="Permanent link">&para;</a></h1>
+<p>A read from an <a class="autorefs autorefs-internal" title="zarrista.Array" href="../array/#zarrista.Array"><code>Array</code></a> returns a <code>Tensor</code>. This applies to
+<code>retrieve_array_subset</code>, <code>retrieve_chunk</code>, and <code>[...]</code>. A <code>Tensor</code> is one of
 four concrete result types, and the decoded byte layout of the data type selects
 which one. Use <code>isinstance</code> to narrow to a concrete type before you call a method
 that belongs to one layout.</p>
 <ul>
-<li><a href="#zarrista.Tensor"><code>Tensor</code></a> — fixed-width, dense data.</li>
-<li><a href="#zarrista.VariableArray"><code>VariableArray</code></a> — variable-length data (e.g. strings or
-  bytes).</li>
-<li><a href="#zarrista.MaskedTensor"><code>MaskedTensor</code></a> — fixed-width data with a validity mask.</li>
-<li><a href="#zarrista.MaskedVariableArray"><code>MaskedVariableArray</code></a> — variable-length data with a
-  validity mask.</li>
+<li><a href="#zarrista.FixedLengthTensor"><code>FixedLengthTensor</code></a> — fixed-width, dense data.</li>
+<li><a href="#zarrista.VariableLengthTensor"><code>VariableLengthTensor</code></a> — variable-length data
+  (e.g. strings or bytes).</li>
+<li><a href="#zarrista.OptionalFixedLengthTensor"><code>OptionalFixedLengthTensor</code></a> — fixed-width
+  data with a validity mask.</li>
+<li><a href="#zarrista.OptionalVariableLengthTensor"><code>OptionalVariableLengthTensor</code></a> —
+  variable-length data with a validity mask.</li>
 </ul>
 
 
@@ -1607,17 +1608,20 @@ that belongs to one layout.</p>
 
 
 
-<h2 id="zarrista.DecodedArray" class="doc doc-heading">
-            <span class="doc doc-object-name doc-attribute-name">zarrista.DecodedArray</span>
+<h2 id="zarrista.Tensor" class="doc doc-heading">
+            <span class="doc doc-object-name doc-attribute-name">zarrista.Tensor</span>
 
 
   <span class="doc doc-labels">
       <small class="doc doc-label doc-label-module-attribute"><code>module-attribute</code></small>
   </span>
 
-<a href="#zarrista.DecodedArray" class="headerlink" title="Permanent link">&para;</a></h2>
-<div class="doc-signature codehilite"><pre><span></span><code><span class="n">DecodedArray</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="typing.TypeAlias" href="https://docs.python.org/3/library/typing.html#typing.TypeAlias">TypeAlias</a></span> <span class="o">=</span> <span class="p">(</span>
-    <span class="n"><a class="autorefs autorefs-internal" title="zarrista.Tensor (zarrista._zarrista.Tensor)" href="#zarrista.Tensor">Tensor</a></span> <span class="o">|</span> <span class="n"><a class="autorefs autorefs-internal" title="zarrista.VariableArray (zarrista._zarrista.VariableArray)" href="#zarrista.VariableArray">VariableArray</a></span> <span class="o">|</span> <span class="n"><a class="autorefs autorefs-internal" title="zarrista.MaskedTensor (zarrista._zarrista.MaskedTensor)" href="#zarrista.MaskedTensor">MaskedTensor</a></span> <span class="o">|</span> <span class="n"><a class="autorefs autorefs-internal" title="zarrista.MaskedVariableArray (zarrista._zarrista.MaskedVariableArray)" href="#zarrista.MaskedVariableArray">MaskedVariableArray</a></span>
+<a href="#zarrista.Tensor" class="headerlink" title="Permanent link">&para;</a></h2>
+<div class="doc-signature codehilite"><pre><span></span><code><span class="n">Tensor</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="typing.TypeAlias" href="https://docs.python.org/3/library/typing.html#typing.TypeAlias">TypeAlias</a></span> <span class="o">=</span> <span class="p">(</span>
+    <span class="n"><a class="autorefs autorefs-internal" title="zarrista.FixedLengthTensor (zarrista._zarrista.FixedLengthTensor)" href="#zarrista.FixedLengthTensor">FixedLengthTensor</a></span>
+    <span class="o">|</span> <span class="n"><a class="autorefs autorefs-internal" title="zarrista.VariableLengthTensor (zarrista._zarrista.VariableLengthTensor)" href="#zarrista.VariableLengthTensor">VariableLengthTensor</a></span>
+    <span class="o">|</span> <span class="n"><a class="autorefs autorefs-internal" title="zarrista.OptionalFixedLengthTensor (zarrista._zarrista.OptionalFixedLengthTensor)" href="#zarrista.OptionalFixedLengthTensor">OptionalFixedLengthTensor</a></span>
+    <span class="o">|</span> <span class="n"><a class="autorefs autorefs-internal" title="zarrista.OptionalVariableLengthTensor (zarrista._zarrista.OptionalVariableLengthTensor)" href="#zarrista.OptionalVariableLengthTensor">OptionalVariableLengthTensor</a></span>
 <span class="p">)</span>
 </code></pre></div>
 
@@ -1637,11 +1641,11 @@ belongs to one layout.</p>
 
 
 
-<h2 id="zarrista.Tensor" class="doc doc-heading">
-            <span class="doc doc-object-name doc-class-name">zarrista.Tensor</span>
+<h2 id="zarrista.FixedLengthTensor" class="doc doc-heading">
+            <span class="doc doc-object-name doc-class-name">zarrista.FixedLengthTensor</span>
 
 
-<a href="#zarrista.Tensor" class="headerlink" title="Permanent link">&para;</a></h2>
+<a href="#zarrista.FixedLengthTensor" class="headerlink" title="Permanent link">&para;</a></h2>
 
 
     <div class="doc doc-contents first">
@@ -1649,9 +1653,10 @@ belongs to one layout.</p>
 
 
         <p>Fixed-width, dense decoded array data.</p>
-<p><code>Tensor</code> implements the buffer protocol directly as an N-dimensional, typed,
-read-only view. Therefore it works with <code>memoryview(tensor)</code> and
-<code>np.asarray(tensor)</code> for any type that the buffer protocol supports.</p>
+<p><code>FixedLengthTensor</code> implements the buffer protocol directly as an
+N-dimensional, typed, read-only view. Therefore it works with
+<code>memoryview(tensor)</code> and <code>np.asarray(tensor)</code> for any type that the buffer
+protocol supports.</p>
 <p>Use <code>to_numpy</code> to get a NumPy array view over the Rust memory. This is
 zero-copy whenever possible.</p>
 
@@ -1677,7 +1682,7 @@ zero-copy whenever possible.</p>
 
 
 
-<h3 id="zarrista.Tensor.dtype" class="doc doc-heading">
+<h3 id="zarrista.FixedLengthTensor.dtype" class="doc doc-heading">
             <span class="doc doc-object-name doc-attribute-name">dtype</span>
 
 
@@ -1685,7 +1690,7 @@ zero-copy whenever possible.</p>
       <small class="doc doc-label doc-label-property"><code>property</code></small>
   </span>
 
-<a href="#zarrista.Tensor.dtype" class="headerlink" title="Permanent link">&para;</a></h3>
+<a href="#zarrista.FixedLengthTensor.dtype" class="headerlink" title="Permanent link">&para;</a></h3>
 <div class="doc-signature codehilite"><pre><span></span><code><span class="n">dtype</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="zarrista.DataType (zarrista._dtype.DataType)" href="../dtype/#zarrista.DataType">DataType</a></span>
 </code></pre></div>
 
@@ -1701,7 +1706,7 @@ zero-copy whenever possible.</p>
 
 
 
-<h3 id="zarrista.Tensor.shape" class="doc doc-heading">
+<h3 id="zarrista.FixedLengthTensor.shape" class="doc doc-heading">
             <span class="doc doc-object-name doc-attribute-name">shape</span>
 
 
@@ -1709,7 +1714,7 @@ zero-copy whenever possible.</p>
       <small class="doc doc-label doc-label-property"><code>property</code></small>
   </span>
 
-<a href="#zarrista.Tensor.shape" class="headerlink" title="Permanent link">&para;</a></h3>
+<a href="#zarrista.FixedLengthTensor.shape" class="headerlink" title="Permanent link">&para;</a></h3>
 <div class="doc-signature codehilite"><pre><span></span><code><span class="n">shape</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#list">list</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></span><span class="p">]</span>
 </code></pre></div>
 
@@ -1727,11 +1732,11 @@ zero-copy whenever possible.</p>
 <div class="doc doc-object doc-function">
 
 
-<h3 id="zarrista.Tensor.__array__" class="doc doc-heading">
+<h3 id="zarrista.FixedLengthTensor.__array__" class="doc doc-heading">
             <span class="doc doc-object-name doc-function-name">__array__</span>
 
 
-<a href="#zarrista.Tensor.__array__" class="headerlink" title="Permanent link">&para;</a></h3>
+<a href="#zarrista.FixedLengthTensor.__array__" class="headerlink" title="Permanent link">&para;</a></h3>
 <div class="doc-signature codehilite"><pre><span></span><code><span class="nf">__array__</span><span class="p">(</span>
     <span class="n">dtype</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="numpy.typing.DTypeLike" href="https://numpy.org/doc/stable/reference/typing.html#numpy.typing.DTypeLike">DTypeLike</a></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">copy</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-external" title="numpy.typing.NDArray" href="https://numpy.org/doc/stable/reference/typing.html#numpy.typing.NDArray">NDArray</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a></span><span class="p">]</span>
@@ -1787,11 +1792,11 @@ own data type.</p>
 <div class="doc doc-object doc-function">
 
 
-<h3 id="zarrista.Tensor.__buffer__" class="doc doc-heading">
+<h3 id="zarrista.FixedLengthTensor.__buffer__" class="doc doc-heading">
             <span class="doc doc-object-name doc-function-name">__buffer__</span>
 
 
-<a href="#zarrista.Tensor.__buffer__" class="headerlink" title="Permanent link">&para;</a></h3>
+<a href="#zarrista.FixedLengthTensor.__buffer__" class="headerlink" title="Permanent link">&para;</a></h3>
 <div class="doc-signature codehilite"><pre><span></span><code><span class="nf">__buffer__</span><span class="p">(</span><span class="n">flags</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#memoryview">memoryview</a></span>
 </code></pre></div>
 
@@ -1845,18 +1850,18 @@ type has no standard format code.</p>
 <div class="doc doc-object doc-function">
 
 
-<h3 id="zarrista.Tensor.__dlpack__" class="doc doc-heading">
+<h3 id="zarrista.FixedLengthTensor.__dlpack__" class="doc doc-heading">
             <span class="doc doc-object-name doc-function-name">__dlpack__</span>
 
 
-<a href="#zarrista.Tensor.__dlpack__" class="headerlink" title="Permanent link">&para;</a></h3>
+<a href="#zarrista.FixedLengthTensor.__dlpack__" class="headerlink" title="Permanent link">&para;</a></h3>
 <div class="doc-signature codehilite"><pre><span></span><code><span class="nf">__dlpack__</span><span class="p">(</span>
     <span class="o">*</span><span class="p">,</span>
     <span class="n">stream</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">max_version</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#tuple">tuple</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">dl_device</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#tuple">tuple</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">copy</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><span title="typing_extensions.CapsuleType">CapsuleType</span></span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-external" title="typing_extensions.CapsuleType" href="https://typing-extensions.readthedocs.io/en/latest/index.html#typing_extensions.CapsuleType">CapsuleType</a></span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -1905,7 +1910,7 @@ CPU, so this argument has no effect.</p>
 <p><span class="doc-section-title">Returns:</span></p>
     <ul>
         <li class="doc-section-item field-body">
-              <code><span title="typing_extensions.CapsuleType">CapsuleType</span></code>
+              <code><a class="autorefs autorefs-external" title="typing_extensions.CapsuleType" href="https://typing-extensions.readthedocs.io/en/latest/index.html#typing_extensions.CapsuleType">CapsuleType</a></code>
           –
           <div class="doc-md-description">
             <p>A capsule that holds the DLPack tensor.</p>
@@ -1921,11 +1926,11 @@ CPU, so this argument has no effect.</p>
 <div class="doc doc-object doc-function">
 
 
-<h3 id="zarrista.Tensor.__dlpack_device__" class="doc doc-heading">
+<h3 id="zarrista.FixedLengthTensor.__dlpack_device__" class="doc doc-heading">
             <span class="doc doc-object-name doc-function-name">__dlpack_device__</span>
 
 
-<a href="#zarrista.Tensor.__dlpack_device__" class="headerlink" title="Permanent link">&para;</a></h3>
+<a href="#zarrista.FixedLengthTensor.__dlpack_device__" class="headerlink" title="Permanent link">&para;</a></h3>
 <div class="doc-signature codehilite"><pre><span></span><code><span class="nf">__dlpack_device__</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#tuple">tuple</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></span><span class="p">]</span>
 </code></pre></div>
 
@@ -1953,12 +1958,12 @@ CPU, so this argument has no effect.</p>
 <div class="doc doc-object doc-function">
 
 
-<h3 id="zarrista.Tensor.buffer" class="doc doc-heading">
+<h3 id="zarrista.FixedLengthTensor.buffer" class="doc doc-heading">
             <span class="doc doc-object-name doc-function-name">buffer</span>
 
 
-<a href="#zarrista.Tensor.buffer" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature codehilite"><pre><span></span><code><span class="nf">buffer</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n"><span title="typing_extensions.Buffer">Buffer</span></span>
+<a href="#zarrista.FixedLengthTensor.buffer" class="headerlink" title="Permanent link">&para;</a></h3>
+<div class="doc-signature codehilite"><pre><span></span><code><span class="nf">buffer</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-external" title="typing_extensions.Buffer" href="https://typing-extensions.readthedocs.io/en/latest/index.html#typing_extensions.Buffer">Buffer</a></span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -1969,7 +1974,7 @@ CPU, so this argument has no effect.</p>
 <p><span class="doc-section-title">Returns:</span></p>
     <ul>
         <li class="doc-section-item field-body">
-              <code><span title="typing_extensions.Buffer">Buffer</span></code>
+              <code><a class="autorefs autorefs-external" title="typing_extensions.Buffer" href="https://typing-extensions.readthedocs.io/en/latest/index.html#typing_extensions.Buffer">Buffer</a></code>
           –
           <div class="doc-md-description">
             <p>A read-only view over the decoded bytes.</p>
@@ -1985,11 +1990,11 @@ CPU, so this argument has no effect.</p>
 <div class="doc doc-object doc-function">
 
 
-<h3 id="zarrista.Tensor.to_numpy" class="doc doc-heading">
+<h3 id="zarrista.FixedLengthTensor.to_numpy" class="doc doc-heading">
             <span class="doc doc-object-name doc-function-name">to_numpy</span>
 
 
-<a href="#zarrista.Tensor.to_numpy" class="headerlink" title="Permanent link">&para;</a></h3>
+<a href="#zarrista.FixedLengthTensor.to_numpy" class="headerlink" title="Permanent link">&para;</a></h3>
 <div class="doc-signature codehilite"><pre><span></span><code><span class="nf">to_numpy</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-external" title="numpy.typing.NDArray" href="https://numpy.org/doc/stable/reference/typing.html#numpy.typing.NDArray">NDArray</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a></span><span class="p">]</span>
 </code></pre></div>
 
@@ -2006,14 +2011,8 @@ protocol, this path covers the full NumPy dtype set (e.g. complex).</p>
               <code><a class="autorefs autorefs-external" title="numpy.typing.NDArray" href="https://numpy.org/doc/stable/reference/typing.html#numpy.typing.NDArray">NDArray</a>[<a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a>]</code>
           –
           <div class="doc-md-description">
-            <p>A read-only NumPy array with the same shape and dtype as this</p>
-          </div>
-        </li>
-        <li class="doc-section-item field-body">
-              <code><a class="autorefs autorefs-external" title="numpy.typing.NDArray" href="https://numpy.org/doc/stable/reference/typing.html#numpy.typing.NDArray">NDArray</a>[<a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a>]</code>
-          –
-          <div class="doc-md-description">
-            <p>tensor.</p>
+            <p>A read-only NumPy array with the same shape and dtype as this
+tensor.</p>
           </div>
         </li>
     </ul>
@@ -2035,11 +2034,11 @@ protocol, this path covers the full NumPy dtype set (e.g. complex).</p>
 
 
 
-<h2 id="zarrista.VariableArray" class="doc doc-heading">
-            <span class="doc doc-object-name doc-class-name">zarrista.VariableArray</span>
+<h2 id="zarrista.VariableLengthTensor" class="doc doc-heading">
+            <span class="doc doc-object-name doc-class-name">zarrista.VariableLengthTensor</span>
 
 
-<a href="#zarrista.VariableArray" class="headerlink" title="Permanent link">&para;</a></h2>
+<a href="#zarrista.VariableLengthTensor" class="headerlink" title="Permanent link">&para;</a></h2>
 
 
     <div class="doc doc-contents first">
@@ -2073,7 +2072,7 @@ in any Python library that speaks Arrow without a copy.</p>
 
 
 
-<h3 id="zarrista.VariableArray.dtype" class="doc doc-heading">
+<h3 id="zarrista.VariableLengthTensor.dtype" class="doc doc-heading">
             <span class="doc doc-object-name doc-attribute-name">dtype</span>
 
 
@@ -2081,7 +2080,7 @@ in any Python library that speaks Arrow without a copy.</p>
       <small class="doc doc-label doc-label-property"><code>property</code></small>
   </span>
 
-<a href="#zarrista.VariableArray.dtype" class="headerlink" title="Permanent link">&para;</a></h3>
+<a href="#zarrista.VariableLengthTensor.dtype" class="headerlink" title="Permanent link">&para;</a></h3>
 <div class="doc-signature codehilite"><pre><span></span><code><span class="n">dtype</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="zarrista.DataType (zarrista._dtype.DataType)" href="../dtype/#zarrista.DataType">DataType</a></span>
 </code></pre></div>
 
@@ -2097,7 +2096,7 @@ in any Python library that speaks Arrow without a copy.</p>
 
 
 
-<h3 id="zarrista.VariableArray.shape" class="doc doc-heading">
+<h3 id="zarrista.VariableLengthTensor.shape" class="doc doc-heading">
             <span class="doc doc-object-name doc-attribute-name">shape</span>
 
 
@@ -2105,7 +2104,7 @@ in any Python library that speaks Arrow without a copy.</p>
       <small class="doc doc-label doc-label-property"><code>property</code></small>
   </span>
 
-<a href="#zarrista.VariableArray.shape" class="headerlink" title="Permanent link">&para;</a></h3>
+<a href="#zarrista.VariableLengthTensor.shape" class="headerlink" title="Permanent link">&para;</a></h3>
 <div class="doc-signature codehilite"><pre><span></span><code><span class="n">shape</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#list">list</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></span><span class="p">]</span>
 </code></pre></div>
 
@@ -2123,11 +2122,11 @@ in any Python library that speaks Arrow without a copy.</p>
 <div class="doc doc-object doc-function">
 
 
-<h3 id="zarrista.VariableArray.__array__" class="doc doc-heading">
+<h3 id="zarrista.VariableLengthTensor.__array__" class="doc doc-heading">
             <span class="doc doc-object-name doc-function-name">__array__</span>
 
 
-<a href="#zarrista.VariableArray.__array__" class="headerlink" title="Permanent link">&para;</a></h3>
+<a href="#zarrista.VariableLengthTensor.__array__" class="headerlink" title="Permanent link">&para;</a></h3>
 <div class="doc-signature codehilite"><pre><span></span><code><span class="nf">__array__</span><span class="p">(</span>
     <span class="n">dtype</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="numpy.typing.DTypeLike" href="https://numpy.org/doc/stable/reference/typing.html#numpy.typing.DTypeLike">DTypeLike</a></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">copy</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-external" title="numpy.typing.NDArray" href="https://numpy.org/doc/stable/reference/typing.html#numpy.typing.NDArray">NDArray</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a></span><span class="p">]</span>
@@ -2170,7 +2169,7 @@ error.</p>
               <code><a class="autorefs autorefs-external" title="numpy.typing.NDArray" href="https://numpy.org/doc/stable/reference/typing.html#numpy.typing.NDArray">NDArray</a>[<a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a>]</code>
           –
           <div class="doc-md-description">
-            <p>A NumPy array with the same shape as this array.</p>
+            <p>A NumPy array with the same shape as this tensor.</p>
           </div>
         </li>
     </ul>
@@ -2203,14 +2202,14 @@ applies to the <code>string</code> data type only.</p>
 <div class="doc doc-object doc-function">
 
 
-<h3 id="zarrista.VariableArray.__arrow_c_array__" class="doc doc-heading">
+<h3 id="zarrista.VariableLengthTensor.__arrow_c_array__" class="doc doc-heading">
             <span class="doc doc-object-name doc-function-name">__arrow_c_array__</span>
 
 
-<a href="#zarrista.VariableArray.__arrow_c_array__" class="headerlink" title="Permanent link">&para;</a></h3>
+<a href="#zarrista.VariableLengthTensor.__arrow_c_array__" class="headerlink" title="Permanent link">&para;</a></h3>
 <div class="doc-signature codehilite"><pre><span></span><code><span class="nf">__arrow_c_array__</span><span class="p">(</span>
     <span class="n">requested_schema</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#object">object</a></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#tuple">tuple</a></span><span class="p">[</span><span class="n"><span title="typing_extensions.CapsuleType">CapsuleType</span></span><span class="p">,</span> <span class="n"><span title="typing_extensions.CapsuleType">CapsuleType</span></span><span class="p">]</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#tuple">tuple</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" title="typing_extensions.CapsuleType" href="https://typing-extensions.readthedocs.io/en/latest/index.html#typing_extensions.CapsuleType">CapsuleType</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-external" title="typing_extensions.CapsuleType" href="https://typing-extensions.readthedocs.io/en/latest/index.html#typing_extensions.CapsuleType">CapsuleType</a></span><span class="p">]</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -2237,7 +2236,7 @@ caller wants. Give <code>None</code> to accept this array's own schema.</p>
 <p><span class="doc-section-title">Returns:</span></p>
     <ul>
         <li class="doc-section-item field-body">
-              <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#tuple">tuple</a>[<span title="typing_extensions.CapsuleType">CapsuleType</span>, <span title="typing_extensions.CapsuleType">CapsuleType</span>]</code>
+              <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#tuple">tuple</a>[<a class="autorefs autorefs-external" title="typing_extensions.CapsuleType" href="https://typing-extensions.readthedocs.io/en/latest/index.html#typing_extensions.CapsuleType">CapsuleType</a>, <a class="autorefs autorefs-external" title="typing_extensions.CapsuleType" href="https://typing-extensions.readthedocs.io/en/latest/index.html#typing_extensions.CapsuleType">CapsuleType</a>]</code>
           –
           <div class="doc-md-description">
             <p>The pair <code>(schema_capsule, array_capsule)</code>.</p>
@@ -2265,12 +2264,12 @@ caller wants. Give <code>None</code> to accept this array's own schema.</p>
 <div class="doc doc-object doc-function">
 
 
-<h3 id="zarrista.VariableArray.__arrow_c_schema__" class="doc doc-heading">
+<h3 id="zarrista.VariableLengthTensor.__arrow_c_schema__" class="doc doc-heading">
             <span class="doc doc-object-name doc-function-name">__arrow_c_schema__</span>
 
 
-<a href="#zarrista.VariableArray.__arrow_c_schema__" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature codehilite"><pre><span></span><code><span class="nf">__arrow_c_schema__</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n"><span title="typing_extensions.CapsuleType">CapsuleType</span></span>
+<a href="#zarrista.VariableLengthTensor.__arrow_c_schema__" class="headerlink" title="Permanent link">&para;</a></h3>
+<div class="doc-signature codehilite"><pre><span></span><code><span class="nf">__arrow_c_schema__</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-external" title="typing_extensions.CapsuleType" href="https://typing-extensions.readthedocs.io/en/latest/index.html#typing_extensions.CapsuleType">CapsuleType</a></span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -2281,7 +2280,7 @@ caller wants. Give <code>None</code> to accept this array's own schema.</p>
 <p><span class="doc-section-title">Returns:</span></p>
     <ul>
         <li class="doc-section-item field-body">
-              <code><span title="typing_extensions.CapsuleType">CapsuleType</span></code>
+              <code><a class="autorefs autorefs-external" title="typing_extensions.CapsuleType" href="https://typing-extensions.readthedocs.io/en/latest/index.html#typing_extensions.CapsuleType">CapsuleType</a></code>
           –
           <div class="doc-md-description">
             <p>A capsule that holds the <code>ArrowSchema</code>.</p>
@@ -2297,11 +2296,11 @@ caller wants. Give <code>None</code> to accept this array's own schema.</p>
 <div class="doc doc-object doc-function">
 
 
-<h3 id="zarrista.VariableArray.to_numpy" class="doc doc-heading">
+<h3 id="zarrista.VariableLengthTensor.to_numpy" class="doc doc-heading">
             <span class="doc doc-object-name doc-function-name">to_numpy</span>
 
 
-<a href="#zarrista.VariableArray.to_numpy" class="headerlink" title="Permanent link">&para;</a></h3>
+<a href="#zarrista.VariableLengthTensor.to_numpy" class="headerlink" title="Permanent link">&para;</a></h3>
 <div class="doc-signature codehilite"><pre><span></span><code><span class="nf">to_numpy</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-external" title="numpy.typing.NDArray" href="https://numpy.org/doc/stable/reference/typing.html#numpy.typing.NDArray">NDArray</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a></span><span class="p">]</span>
 </code></pre></div>
 
@@ -2320,7 +2319,7 @@ an <code>object</code> dtype array, containing Python <code>bytes</code> objects
               <code><a class="autorefs autorefs-external" title="numpy.typing.NDArray" href="https://numpy.org/doc/stable/reference/typing.html#numpy.typing.NDArray">NDArray</a>[<a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a>]</code>
           –
           <div class="doc-md-description">
-            <p>A NumPy array with the same shape as this array.</p>
+            <p>A NumPy array with the same shape as this tensor.</p>
           </div>
         </li>
     </ul>
@@ -2361,11 +2360,11 @@ applies to the <code>string</code> data type only.</p>
 
 
 
-<h2 id="zarrista.MaskedTensor" class="doc doc-heading">
-            <span class="doc doc-object-name doc-class-name">zarrista.MaskedTensor</span>
+<h2 id="zarrista.OptionalFixedLengthTensor" class="doc doc-heading">
+            <span class="doc doc-object-name doc-class-name">zarrista.OptionalFixedLengthTensor</span>
 
 
-<a href="#zarrista.MaskedTensor" class="headerlink" title="Permanent link">&para;</a></h2>
+<a href="#zarrista.OptionalFixedLengthTensor" class="headerlink" title="Permanent link">&para;</a></h2>
 
 
     <div class="doc doc-contents first">
@@ -2398,7 +2397,7 @@ view over the underlying Rust memory.</p>
 
 
 
-<h3 id="zarrista.MaskedTensor.data" class="doc doc-heading">
+<h3 id="zarrista.OptionalFixedLengthTensor.data" class="doc doc-heading">
             <span class="doc doc-object-name doc-attribute-name">data</span>
 
 
@@ -2406,8 +2405,8 @@ view over the underlying Rust memory.</p>
       <small class="doc doc-label doc-label-property"><code>property</code></small>
   </span>
 
-<a href="#zarrista.MaskedTensor.data" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature codehilite"><pre><span></span><code><span class="n">data</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="zarrista.Tensor (zarrista._decoded_array.Tensor)" href="#zarrista.Tensor">Tensor</a></span>
+<a href="#zarrista.OptionalFixedLengthTensor.data" class="headerlink" title="Permanent link">&para;</a></h3>
+<div class="doc-signature codehilite"><pre><span></span><code><span class="n">data</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="zarrista.FixedLengthTensor (zarrista._tensor.FixedLengthTensor)" href="#zarrista.FixedLengthTensor">FixedLengthTensor</a></span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -2422,7 +2421,7 @@ view over the underlying Rust memory.</p>
 
 
 
-<h3 id="zarrista.MaskedTensor.dtype" class="doc doc-heading">
+<h3 id="zarrista.OptionalFixedLengthTensor.dtype" class="doc doc-heading">
             <span class="doc doc-object-name doc-attribute-name">dtype</span>
 
 
@@ -2430,7 +2429,7 @@ view over the underlying Rust memory.</p>
       <small class="doc doc-label doc-label-property"><code>property</code></small>
   </span>
 
-<a href="#zarrista.MaskedTensor.dtype" class="headerlink" title="Permanent link">&para;</a></h3>
+<a href="#zarrista.OptionalFixedLengthTensor.dtype" class="headerlink" title="Permanent link">&para;</a></h3>
 <div class="doc-signature codehilite"><pre><span></span><code><span class="n">dtype</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="zarrista.DataType (zarrista._dtype.DataType)" href="../dtype/#zarrista.DataType">DataType</a></span>
 </code></pre></div>
 
@@ -2446,7 +2445,7 @@ view over the underlying Rust memory.</p>
 
 
 
-<h3 id="zarrista.MaskedTensor.mask" class="doc doc-heading">
+<h3 id="zarrista.OptionalFixedLengthTensor.mask" class="doc doc-heading">
             <span class="doc doc-object-name doc-attribute-name">mask</span>
 
 
@@ -2454,8 +2453,8 @@ view over the underlying Rust memory.</p>
       <small class="doc doc-label doc-label-property"><code>property</code></small>
   </span>
 
-<a href="#zarrista.MaskedTensor.mask" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature codehilite"><pre><span></span><code><span class="n">mask</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="zarrista.Tensor (zarrista._decoded_array.Tensor)" href="#zarrista.Tensor">Tensor</a></span>
+<a href="#zarrista.OptionalFixedLengthTensor.mask" class="headerlink" title="Permanent link">&para;</a></h3>
+<div class="doc-signature codehilite"><pre><span></span><code><span class="n">mask</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="zarrista.FixedLengthTensor (zarrista._tensor.FixedLengthTensor)" href="#zarrista.FixedLengthTensor">FixedLengthTensor</a></span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -2470,7 +2469,7 @@ view over the underlying Rust memory.</p>
 
 
 
-<h3 id="zarrista.MaskedTensor.shape" class="doc doc-heading">
+<h3 id="zarrista.OptionalFixedLengthTensor.shape" class="doc doc-heading">
             <span class="doc doc-object-name doc-attribute-name">shape</span>
 
 
@@ -2478,7 +2477,7 @@ view over the underlying Rust memory.</p>
       <small class="doc doc-label doc-label-property"><code>property</code></small>
   </span>
 
-<a href="#zarrista.MaskedTensor.shape" class="headerlink" title="Permanent link">&para;</a></h3>
+<a href="#zarrista.OptionalFixedLengthTensor.shape" class="headerlink" title="Permanent link">&para;</a></h3>
 <div class="doc-signature codehilite"><pre><span></span><code><span class="n">shape</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#list">list</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></span><span class="p">]</span>
 </code></pre></div>
 
@@ -2496,11 +2495,11 @@ view over the underlying Rust memory.</p>
 <div class="doc doc-object doc-function">
 
 
-<h3 id="zarrista.MaskedTensor.__array__" class="doc doc-heading">
+<h3 id="zarrista.OptionalFixedLengthTensor.__array__" class="doc doc-heading">
             <span class="doc doc-object-name doc-function-name">__array__</span>
 
 
-<a href="#zarrista.MaskedTensor.__array__" class="headerlink" title="Permanent link">&para;</a></h3>
+<a href="#zarrista.OptionalFixedLengthTensor.__array__" class="headerlink" title="Permanent link">&para;</a></h3>
 <div class="doc-signature codehilite"><pre><span></span><code><span class="nf">__array__</span><span class="p">(</span>
     <span class="n">dtype</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="numpy.typing.DTypeLike" href="https://numpy.org/doc/stable/reference/typing.html#numpy.typing.DTypeLike">DTypeLike</a></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">copy</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-external" title="numpy.ma.MaskedArray" href="https://numpy.org/doc/stable/reference/maskedarray.baseclass.html#numpy.ma.MaskedArray">MaskedArray</a></span>
@@ -2556,11 +2555,11 @@ tensor's own data type.</p>
 <div class="doc doc-object doc-function">
 
 
-<h3 id="zarrista.MaskedTensor.to_numpy" class="doc doc-heading">
+<h3 id="zarrista.OptionalFixedLengthTensor.to_numpy" class="doc doc-heading">
             <span class="doc doc-object-name doc-function-name">to_numpy</span>
 
 
-<a href="#zarrista.MaskedTensor.to_numpy" class="headerlink" title="Permanent link">&para;</a></h3>
+<a href="#zarrista.OptionalFixedLengthTensor.to_numpy" class="headerlink" title="Permanent link">&para;</a></h3>
 <div class="doc-signature codehilite"><pre><span></span><code><span class="nf">to_numpy</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-external" title="numpy.ma.MaskedArray" href="https://numpy.org/doc/stable/reference/maskedarray.baseclass.html#numpy.ma.MaskedArray">MaskedArray</a></span>
 </code></pre></div>
 
@@ -2600,11 +2599,11 @@ mask.</p>
 
 
 
-<h2 id="zarrista.MaskedVariableArray" class="doc doc-heading">
-            <span class="doc doc-object-name doc-class-name">zarrista.MaskedVariableArray</span>
+<h2 id="zarrista.OptionalVariableLengthTensor" class="doc doc-heading">
+            <span class="doc doc-object-name doc-class-name">zarrista.OptionalVariableLengthTensor</span>
 
 
-<a href="#zarrista.MaskedVariableArray" class="headerlink" title="Permanent link">&para;</a></h2>
+<a href="#zarrista.OptionalVariableLengthTensor" class="headerlink" title="Permanent link">&para;</a></h2>
 
 
     <div class="doc doc-contents first">
@@ -2636,7 +2635,7 @@ mask.</p>
 
 
 
-<h3 id="zarrista.MaskedVariableArray.dtype" class="doc doc-heading">
+<h3 id="zarrista.OptionalVariableLengthTensor.dtype" class="doc doc-heading">
             <span class="doc doc-object-name doc-attribute-name">dtype</span>
 
 
@@ -2644,7 +2643,7 @@ mask.</p>
       <small class="doc doc-label doc-label-property"><code>property</code></small>
   </span>
 
-<a href="#zarrista.MaskedVariableArray.dtype" class="headerlink" title="Permanent link">&para;</a></h3>
+<a href="#zarrista.OptionalVariableLengthTensor.dtype" class="headerlink" title="Permanent link">&para;</a></h3>
 <div class="doc-signature codehilite"><pre><span></span><code><span class="n">dtype</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="zarrista.DataType (zarrista._dtype.DataType)" href="../dtype/#zarrista.DataType">DataType</a></span>
 </code></pre></div>
 
@@ -2660,7 +2659,7 @@ mask.</p>
 
 
 
-<h3 id="zarrista.MaskedVariableArray.shape" class="doc doc-heading">
+<h3 id="zarrista.OptionalVariableLengthTensor.shape" class="doc doc-heading">
             <span class="doc doc-object-name doc-attribute-name">shape</span>
 
 
@@ -2668,7 +2667,7 @@ mask.</p>
       <small class="doc doc-label doc-label-property"><code>property</code></small>
   </span>
 
-<a href="#zarrista.MaskedVariableArray.shape" class="headerlink" title="Permanent link">&para;</a></h3>
+<a href="#zarrista.OptionalVariableLengthTensor.shape" class="headerlink" title="Permanent link">&para;</a></h3>
 <div class="doc-signature codehilite"><pre><span></span><code><span class="n">shape</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#list">list</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></span><span class="p">]</span>
 </code></pre></div>
 
