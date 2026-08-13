@@ -3,3 +3,9 @@ authors:
     name: Kyle Barron
     description: Creator
     avatar: https://github.com/kylebarron.png
+    url: https://developmentseed.org/team/kyle-barron/
+  d-v-b:
+    name: Davis Bennett
+    description: Zarr-Python maintainer
+    avatar: https://github.com/d-v-b.png
+    # url: https://developmentseed.org/team/davis-bennett/
