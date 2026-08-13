@@ -5,6 +5,10 @@
          <lastmod>2026-08-13</lastmod>
     </url>
     <url>
+         <loc>https://developmentseed.org/zarrista/latest/CHANGELOG/</loc>
+         <lastmod>2026-08-13</lastmod>
+    </url>
+    <url>
          <loc>https://developmentseed.org/zarrista/latest/api/array/</loc>
          <lastmod>2026-08-13</lastmod>
     </url>
@@ -54,6 +58,18 @@
     </url>
     <url>
          <loc>https://developmentseed.org/zarrista/latest/blog/</loc>
+         <lastmod>2026-08-13</lastmod>
+    </url>
+    <url>
+         <loc>https://developmentseed.org/zarrista/latest/blog/2026/08/13/zarrista-faster-zarr-for-python/</loc>
+         <lastmod>2026-08-13</lastmod>
+    </url>
+    <url>
+         <loc>https://developmentseed.org/zarrista/latest/blog/archive/2026/</loc>
+         <lastmod>2026-08-13</lastmod>
+    </url>
+    <url>
+         <loc>https://developmentseed.org/zarrista/latest/blog/category/release/</loc>
          <lastmod>2026-08-13</lastmod>
     </url>
 </urlset>
