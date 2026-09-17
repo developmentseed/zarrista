@@ -2,9 +2,8 @@ use pyo3::exceptions::PyTypeError;
 use pyo3::prelude::*;
 use zarrs::array::ArrayBuilder;
 
-use crate::array::fill_value::PyFillValueInput;
 use crate::array::type_wrappers::PyDimensionName;
-use crate::array::{PyArray, PyArrayShape, PyChunkGrid, PyChunkKeyEncoding};
+use crate::array::{PyArray, PyArrayShape, PyChunkGrid, PyChunkKeyEncoding, PyFillValueInput};
 use crate::codec::{PyArrayToArrayCodec, PyArrayToBytesCodec, PyBytesToBytesCodec};
 use crate::dtype::PyDataType;
 use crate::error::ZarristaResult;

@@ -8,7 +8,7 @@ use zarrs::array::codec::api::CodecMetadata;
 use zarrs::array::codec::{BitroundCodec, TransposeCodec, TransposeOrder};
 use zarrs::array::{ArrayToArrayCodecTraits, Codec, CodecOptions};
 
-use crate::array::PyFillValue;
+use crate::array::{PyFillValue, PyFillValueInput};
 use crate::array_bytes::PyArrayBytes;
 use crate::dtype::PyDataType;
 use crate::error::ZarristaResult;
@@ -94,15 +94,17 @@ impl PyArrayToArrayCodec {
         py: Python,
         value: &PyArrayBytes,
         shape: Vec<NonZeroU64>,
-        data_type: &PyDataType,
-        fill_value: &PyFillValue,
+        data_type: PyDataType,
+        fill_value: PyFillValueInput,
     ) -> ZarristaResult<PyArrayBytes> {
+        let data_type = data_type.into_inner();
+        let fill_value = fill_value.resolve(&data_type)?;
         crate::py::detach(py, || {
             let encoded = self.0.encode(
                 value.as_array_bytes()?,
                 &shape,
-                data_type.inner(),
-                fill_value.inner(),
+                &data_type,
+                &fill_value,
                 &CodecOptions::default(),
             )?;
             Ok(PyArrayBytes::from_zarrs(encoded))
@@ -115,15 +117,17 @@ impl PyArrayToArrayCodec {
         py: Python,
         value: &PyArrayBytes,
         shape: Vec<NonZeroU64>,
-        data_type: &PyDataType,
-        fill_value: &PyFillValue,
+        data_type: PyDataType,
+        fill_value: PyFillValueInput,
     ) -> ZarristaResult<PyArrayBytes> {
+        let data_type = data_type.into_inner();
+        let fill_value = fill_value.resolve(&data_type)?;
         crate::py::detach(py, || {
             let decoded = self.0.decode(
                 value.as_array_bytes()?,
                 &shape,
-                data_type.inner(),
-                fill_value.inner(),
+                &data_type,
+                &fill_value,
                 &CodecOptions::default(),
             )?;
             Ok(PyArrayBytes::from_zarrs(decoded))

@@ -136,9 +136,7 @@ impl From<ZarristaError> for PyErr {
             ZarristaError::RectilinearChunkGridCreate(err) => {
                 exc::ChunkGridCreateError::new_err(err.to_string())
             }
-            ZarristaError::DataTypeFillValue(err) => {
-                exc::FillValueError::new_err(err.to_string())
-            }
+            ZarristaError::DataTypeFillValue(err) => exc::FillValueError::new_err(err.to_string()),
             ZarristaError::DataTypeFillValueMetadata(err) => {
                 exc::FillValueError::new_err(err.to_string())
             }
