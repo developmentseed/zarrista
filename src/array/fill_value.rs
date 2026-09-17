@@ -1,6 +1,8 @@
+use pyo3::exceptions::PyValueError;
 use pyo3::prelude::*;
+use pyo3::pybacked::{PyBackedBytes, PyBackedStr};
 use pyo3_bytes::PyBytes;
-use zarrs::array::FillValue;
+use zarrs::array::{DataType, FillValue};
 
 #[derive(Debug, Clone)]
 #[pyclass(module = "zarrista", frozen, name = "FillValue", from_py_object)]
@@ -54,5 +56,58 @@ impl From<FillValue> for PyFillValue {
 impl From<PyFillValue> for FillValue {
     fn from(py_fill_value: PyFillValue) -> Self {
         py_fill_value.0
+    }
+}
+
+#[derive(Debug, Clone, FromPyObject)]
+pub struct PyFillValueInput<'py>(Bound<'py, PyAny>);
+
+impl PyFillValueInput<'_> {
+    pub fn resolve(&self, dtype: &DataType) -> PyResult<FillValue> {
+        use zarrs::array::data_type::*;
+
+        let fill_value = if dtype.is::<BoolDataType>() {
+            FillValue::from(self.0.extract::<bool>()?)
+        } else if dtype.is::<UInt8DataType>() {
+            FillValue::from(self.0.extract::<u8>()?)
+        } else if dtype.is::<UInt16DataType>() {
+            FillValue::from(self.0.extract::<u16>()?)
+        } else if dtype.is::<UInt32DataType>() {
+            FillValue::from(self.0.extract::<u32>()?)
+        } else if dtype.is::<UInt64DataType>() {
+            FillValue::from(self.0.extract::<u64>()?)
+        } else if dtype.is::<Int8DataType>() {
+            FillValue::from(self.0.extract::<i8>()?)
+        } else if dtype.is::<Int16DataType>() {
+            FillValue::from(self.0.extract::<i16>()?)
+        } else if dtype.is::<Int32DataType>() {
+            FillValue::from(self.0.extract::<i32>()?)
+        } else if dtype.is::<Int64DataType>() {
+            FillValue::from(self.0.extract::<i64>()?)
+        } else if dtype.is::<BFloat16DataType>() {
+            FillValue::from(half::bf16::from_f64(self.0.extract()?))
+        } else if dtype.is::<Float16DataType>() {
+            FillValue::from(half::f16::from_f64(self.0.extract()?))
+        } else if dtype.is::<Float32DataType>() {
+            FillValue::from(self.0.extract::<f32>()?)
+        } else if dtype.is::<Float64DataType>() {
+            FillValue::from(self.0.extract::<f64>()?)
+        } else if dtype.is::<BytesDataType>() {
+            FillValue::from(self.0.extract::<PyBackedBytes>()?.as_ref())
+        } else if dtype.is::<StringDataType>() {
+            FillValue::from(self.0.extract::<PyBackedStr>()?.as_str())
+        } else {
+            // Last, try to extract as bytes
+            if let Ok(bytes) = self.0.extract::<Vec<u8>>() {
+                return Ok(FillValue::new(bytes));
+            }
+
+            return Err(PyValueError::new_err(format!(
+                "cannot resolve fill value for data type {}",
+                dtype.name_v3().unwrap_or_else(|| "<unknown>".into())
+            )));
+        };
+
+        Ok(fill_value)
     }
 }

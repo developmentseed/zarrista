@@ -5340,6 +5340,7 @@ dependencies = [
  "bytes",
  "dlpark",
  "flate2",
+ "half",
  "icechunk",
  "object_store 0.13.2",
  "pyo3",
