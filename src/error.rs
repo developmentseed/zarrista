@@ -6,6 +6,7 @@
 //! [`ZarristaResult`] can therefore use `?` directly on those underlying
 //! errors instead of sprinkling `.map_err(...)` everywhere.
 
+use pyo3::CastError;
 use pyo3::prelude::*;
 use pythonize::PythonizeError;
 use thiserror::Error;
@@ -130,6 +131,12 @@ impl From<ZarristaError> for PyErr {
                 exc::IncompatibleDimensionalityError::new_err(err.to_string())
             }
         }
+    }
+}
+
+impl From<CastError<'_, '_>> for ZarristaError {
+    fn from(error: CastError<'_, '_>) -> Self {
+        Self::Py(error.into())
     }
 }
 
