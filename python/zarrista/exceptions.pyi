@@ -34,6 +34,9 @@ class PluginCreateError(ZarristaError):
 class SerializationError(ZarristaError):
     """Raised when (de)serializing JSON or converting to/from Python objects fails."""
 
+class FillValueError(ZarristaError):
+    """Raised when a fill value is incompatible with its data type."""
+
 class ChunkGridCreateError(ZarristaError):
     """Raised when a chunk grid cannot be created from the given shapes."""
 
@@ -45,6 +48,7 @@ __all__ = [
     "ArrayError",
     "ChunkGridCreateError",
     "CodecError",
+    "FillValueError",
     "GroupCreateError",
     "IncompatibleDimensionalityError",
     "NodeCreateError",
