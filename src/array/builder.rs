@@ -139,12 +139,15 @@ impl PyArrayBuilder {
         Ok(format!("ArrayBuilder(metadata={metadata})"))
     }
 
-    /// Set the data type of the array to be built.
-    #[pyo3(signature = (data_type, /))]
-    fn data_type(&self, data_type: PyDataType) -> Self {
-        self.with(|builder| {
-            builder.data_type(data_type.into_inner());
-        })
+    /// Set the fill value, and the data type that it belongs to.
+    #[pyo3(signature = (value, /, dtype))]
+    fn fill_value(&self, value: PyFillValueInput, dtype: PyDataType) -> ZarristaResult<Self> {
+        let dtype = dtype.into_inner();
+        let fill_value = value.resolve(&dtype)?;
+        Ok(self.with(move |builder| {
+            builder.data_type(dtype);
+            builder.fill_value(fill_value);
+        }))
     }
 
     #[pyo3(signature = (dimension_names, /))]
