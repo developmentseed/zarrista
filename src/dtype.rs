@@ -4,6 +4,7 @@
 use std::borrow::Cow;
 
 use pyo3::prelude::*;
+use pyo3::pybacked::PyBackedStr;
 use zarrs::array::{DataType, DataTypeSize};
 use zarrs::metadata::v3::MetadataV3;
 
@@ -11,7 +12,7 @@ use crate::error::ZarristaResult;
 use crate::metadata::PyMetadataV3;
 
 #[derive(Debug, Clone)]
-#[pyclass(module = "zarrista", frozen, name = "DataType", from_py_object)]
+#[pyclass(module = "zarrista", frozen, name = "DataType", skip_from_py_object)]
 pub struct PyDataType {
     inner: DataType,
 }
@@ -72,6 +73,23 @@ impl PyDataType {
         // Render the Zarr v3 name
         let name = self.inner.name_v3().into_pyobject(py)?.repr()?;
         Ok(format!("DataType({name})"))
+    }
+}
+
+/// Accept a `DataType`, its Zarr v3 name, or its Zarr v3 metadata.
+impl FromPyObject<'_, '_> for PyDataType {
+    type Error = PyErr;
+
+    fn extract(ob: Borrowed<'_, '_, PyAny>) -> PyResult<Self> {
+        if let Ok(data_type) = ob.cast::<Self>() {
+            return Ok(data_type.get().clone());
+        }
+
+        if let Ok(name) = ob.extract::<PyBackedStr>() {
+            return Ok(Self::from_string(&name)?);
+        }
+
+        Ok(Self::from_metadata(ob.extract()?)?)
     }
 }
 
