@@ -79,15 +79,13 @@ impl PyArrayToArrayCodec {
         Ok(self.0.encoded_data_type(decoded_data_type.inner())?.into())
     }
 
-    fn encoded_fill_value(
-        &self,
-        decoded_data_type: &PyDataType,
-        decoded_fill_value: &PyFillValue,
-    ) -> ZarristaResult<PyFillValue> {
-        Ok(self
+    fn encoded_fill_value(&self, decoded_fill_value: &PyFillValue) -> ZarristaResult<PyFillValue> {
+        let decoded_data_type = decoded_fill_value.data_type();
+        let encoded_fill_value = self
             .0
-            .encoded_fill_value(decoded_data_type.inner(), decoded_fill_value.inner())?
-            .into())
+            .encoded_fill_value(decoded_data_type, decoded_fill_value.inner())?;
+        let encoded_data_type = self.0.encoded_data_type(decoded_data_type)?;
+        Ok(PyFillValue::new(encoded_fill_value, encoded_data_type))
     }
 
     #[pyo3(signature = (value, /, shape, data_type, fill_value))]

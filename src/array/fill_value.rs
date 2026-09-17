@@ -7,60 +7,69 @@ use pyo3_bytes::PyBytes;
 use pythonize::depythonize;
 use zarrs::array::{DataType, FillValue, FillValueMetadata};
 
+use crate::dtype::PyDataType;
 use crate::error::ZarristaResult;
 
 #[derive(Debug, Clone)]
 #[pyclass(module = "zarrista", frozen, name = "FillValue", from_py_object)]
-pub struct PyFillValue(FillValue);
+pub struct PyFillValue {
+    fill_value: FillValue,
+    /// We hold a DataType to enable easy conversion to typed scalar representations
+    dtype: DataType,
+}
 
 impl PyFillValue {
+    pub fn new(fill_value: FillValue, dtype: DataType) -> Self {
+        Self { fill_value, dtype }
+    }
+
     pub(crate) fn inner(&self) -> &FillValue {
-        &self.0
+        &self.fill_value
     }
 
     pub fn into_inner(self) -> FillValue {
-        self.0
+        self.fill_value
+    }
+
+    pub fn data_type(&self) -> &DataType {
+        &self.dtype
     }
 }
 
 #[pymethods]
 impl PyFillValue {
     #[new]
-    #[pyo3(signature = (value, /))]
-    fn new(value: Vec<u8>) -> Self {
-        Self(FillValue::new(value))
+    #[pyo3(signature = (value, /, dtype))]
+    fn py_new(value: PyFillValueInput, dtype: PyDataType) -> ZarristaResult<Self> {
+        let dtype = dtype.into_inner();
+        let fill_value = value.resolve(&dtype)?;
+        Ok(Self { fill_value, dtype })
     }
 
     #[getter]
     fn size(&self) -> usize {
-        self.0.size()
+        self.fill_value.size()
     }
 
     fn as_bytes(&self) -> &[u8] {
-        self.0.as_ne_bytes()
+        self.fill_value.as_ne_bytes()
     }
 
     fn __repr__(&self, py: Python) -> PyResult<String> {
         // Use the Python bytes type, not our PyBytes adapter, to create the repr
-        let bytes = pyo3::types::PyBytes::new(py, self.0.as_ne_bytes()).repr()?;
+        let bytes = pyo3::types::PyBytes::new(py, self.fill_value.as_ne_bytes()).repr()?;
         Ok(format!("FillValue({bytes})"))
     }
 
     #[pyo3(signature = (other, /))]
     fn equals_all(&self, other: PyBytes) -> bool {
-        self.0.equals_all(other.as_ref())
-    }
-}
-
-impl From<FillValue> for PyFillValue {
-    fn from(fill_value: FillValue) -> Self {
-        PyFillValue(fill_value)
+        self.fill_value.equals_all(other.as_ref())
     }
 }
 
 impl From<PyFillValue> for FillValue {
     fn from(py_fill_value: PyFillValue) -> Self {
-        py_fill_value.0
+        py_fill_value.fill_value
     }
 }
 

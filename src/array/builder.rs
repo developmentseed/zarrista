@@ -2,8 +2,9 @@ use pyo3::exceptions::PyTypeError;
 use pyo3::prelude::*;
 use zarrs::array::ArrayBuilder;
 
+use crate::array::fill_value::PyFillValueInput;
 use crate::array::type_wrappers::PyDimensionName;
-use crate::array::{PyArray, PyArrayShape, PyChunkGrid, PyChunkKeyEncoding, PyFillValue};
+use crate::array::{PyArray, PyArrayShape, PyChunkGrid, PyChunkKeyEncoding};
 use crate::codec::{PyArrayToArrayCodec, PyArrayToBytesCodec, PyBytesToBytesCodec};
 use crate::dtype::PyDataType;
 use crate::error::ZarristaResult;
@@ -26,12 +27,18 @@ impl PyArrayBuilder {
 #[pymethods]
 impl PyArrayBuilder {
     #[new]
-    fn py_new(chunk_grid: PyChunkGrid, dtype: PyDataType, fill_value: PyFillValue) -> Self {
-        Self(ArrayBuilder::new_with_chunk_grid(
+    fn py_new(
+        chunk_grid: PyChunkGrid,
+        dtype: PyDataType,
+        fill_value: PyFillValueInput,
+    ) -> ZarristaResult<Self> {
+        let dtype = dtype.into_inner();
+        let fill_value = fill_value.resolve(&dtype)?;
+        Ok(Self(ArrayBuilder::new_with_chunk_grid(
             chunk_grid.into_inner(),
-            dtype.into_inner(),
-            fill_value.into_inner(),
-        ))
+            dtype,
+            fill_value,
+        )))
     }
 
     #[staticmethod]
