@@ -1,8 +1,13 @@
-use pyo3::exceptions::PyValueError;
+use num_complex::Complex;
+use pyo3::exceptions::PyTypeError;
+use pyo3::intern;
 use pyo3::prelude::*;
 use pyo3::pybacked::{PyBackedBytes, PyBackedStr};
 use pyo3_bytes::PyBytes;
-use zarrs::array::{DataType, FillValue};
+use pythonize::depythonize;
+use zarrs::array::{DataType, FillValue, FillValueMetadata};
+
+use crate::error::ZarristaResult;
 
 #[derive(Debug, Clone)]
 #[pyclass(module = "zarrista", frozen, name = "FillValue", from_py_object)]
@@ -63,7 +68,7 @@ impl From<PyFillValue> for FillValue {
 pub struct PyFillValueInput<'py>(Bound<'py, PyAny>);
 
 impl PyFillValueInput<'_> {
-    pub fn resolve(&self, dtype: &DataType) -> PyResult<FillValue> {
+    pub fn resolve(&self, dtype: &DataType) -> ZarristaResult<FillValue> {
         use zarrs::array::data_type::*;
 
         let fill_value = if dtype.is::<BoolDataType>() {
@@ -97,17 +102,124 @@ impl PyFillValueInput<'_> {
         } else if dtype.is::<StringDataType>() {
             FillValue::from(self.0.extract::<PyBackedStr>()?.as_str())
         } else {
-            // Last, try to extract as bytes
-            if let Ok(bytes) = self.0.extract::<Vec<u8>>() {
-                return Ok(FillValue::new(bytes));
-            }
-
-            return Err(PyValueError::new_err(format!(
-                "cannot resolve fill value for data type {}",
-                dtype.name_v3().unwrap_or_else(|| "<unknown>".into())
-            )));
+            // Otherwise: convert to Zarr v3 fill value metadata; let zarrs parse it
+            dtype.fill_value_v3(&self.to_fill_value_metadata()?)?
         };
 
         Ok(fill_value)
+    }
+
+    /// Convert a Python value into Zarr v3 fill value metadata.
+    ///
+    /// Three inputs need more than a plain JSON conversion.
+    ///
+    /// **NumPy scalars.** A scalar such as `np.float32(1.5)` for a `float8_e4m3`
+    /// array is not a JSON value, and it is not a `float` subclass either. Its
+    /// `item()` method gives the equivalent Python scalar. Without `item()`, the
+    /// complex branch below would accept it and give `[1.5, 0.0]`, which is not
+    /// a scalar fill value. `np.float64` and `np.int64` do subclass `float` and
+    /// `int`, so they also work without `item()`.
+    ///
+    /// **Non-finite floats.** JSON has no NaN or infinity. The spec writes these as
+    /// the strings `"NaN"`, `"Infinity"` and `"-Infinity"`, which is what
+    /// `FillValueMetadata::from` gives for an `f64`.
+    ///
+    /// **Complex numbers.** The spec writes a complex value as the two-element
+    /// array `[real, imaginary]`.
+    fn to_fill_value_metadata(&self) -> ZarristaResult<FillValueMetadata> {
+        let ob = &self.0;
+
+        // Call .item on a NumPy scalar to get the Python value. Otherwise this stays as-is.
+        let ob = ob
+            .call_method0(intern!(ob.py(), "item"))
+            .unwrap_or_else(|_| ob.clone());
+
+        if let Ok(value) = ob.extract::<f64>()
+            && !value.is_finite()
+        {
+            return Ok(FillValueMetadata::from(value));
+        }
+
+        // Generic JSON conversion
+        if let Ok(metadata) = depythonize(&ob) {
+            return Ok(metadata);
+        }
+
+        let Ok(complex) = ob.extract::<Complex<f64>>() else {
+            let type_name = ob.get_type().name()?;
+            return Err(PyTypeError::new_err(format!(
+                "cannot use a value of type '{type_name}' as a fill value"
+            ))
+            .into());
+        };
+        Ok(FillValueMetadata::from([
+            FillValueMetadata::from(complex.re),
+            FillValueMetadata::from(complex.im),
+        ]))
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use zarrs::array::data_type;
+
+    use super::*;
+
+    /// Resolve `value` for `dtype`, where `value` is a Python expression.
+    fn resolve(value: &std::ffi::CStr, dtype: &DataType) -> ZarristaResult<FillValue> {
+        Python::attach(|py| {
+            let obj = py.eval(value, None, None).unwrap();
+            PyFillValueInput(obj).resolve(dtype)
+        })
+    }
+
+    #[test]
+    fn resolves_int_for_each_integer_width() {
+        let fill_value = resolve(c"-9999", &data_type::int32()).unwrap();
+        assert_eq!(fill_value.as_ne_bytes(), (-9999i32).to_ne_bytes());
+    }
+
+    #[test]
+    fn resolves_the_same_int_differently_per_data_type() {
+        let as_int = resolve(c"-9999", &data_type::int32()).unwrap();
+        let as_float = resolve(c"-9999", &data_type::float32()).unwrap();
+        assert_ne!(as_int.as_ne_bytes(), as_float.as_ne_bytes());
+        assert_eq!(as_float.as_ne_bytes(), (-9999f32).to_ne_bytes());
+    }
+
+    #[test]
+    fn rejects_an_out_of_range_int() {
+        assert!(resolve(c"300", &data_type::int8()).is_err());
+    }
+
+    #[test]
+    fn resolves_float16_by_rounding_once() {
+        // The value sits just above the midpoint of two float16 values. A
+        // conversion through float32 would round it down to 1.0.
+        let fill_value = resolve(c"1.0 + 2**-11 + 2**-30", &data_type::float16()).unwrap();
+        assert_eq!(
+            fill_value.as_ne_bytes(),
+            half::f16::from_bits(0x3c01).to_ne_bytes()
+        );
+    }
+
+    #[test]
+    fn resolves_nan_through_the_metadata_path() {
+        let fill_value = resolve(c"float('nan')", &data_type::float8_e4m3()).unwrap();
+        assert_eq!(fill_value.size(), 1);
+    }
+
+    #[test]
+    fn resolves_a_complex_value() {
+        let fill_value = resolve(c"complex(1.5, -2.5)", &data_type::complex64()).unwrap();
+        let mut expected = 1.5f32.to_ne_bytes().to_vec();
+        expected.extend_from_slice(&(-2.5f32).to_ne_bytes());
+        assert_eq!(fill_value.as_ne_bytes(), expected);
+    }
+
+    #[test]
+    fn rejects_a_value_that_is_not_a_fill_value() {
+        let error = resolve(c"object()", &data_type::complex64()).unwrap_err();
+        assert!(format!("{error}").contains("cannot use a value of type 'object' as a fill value"));
     }
 }
