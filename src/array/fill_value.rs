@@ -10,6 +10,7 @@ use zarrs::array::{DataType, FillValue, FillValueMetadata};
 use crate::dtype::{PyDataType, data_type_display};
 use crate::error::ZarristaResult;
 use crate::exceptions as exc;
+use crate::metadata::PyFillValueMetadata;
 
 #[derive(Debug, Clone)]
 #[pyclass(module = "zarrista", frozen, name = "FillValue", from_py_object)]
@@ -47,9 +48,21 @@ impl PyFillValue {
         Ok(Self { fill_value, dtype })
     }
 
+    /// The data type that applies to these bytes
+    #[getter]
+    fn dtype(&self) -> PyDataType {
+        self.dtype.clone().into()
+    }
+
     #[getter]
     fn size(&self) -> usize {
         self.fill_value.size()
+    }
+
+    /// The Zarr v3 fill value metadata of this fill value.
+    #[getter]
+    fn metadata(&self) -> ZarristaResult<PyFillValueMetadata> {
+        Ok(self.dtype.metadata_fill_value(&self.fill_value)?.into())
     }
 
     fn as_bytes(&self) -> &[u8] {
@@ -57,9 +70,30 @@ impl PyFillValue {
     }
 
     fn __repr__(&self, py: Python) -> PyResult<String> {
-        // Use the Python bytes type, not our PyBytes adapter, to create the repr
-        let bytes = pyo3::types::PyBytes::new(py, self.fill_value.as_ne_bytes()).repr()?;
-        Ok(format!("FillValue({bytes})"))
+        // Show the fill value the way the user gave it, which is also the way
+        // the metadata stores it. A data type that cannot describe its own fill
+        // value falls back to the bytes.
+        let value = match self.metadata() {
+            Ok(metadata) => metadata.into_pyobject(py)?.repr()?.to_string(),
+            // Use the Python bytes type, not our PyBytes adapter, to create the repr
+            Err(_) => pyo3::types::PyBytes::new(py, self.fill_value.as_ne_bytes())
+                .repr()?
+                .to_string(),
+        };
+        // Show the Zarr v3 name, as every other repr does. The constructor
+        // accepts that name, so this repr round-trips.
+        let dtype = self.dtype.name_v3().into_pyobject(py)?.repr()?;
+        Ok(format!("FillValue({value}, dtype={dtype})"))
+    }
+
+    fn __eq__(&self, other: &Bound<PyAny>) -> bool {
+        // Equal bytes under different data types are different fill values.
+        if let Ok(other) = other.cast::<Self>() {
+            let other = other.get();
+            self.fill_value == other.fill_value && self.dtype == other.dtype
+        } else {
+            false
+        }
     }
 
     #[pyo3(signature = (other, /))]

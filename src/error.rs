@@ -12,7 +12,7 @@ use pythonize::PythonizeError;
 use thiserror::Error;
 use zarrs::array::chunk_grid::{RectilinearChunkGridCreateError, RegularChunkGridCreateError};
 use zarrs::array::codec::TransposeOrderError;
-use zarrs::array::data_type::api::DataTypeFillValueMetadataError;
+use zarrs::array::data_type::api::{DataTypeFillValueError, DataTypeFillValueMetadataError};
 use zarrs::array::{ArrayCreateError, ArrayError, CodecError, IncompatibleDimensionalityError};
 use zarrs::filesystem::FilesystemStoreCreateError;
 use zarrs::group::GroupCreateError;
@@ -96,6 +96,10 @@ pub enum ZarristaError {
     #[error(transparent)]
     RectilinearChunkGridCreate(#[from] RectilinearChunkGridCreateError),
 
+    /// Failed to describe a fill value as metadata.
+    #[error(transparent)]
+    DataTypeFillValue(#[from] DataTypeFillValueError),
+
     /// Failed to create a fill value from its metadata.
     #[error(transparent)]
     DataTypeFillValueMetadata(#[from] DataTypeFillValueMetadataError),
@@ -131,6 +135,9 @@ impl From<ZarristaError> for PyErr {
             }
             ZarristaError::RectilinearChunkGridCreate(err) => {
                 exc::ChunkGridCreateError::new_err(err.to_string())
+            }
+            ZarristaError::DataTypeFillValue(err) => {
+                exc::FillValueError::new_err(err.to_string())
             }
             ZarristaError::DataTypeFillValueMetadata(err) => {
                 exc::FillValueError::new_err(err.to_string())
