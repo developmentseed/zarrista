@@ -4,6 +4,8 @@ A fill value holds its data type, because the bytes alone are ambiguous:
 `-9999` is `f1 d8 ff ff` as `int32` and `00 3c 1c c5` as `float32`.
 """
 
+from decimal import Decimal
+
 import numpy as np
 import pytest
 
@@ -85,6 +87,17 @@ def test_a_numpy_complex_scalar_resolves_for_a_complex_data_type():
 def test_a_complex_value_is_rejected_for_a_scalar_data_type():
     with pytest.raises(FillValueError):
         FillValue(np.complex64(1.5), dtype="float8_e4m3")
+
+
+@pytest.mark.parametrize("dtype", ["float32", "float8_e4m3"])
+def test_an_object_that_acts_like_a_float_resolves(dtype):
+    """A float data type reads `__float__`, whichever path it takes."""
+    assert FillValue(Decimal("1.5"), dtype=dtype).metadata == 1.5
+
+
+def test_an_object_that_acts_like_a_float_is_rejected_by_an_int_data_type():
+    with pytest.raises(TypeError):
+        FillValue(Decimal("1.5"), dtype="int32")
 
 
 def test_numpy_bool_resolves_for_bool():

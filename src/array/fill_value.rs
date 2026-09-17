@@ -184,6 +184,11 @@ impl PyFillValueInput<'_> {
     ///
     /// **Complex numbers.** The spec writes a complex value as the two-element
     /// array `[real, imaginary]`.
+    ///
+    /// An object that is not JSON but that acts like a number, such as
+    /// `decimal.Decimal`, goes through `__index__` or `__float__`. The data
+    /// types that this method serves then accept the same inputs as the data
+    /// types above, which extract those methods directly.
     fn to_fill_value_metadata(&self) -> ZarristaResult<FillValueMetadata> {
         let ob = &self.0;
 
@@ -201,6 +206,19 @@ impl PyFillValueInput<'_> {
         // Generic JSON conversion
         if let Ok(metadata) = depythonize(&ob) {
             return Ok(metadata);
+        }
+
+        // An object that is not JSON, but that acts like a number. `__index__`
+        // comes first, so that an integer stays an integer: an integer data
+        // type rejects the metadata `3.0`.
+        if let Ok(value) = ob.extract::<i64>() {
+            return Ok(FillValueMetadata::from(value));
+        }
+        if let Ok(value) = ob.extract::<u64>() {
+            return Ok(FillValueMetadata::from(value));
+        }
+        if let Ok(value) = ob.extract::<f64>() {
+            return Ok(FillValueMetadata::from(value));
         }
 
         let Ok(complex) = ob.extract::<Complex<f64>>() else {
