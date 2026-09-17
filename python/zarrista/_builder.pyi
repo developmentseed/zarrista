@@ -9,14 +9,14 @@ from zarrista.codec import (
 )
 
 # Imported only so that the `Raises:` sections below link to the exception docs.
-from zarrista.exceptions import ArrayCreateError  # noqa: F401
+from zarrista.exceptions import ArrayCreateError, FillValueError  # noqa: F401
 from zarrista.store import AsyncStore, SyncStore
 
 from ._array import Array, AsyncArray
 from ._chunk_key_encoding import ChunkKeyEncoding
 from ._chunks import ChunkGrid
-from ._dtype import DataType
-from ._fill_value import FillValue
+from ._dtype import DataTypeInput
+from ._fill_value import FillValueInput
 
 class ArrayBuilder:
     """A chained, immutable builder for creating Zarr arrays.
@@ -35,15 +35,13 @@ class ArrayBuilder:
         compression:
 
         ```py
-        from zarrista import ArrayBuilder, ChunkGrid, DataType, FillValue, codec
+        from zarrista import ArrayBuilder, ChunkGrid, codec
         from zarrista.store import FilesystemStore
 
         grid = ChunkGrid.regular([1024, 1024], chunk_shape=[256, 256])
-        dtype = DataType.from_string("int32")
-        fill_value = FillValue((0).to_bytes(4, "little"))
 
         array = (
-            ArrayBuilder(grid, dtype, fill_value)
+            ArrayBuilder(grid, dtype="int32", fill_value=0)
             .dimension_names(["y", "x"])
             .compressors([codec.zstd(3, checksum=False)])
             .create(FilesystemStore("data"), "/temperature")
@@ -54,7 +52,9 @@ class ArrayBuilder:
         builder, so you can keep a partly configured builder and reuse it:
 
         ```py
-        base = ArrayBuilder(grid, dtype, fill_value).dimension_names(["y", "x"])
+        base = ArrayBuilder(grid, dtype="int32", fill_value=0).dimension_names(
+            ["y", "x"]
+        )
         uncompressed = base.create(store, "/raw")
         compressed = base.compressors([codec.zstd(3, checksum=False)]).create(
             store, "/compressed"
@@ -65,8 +65,8 @@ class ArrayBuilder:
     def __init__(
         self,
         chunk_grid: ChunkGrid,
-        dtype: DataType,
-        fill_value: FillValue,
+        dtype: DataTypeInput,
+        fill_value: FillValueInput,
     ) -> None:
         """Create a builder from a chunk grid, data type, and fill value.
 
@@ -74,7 +74,14 @@ class ArrayBuilder:
             chunk_grid: The chunk grid of the array. The grid also gives the
                 array shape.
             dtype: The data type of the array.
-            fill_value: The fill value of the array. This must match `dtype`.
+            fill_value: The fill value of the array, as a Python value of
+                `dtype`.
+
+        Raises:
+            OverflowError: If `fill_value` is outside the range of `dtype`.
+            TypeError: If `fill_value` is not a value of `dtype`.
+            FillValueError: If `fill_value` is a
+                [`FillValue`][zarrista.FillValue] of another data type.
         """
     @staticmethod
     def like(array: Array | AsyncArray, /) -> ArrayBuilder:
@@ -133,16 +140,6 @@ class ArrayBuilder:
         Returns:
             A new builder with the compressors set.
         """
-    def data_type(self, data_type: DataType, /) -> ArrayBuilder:
-        """Return a new builder with the data type set.
-
-        Args:
-            data_type: The data type of the array. The fill value must match
-                this data type.
-
-        Returns:
-            A new builder with the data type set.
-        """
     def dimension_names(
         self,
         dimension_names: Sequence[str | None] | None,
@@ -157,6 +154,30 @@ class ArrayBuilder:
 
         Returns:
             A new builder with the dimension names set.
+        """
+    def fill_value(
+        self,
+        value: FillValueInput,
+        /,
+        dtype: DataTypeInput,
+    ) -> ArrayBuilder:
+        """Return a new builder with the fill value and the data type set.
+
+        A fill value belongs to one data type. Therefore this method sets both,
+        and there is no method that sets the data type alone.
+
+        Args:
+            value: The fill value of the array, as a Python value of `dtype`.
+            dtype: The data type of the array.
+
+        Returns:
+            A new builder with the fill value and the data type set.
+
+        Raises:
+            OverflowError: If `value` is outside the range of `dtype`.
+            TypeError: If `value` is not a value of `dtype`.
+            FillValueError: If `value` is a [`FillValue`][zarrista.FillValue] of
+                another data type.
         """
     def filters(self, filters: Sequence[ArrayToArrayCodec], /) -> ArrayBuilder:
         """Return a new builder with the array-to-array codecs ("filters") set.
