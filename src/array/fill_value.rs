@@ -7,8 +7,9 @@ use pyo3_bytes::PyBytes;
 use pythonize::depythonize;
 use zarrs::array::{DataType, FillValue, FillValueMetadata};
 
-use crate::dtype::PyDataType;
+use crate::dtype::{PyDataType, data_type_display};
 use crate::error::ZarristaResult;
+use crate::exceptions as exc;
 
 #[derive(Debug, Clone)]
 #[pyclass(module = "zarrista", frozen, name = "FillValue", from_py_object)]
@@ -79,6 +80,20 @@ pub struct PyFillValueInput<'py>(Bound<'py, PyAny>);
 impl PyFillValueInput<'_> {
     pub fn resolve(&self, dtype: &DataType) -> ZarristaResult<FillValue> {
         use zarrs::array::data_type::*;
+
+        // Allow an existing PyFillValue
+        if let Ok(fill_value) = self.0.cast::<PyFillValue>() {
+            let fill_value = fill_value.get();
+            if fill_value.data_type() != dtype {
+                return Err(exc::FillValueError::new_err(format!(
+                    "fill value has data type '{}', but the array has data type '{}'",
+                    data_type_display(fill_value.data_type()),
+                    data_type_display(dtype)
+                ))
+                .into());
+            }
+            return Ok(fill_value.inner().clone());
+        }
 
         let fill_value = if dtype.is::<BoolDataType>() {
             FillValue::from(self.0.extract::<bool>()?)
@@ -224,6 +239,43 @@ mod tests {
         let mut expected = 1.5f32.to_ne_bytes().to_vec();
         expected.extend_from_slice(&(-2.5f32).to_ne_bytes());
         assert_eq!(fill_value.as_ne_bytes(), expected);
+    }
+
+    /// Build a Python `FillValue` object for `dtype` from the Python `value`.
+    fn fill_value_object<'py>(
+        py: Python<'py>,
+        value: &std::ffi::CStr,
+        dtype: &DataType,
+    ) -> Bound<'py, PyAny> {
+        let value = py.eval(value, None, None).unwrap();
+        let fill_value =
+            PyFillValue::py_new(PyFillValueInput(value), dtype.clone().into()).unwrap();
+        Bound::new(py, fill_value).unwrap().into_any()
+    }
+
+    #[test]
+    fn passes_through_a_fill_value_of_the_same_data_type() {
+        Python::attach(|py| {
+            let dtype = data_type::int32();
+            let object = fill_value_object(py, c"-9999", &dtype);
+            let fill_value = PyFillValueInput(object).resolve(&dtype).unwrap();
+            assert_eq!(fill_value.as_ne_bytes(), (-9999i32).to_ne_bytes());
+        });
+    }
+
+    #[test]
+    fn rejects_a_fill_value_of_another_data_type() {
+        Python::attach(|py| {
+            // int32 and float32 are both 4 bytes, so only the data type tells
+            // these apart.
+            let object = fill_value_object(py, c"-9999", &data_type::int32());
+            let error = PyFillValueInput(object)
+                .resolve(&data_type::float32())
+                .unwrap_err();
+            assert!(format!("{error}").contains(
+                "fill value has data type 'int32', but the array has data type 'float32'"
+            ));
+        });
     }
 
     #[test]

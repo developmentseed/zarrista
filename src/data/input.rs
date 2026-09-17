@@ -11,6 +11,7 @@ use zarrs::array::{ArrayBytes, DataType};
 
 use crate::array_bytes::PyArrayBytes;
 use crate::data::dlpack::PyManagedTensor;
+use crate::dtype::data_type_display;
 use crate::error::ZarristaResult;
 
 pub enum PyDataInput {
@@ -85,15 +86,4 @@ impl FromPyObject<'_, '_> for PyDataInput {
              Extracting a buffer failed with: {buffer_import_error}"
         )))
     }
-}
-
-/// The Zarr v3 name of `data_type`, for use in a user-facing message.
-///
-/// `DataType`'s `Display` renders as `int32 / <i4`, which is informative but is
-/// not something a user can paste into `astype`. Fall back to it only for a data
-/// type that has no Zarr v3 name.
-fn data_type_display(data_type: &DataType) -> Cow<'_, str> {
-    data_type
-        .name_v3()
-        .unwrap_or_else(|| Cow::Owned(data_type.to_string()))
 }
