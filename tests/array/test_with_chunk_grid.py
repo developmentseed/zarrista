@@ -12,7 +12,6 @@ from zarrista import (
     AsyncArray,
     ChunkGrid,
     DataType,
-    FillValue,
 )
 from zarrista.store import MemoryStore
 
@@ -25,7 +24,7 @@ def _array(store: MemoryStore) -> Array:
     return ArrayBuilder(
         ChunkGrid.regular([4, 4], chunk_shape=[2, 2]),
         DataType.from_string("int8"),
-        FillValue(b"\x00"),
+        0,
     ).create(store, "/a")
 
 
@@ -119,7 +118,7 @@ async def test_async_with_chunk_grid(tmp_path: Path) -> None:
     array = await ArrayBuilder(
         ChunkGrid.regular([4, 4], chunk_shape=[2, 2]),
         DataType.from_string("int8"),
-        FillValue(b"\x00"),
+        0,
     ).create_async(LocalStore(str(tmp_path)), "/a")
 
     # `with_chunk_grid` is sync even on `AsyncArray`: it performs no I/O.

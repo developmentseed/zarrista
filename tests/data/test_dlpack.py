@@ -18,7 +18,6 @@ from zarrista import (
     ArrayBuilder,
     ChunkGrid,
     DataType,
-    FillValue,
     FixedLengthTensor,
 )
 from zarrista.store import MemoryStore
@@ -41,15 +40,16 @@ DTYPES = [
 ]
 
 
-def _fill_value(dtype: str) -> FillValue:
-    return FillValue(np.zeros((), dtype=dtype).tobytes())
+def _fill_value(dtype: str) -> bool | int | float:
+    """The zero of `dtype`, which every data type here can express."""
+    return False if dtype == "bool" else 0
 
 
 def _array(dtype: str = "int32", *, shape: list[int] | None = None) -> Array:
     shape = shape or [4, 4]
     return ArrayBuilder(
         ChunkGrid.regular(shape, chunk_shape=[2, 2]),
-        DataType.from_string(dtype),
+        dtype,
         _fill_value(dtype),
     ).create(MemoryStore(), "/a")
 

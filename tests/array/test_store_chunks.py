@@ -10,7 +10,7 @@ import numpy as np
 import pytest
 from obstore.store import LocalStore
 
-from zarrista import Array, ArrayBuilder, ChunkGrid, DataType, FillValue
+from zarrista import Array, ArrayBuilder, ChunkGrid, DataType
 from zarrista.store import MemoryStore
 
 DATA = np.arange(16, dtype="int32").reshape(4, 4)
@@ -21,7 +21,7 @@ def _array() -> Array:
     return ArrayBuilder(
         ChunkGrid.regular([4, 4], chunk_shape=[2, 2]),
         DataType.from_string("int32"),
-        FillValue(b"\x00\x00\x00\x00"),
+        0,
     ).create(MemoryStore(), "/a")
 
 
@@ -54,7 +54,7 @@ def test_partial_selection_spans_the_remaining_dimensions() -> None:
     array = ArrayBuilder(
         ChunkGrid.regular([4, 4, 4], chunk_shape=[2, 2, 2]),
         DataType.from_string("int32"),
-        FillValue(b"\x00\x00\x00\x00"),
+        0,
     ).create(MemoryStore(), "/a")
 
     array.store_chunks(0, np.ones((2, 4, 4), dtype="int32"))
@@ -77,7 +77,7 @@ async def test_async_writes_a_single_chunk_into_its_element_region(tmp_path) -> 
     array = await ArrayBuilder(
         ChunkGrid.regular([4, 4], chunk_shape=[2, 2]),
         DataType.from_string("int32"),
-        FillValue(b"\x00\x00\x00\x00"),
+        0,
     ).create_async(store, "/a")
 
     await array.store_chunks((0, 1), np.ascontiguousarray(DATA[0:2, 2:4]))

@@ -21,7 +21,6 @@ from zarrista import (
     AsyncArray,
     ChunkGrid,
     DataType,
-    FillValue,
 )
 from zarrista.store import MemoryStore
 
@@ -43,7 +42,7 @@ def _chunked_array() -> Array:
     array = ArrayBuilder(
         ChunkGrid.regular([4, 4], chunk_shape=[2, 2]),
         DataType.from_string("int32"),
-        FillValue(b"\x00\x00\x00\x00"),
+        0,
     ).create(MemoryStore(), "/a")
     for i in (0, 1):
         for j in (0, 1):
@@ -58,7 +57,7 @@ def _sharded_array() -> Array:
         ArrayBuilder(
             ChunkGrid.regular([8, 8], chunk_shape=[4, 4]),
             DataType.from_string("int32"),
-            FillValue(b"\x00\x00\x00\x00"),
+            0,
         )
         .subchunk_shape([2, 2])
         .create(MemoryStore(), "/a")
