@@ -1,8 +1,9 @@
-//! Data-type handling: zarrs `DataType` names, reading regions into numpy
-//! arrays, and converting fill values into Python scalars.
+//! Data-type handling: the zarrs `DataType` wrapper, the Python values that it
+//! accepts as input, and the name to show for a data type in a message.
 
 use std::borrow::Cow;
 
+use pyo3::exceptions::PyTypeError;
 use pyo3::prelude::*;
 use pyo3::pybacked::PyBackedStr;
 use zarrs::array::{DataType, DataTypeSize};
@@ -89,7 +90,20 @@ impl FromPyObject<'_, '_> for PyDataType {
             return Ok(Self::from_string(&name)?);
         }
 
-        Ok(Self::from_metadata(ob.extract()?)?)
+        // A value that is neither a name nor metadata gets a message that names
+        // what this argument takes. Pythonize's own message describes only the
+        // metadata form.
+        let metadata = ob.extract().map_err(|_| {
+            let type_name = ob
+                .get_type()
+                .name()
+                .map_or_else(|_| "<unknown>".to_string(), |name| name.to_string());
+            PyTypeError::new_err(format!(
+                "expected a DataType, a data type name, or Zarr v3 metadata, \
+                 but got a value of type '{type_name}'"
+            ))
+        })?;
+        Ok(Self::from_metadata(metadata)?)
     }
 }
 

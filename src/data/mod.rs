@@ -29,6 +29,7 @@ use std::borrow::Cow;
 use std::sync::Arc;
 
 use bytes::Bytes;
+pub(crate) use fixed::numpy_dtype_name;
 pub use fixed::{PyFixedLengthTensor, PyOptionalFixedLengthTensor};
 pub use input::PyDataInput;
 use pyo3::IntoPyObjectExt;

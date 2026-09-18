@@ -1,6 +1,7 @@
 from collections.abc import Buffer
 from typing import SupportsFloat, SupportsIndex, TypeAlias
 
+import numpy as np
 from zarr_metadata import (
     BoolFillValue,
     BytesFillValue,
@@ -81,10 +82,9 @@ class FillValue:
             dtype: The data type that `value` belongs to.
 
         Raises:
-            OverflowError: If `value` is outside the range of `dtype`.
-            TypeError: If `value` is not a value of `dtype`.
-            FillValueError: If `value` is a `FillValue` of another data type, or
-                if `dtype` cannot use `value` as a fill value.
+            FillValueError: If `dtype` cannot use `value` as a fill value. This
+                covers a value of the wrong type, a value outside the range of
+                `dtype`, and a `FillValue` of another data type.
         """
     @property
     def dtype(self) -> DataType:
@@ -101,6 +101,26 @@ class FillValue:
 
         Raises:
             FillValueError: If the data type cannot describe this fill value.
+        """
+    def to_numpy(self) -> np.generic:
+        """Return the fill value as a NumPy scalar.
+
+        The scalar has the NumPy data type that matches the Zarr data type. For
+        example, an `int32` fill value gives a `numpy.int32`, and a
+        `numpy.datetime64` fill value gives a `numpy.datetime64` with the unit
+        from the data type configuration.
+
+        NumPy has no built-in equivalent of the machine-learning float and
+        sub-byte integer data types, such as `bfloat16` and `int4`. Import
+        `ml_dtypes` to register those names with NumPy first.
+
+        Returns:
+            One NumPy scalar of the data type of this fill value.
+
+        Raises:
+            TypeError: If NumPy does not know the name of the data type.
+            NotImplementedError: If the data type has no Zarr v3 name, and
+                therefore no NumPy name either.
         """
     def as_bytes(self) -> bytes:
         """Return the fill value as native-endian bytes.

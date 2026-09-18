@@ -64,3 +64,8 @@ def test_argument_accepts_metadata():
 def test_argument_rejects_an_unknown_name():
     with pytest.raises(PluginCreateError):
         FillValue(0, dtype="not_a_real_dtype")
+
+
+def test_argument_rejects_a_value_that_is_not_a_data_type():
+    with pytest.raises(TypeError, match="expected a DataType, a data type name"):
+        FillValue(0, dtype=3)  # type: ignore[arg-type]

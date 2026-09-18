@@ -22,7 +22,7 @@ from zarr.core.dtype import data_type_registry
 from zarr.core.dtype.common import DataTypeValidationError, HasEndianness, HasItemSize
 from zarr.core.dtype.wrapper import ZDType
 
-from zarrista import Array, FixedLengthTensor
+from zarrista import Array, FillValue, FixedLengthTensor
 from zarrista.store import FilesystemStore
 
 # Every data type that zarrs and `ml_dtypes` both name identically, mapped to
@@ -170,3 +170,10 @@ def test_buffer_protocol_rejects_ml_dtype(tmp_path: Path):
 
     with pytest.raises(BufferError, match="format code"):
         memoryview(tensor)
+
+
+def test_fill_value_to_numpy_uses_an_ml_dtypes_scalar():
+    """Importing `ml_dtypes` is what lets NumPy resolve a name such as `int4`."""
+    scalar = FillValue(1, dtype="int4").to_numpy()
+
+    assert scalar.dtype == ml_dtypes.int4

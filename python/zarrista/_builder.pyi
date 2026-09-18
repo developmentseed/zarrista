@@ -78,10 +78,7 @@ class ArrayBuilder:
                 `dtype`.
 
         Raises:
-            OverflowError: If `fill_value` is outside the range of `dtype`.
-            TypeError: If `fill_value` is not a value of `dtype`.
-            FillValueError: If `fill_value` is a
-                [`FillValue`][zarrista.FillValue] of another data type.
+            FillValueError: If `dtype` cannot use `fill_value` as a fill value.
         """
     @staticmethod
     def like(array: Array | AsyncArray, /) -> ArrayBuilder:
@@ -174,10 +171,7 @@ class ArrayBuilder:
             A new builder with the fill value and the data type set.
 
         Raises:
-            OverflowError: If `value` is outside the range of `dtype`.
-            TypeError: If `value` is not a value of `dtype`.
-            FillValueError: If `value` is a [`FillValue`][zarrista.FillValue] of
-                another data type.
+            FillValueError: If `dtype` cannot use `value` as a fill value.
         """
     def filters(self, filters: Sequence[ArrayToArrayCodec], /) -> ArrayBuilder:
         """Return a new builder with the array-to-array codecs ("filters") set.

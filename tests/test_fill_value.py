@@ -39,12 +39,12 @@ def test_eq_non_fill_value_is_false():
 
 
 def test_out_of_range_int_raises():
-    with pytest.raises(OverflowError):
+    with pytest.raises(FillValueError):
         FillValue(300, dtype="int8")
 
 
 def test_float_for_an_int_data_type_raises():
-    with pytest.raises(TypeError):
+    with pytest.raises(FillValueError):
         FillValue(1.5, dtype="int32")
 
 
@@ -96,7 +96,7 @@ def test_an_object_that_acts_like_a_float_resolves(dtype):
 
 
 def test_an_object_that_acts_like_a_float_is_rejected_by_an_int_data_type():
-    with pytest.raises(TypeError):
+    with pytest.raises(FillValueError):
         FillValue(Decimal("1.5"), dtype="int32")
 
 
@@ -109,8 +109,55 @@ def test_string_data_type_takes_a_str():
 
 
 def test_an_object_that_is_not_a_value_raises():
-    with pytest.raises(TypeError, match="cannot use a value of type 'object'"):
-        FillValue(object(), dtype="float8_e4m3")
+    with pytest.raises(FillValueError, match="not a number or a JSON value"):
+        FillValue(object(), dtype="float8_e4m3")  # type: ignore[arg-type]
+
+
+@pytest.mark.parametrize(
+    ("value", "dtype", "expected"),
+    [
+        (-9999, "int32", np.int32(-9999)),
+        (1.5, "float16", np.float16(1.5)),
+        (1 + 2j, "complex64", np.complex64(1 + 2j)),
+        ("missing", "string", np.str_("missing")),
+        (b"ab", "bytes", np.bytes_(b"ab")),
+    ],
+)
+def test_to_numpy_gives_a_scalar_of_the_data_type(value, dtype, expected):
+    result = FillValue(value, dtype=dtype).to_numpy()
+
+    assert result == expected
+    assert result.dtype == expected.dtype
+
+
+def test_to_numpy_of_a_configured_data_type():
+    """The NumPy name carries the unit, which the Zarr configuration holds."""
+    fill_value = FillValue(
+        0,
+        dtype={
+            "name": "numpy.datetime64",
+            "configuration": {"unit": "s", "scale_factor": 1},
+        },
+    )
+
+    assert fill_value.to_numpy() == np.datetime64("1970-01-01T00:00:00", "s")
+
+
+def test_to_numpy_of_nan():
+    """NaN is never equal to itself, so compare the bits."""
+    assert np.isnan(FillValue(float("nan"), dtype="float32").to_numpy())
+
+
+def test_an_error_names_the_value_and_the_data_type():
+    """The errors from NumPy and zarrs name neither, so they are wrapped."""
+    with pytest.raises(
+        FillValueError,
+        match="cannot use 300 as a fill value of data type 'int8'",
+    ) as error:
+        FillValue(300, dtype="int8")
+
+    # The text of the original error stays in the message.
+    assert "out of range" in str(error.value)
 
 
 def test_dtype_accepts_a_data_type():

@@ -1,5 +1,5 @@
 use num_complex::Complex;
-use pyo3::exceptions::PyTypeError;
+use pyo3::exceptions::{PyTypeError, PyUnicodeDecodeError};
 use pyo3::intern;
 use pyo3::prelude::*;
 use pyo3::pybacked::{PyBackedBytes, PyBackedStr};
@@ -7,8 +7,9 @@ use pyo3_bytes::PyBytes;
 use pythonize::depythonize;
 use zarrs::array::{DataType, FillValue, FillValueMetadata};
 
+use crate::data::numpy_dtype_name;
 use crate::dtype::{PyDataType, data_type_display};
-use crate::error::ZarristaResult;
+use crate::error::{ZarristaError, ZarristaResult};
 use crate::exceptions as exc;
 use crate::metadata::PyFillValueMetadata;
 
@@ -69,6 +70,37 @@ impl PyFillValue {
         self.fill_value.as_ne_bytes()
     }
 
+    /// Return the fill value as a NumPy scalar.
+    fn to_numpy<'py>(&self, py: Python<'py>) -> ZarristaResult<Bound<'py, PyAny>> {
+        use zarrs::array::data_type::{BytesDataType, StringDataType};
+
+        let numpy = py.import(intern!(py, "numpy"))?;
+        let bytes = self.fill_value.as_ne_bytes();
+
+        // A variable-length data type has no NumPy data type of a fixed size.
+        // Its fill value bytes are the whole element.
+        if self.dtype.is::<StringDataType>() {
+            let string = std::str::from_utf8(bytes)
+                .map_err(|err| PyUnicodeDecodeError::new_err_from_utf8(py, bytes, err))?;
+            return Ok(numpy.call_method1(intern!(py, "str_"), (string,))?);
+        }
+        if self.dtype.is::<BytesDataType>() {
+            return Ok(numpy.call_method1(
+                intern!(py, "bytes_"),
+                (pyo3::types::PyBytes::new(py, bytes),),
+            )?);
+        }
+
+        // One fill value is one element, so read it as a one-element array and
+        // take the only item. That gives a NumPy scalar, not an array.
+        let name = numpy_dtype_name(&self.dtype)?;
+        let flat = numpy.call_method1(
+            intern!(py, "frombuffer"),
+            (pyo3::types::PyBytes::new(py, bytes), name.as_ref()),
+        )?;
+        Ok(flat.get_item(0)?)
+    }
+
     fn __repr__(&self, py: Python) -> PyResult<String> {
         // Show the fill value the way the user gave it, which is also the way
         // the metadata stores it. A data type that cannot describe its own fill
@@ -113,9 +145,8 @@ pub struct PyFillValueInput<'py>(Bound<'py, PyAny>);
 
 impl PyFillValueInput<'_> {
     pub fn resolve(&self, dtype: &DataType) -> ZarristaResult<FillValue> {
-        use zarrs::array::data_type::*;
-
-        // Allow an existing PyFillValue
+        // A fill value that is already resolved needs no conversion, and the
+        // error below already names both data types.
         if let Ok(fill_value) = self.0.cast::<PyFillValue>() {
             let fill_value = fill_value.get();
             if fill_value.data_type() != dtype {
@@ -128,6 +159,27 @@ impl PyFillValueInput<'_> {
             }
             return Ok(fill_value.inner().clone());
         }
+
+        self.convert(dtype)
+            .map_err(|error| self.add_error_context(error, dtype))
+    }
+
+    /// Name the value and the data type, which the errors from below do not.
+    fn add_error_context(&self, error: ZarristaError, dtype: &DataType) -> ZarristaError {
+        let value = self
+            .0
+            .repr()
+            .map_or_else(|_| "<unknown>".to_string(), |repr| repr.to_string());
+        exc::FillValueError::new_err(format!(
+            "cannot use {value} as a fill value of data type '{}': {error}",
+            data_type_display(dtype)
+        ))
+        .into()
+    }
+
+    /// Convert the Python value into the bytes of one `dtype` element.
+    fn convert(&self, dtype: &DataType) -> ZarristaResult<FillValue> {
+        use zarrs::array::data_type::*;
 
         let fill_value = if dtype.is::<BoolDataType>() {
             FillValue::from(self.0.extract::<bool>()?)
@@ -224,7 +276,7 @@ impl PyFillValueInput<'_> {
         let Ok(complex) = ob.extract::<Complex<f64>>() else {
             let type_name = ob.get_type().name()?;
             return Err(PyTypeError::new_err(format!(
-                "cannot use a value of type '{type_name}' as a fill value"
+                "a value of type '{type_name}' is not a number or a JSON value"
             ))
             .into());
         };
@@ -333,6 +385,10 @@ mod tests {
     #[test]
     fn rejects_a_value_that_is_not_a_fill_value() {
         let error = resolve(c"object()", &data_type::complex64()).unwrap_err();
-        assert!(format!("{error}").contains("cannot use a value of type 'object' as a fill value"));
+        // The message names the value and the data type, and the cause names
+        // what was wrong with the value.
+        let message = format!("{error}");
+        assert!(message.contains("as a fill value of data type 'complex64'"));
+        assert!(message.contains("not a number or a JSON value"));
     }
 }

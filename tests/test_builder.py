@@ -198,5 +198,5 @@ def test_data_type_accepts_a_name():
 
 
 def test_fill_value_must_match_the_data_type():
-    with pytest.raises(OverflowError):
+    with pytest.raises(FillValueError):
         ArrayBuilder(ChunkGrid.regular([4], chunk_shape=[4]), "int8", 300)
