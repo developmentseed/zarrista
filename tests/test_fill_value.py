@@ -64,10 +64,20 @@ def test_complex_uses_a_two_element_array():
     assert FillValue(1 + 2j, dtype="complex64").metadata == [1.0, 2.0]
 
 
-def test_float16_rounds_once():
-    """A conversion through float32 would round this down to 1.0."""
+def test_float16_resolves_the_same_way_on_every_platform():
+    """The hardware conversions of `half` disagree here, so we use neither.
+
+    This value sits just above the midpoint of two float16 values. NumPy rounds
+    it up, and so does `half` on aarch64, but `half` on x86 rounds it down. We
+    convert without hardware intrinsics, which gives 1.0 everywhere.
+    """
     value = 1.0 + 2**-11 + 2**-30
 
+    assert FillValue(value, dtype="float16").as_bytes() == np.float16(1.0).tobytes()
+
+
+@pytest.mark.parametrize("value", [0.1, 65519.0, -9999.0, 1.0 + 2**-11])
+def test_float16_matches_numpy_for_ordinary_values(value):
     assert FillValue(value, dtype="float16").as_bytes() == np.float16(value).tobytes()
 
 

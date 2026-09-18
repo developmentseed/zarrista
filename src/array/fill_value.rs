@@ -21,6 +21,8 @@ pub struct PyFillValue {
     dtype: DataType,
 }
 
+crate::wasm_send_sync!(PyFillValue);
+
 impl PyFillValue {
     pub fn new(fill_value: FillValue, dtype: DataType) -> Self {
         Self { fill_value, dtype }
@@ -199,10 +201,15 @@ impl PyFillValueInput<'_> {
             FillValue::from(self.0.extract::<i32>()?)
         } else if dtype.is::<Int64DataType>() {
             FillValue::from(self.0.extract::<i64>()?)
+        // `from_f64_const` never uses hardware intrinsics, and therefore gives
+        // the same bytes on every platform. `from_f64` does not: on x86 with
+        // F16C it converts through `f32`, which rounds twice, while on aarch64
+        // with fp16 it converts directly. The two disagree by one ulp for a
+        // value that sits just above the midpoint of two `float16` values.
         } else if dtype.is::<BFloat16DataType>() {
-            FillValue::from(half::bf16::from_f64(self.0.extract()?))
+            FillValue::from(half::bf16::from_f64_const(self.0.extract()?))
         } else if dtype.is::<Float16DataType>() {
-            FillValue::from(half::f16::from_f64(self.0.extract()?))
+            FillValue::from(half::f16::from_f64_const(self.0.extract()?))
         } else if dtype.is::<Float32DataType>() {
             FillValue::from(self.0.extract::<f32>()?)
         } else if dtype.is::<Float64DataType>() {
@@ -321,13 +328,14 @@ mod tests {
     }
 
     #[test]
-    fn resolves_float16_by_rounding_once() {
-        // The value sits just above the midpoint of two float16 values. A
-        // conversion through float32 would round it down to 1.0.
+    fn resolves_float16_the_same_way_on_every_platform() {
+        // This value sits just above the midpoint of two float16 values, which
+        // is where the hardware conversions of `half` disagree with each other.
+        // `from_f64_const` gives 1.0 everywhere.
         let fill_value = resolve(c"1.0 + 2**-11 + 2**-30", &data_type::float16()).unwrap();
         assert_eq!(
             fill_value.as_ne_bytes(),
-            half::f16::from_bits(0x3c01).to_ne_bytes()
+            half::f16::from_bits(0x3c00).to_ne_bytes()
         );
     }
 
