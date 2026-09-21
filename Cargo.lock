@@ -62,7 +62,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1e5f6adeffdf587d7a31db5d2266189624b526730cd3627f9ff9fedae97ad584"
 dependencies = [
  "ahash",
- "arrow-buffer",
+ "arrow-buffer 59.3.0",
  "arrow-data",
  "arrow-schema",
  "chrono",
@@ -88,13 +88,25 @@ dependencies = [
 ]
 
 [[package]]
+name = "arrow-buffer"
+version = "60.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c7235b863533e9db3ab86905b4521251de11226275b436ff3cb2d0010558d1c5"
+dependencies = [
+ "bytes",
+ "half",
+ "num-bigint 0.5.1",
+ "num-traits",
+]
+
+[[package]]
 name = "arrow-cast"
 version = "59.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a9ad451ce4f98710828a455b96991b8f031deb2e67f5fcad6773f017e4a69c3a"
 dependencies = [
  "arrow-array",
- "arrow-buffer",
+ "arrow-buffer 59.3.0",
  "arrow-data",
  "arrow-ord",
  "arrow-schema",
@@ -115,7 +127,7 @@ version = "59.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9ba2f832eaeca24b8f26143dba750e42ee4ab51cf7d65e701ca9607cfda9f358"
 dependencies = [
- "arrow-buffer",
+ "arrow-buffer 59.3.0",
  "arrow-schema",
  "half",
  "num-integer",
@@ -129,7 +141,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0e13dbdc2a9c053c10c7baa6e30faee04a180aa7ce88e471835850ce37abd20b"
 dependencies = [
  "arrow-array",
- "arrow-buffer",
+ "arrow-buffer 59.3.0",
  "arrow-data",
  "arrow-schema",
  "arrow-select",
@@ -152,7 +164,7 @@ checksum = "402770dba90865359d98d1ef92ef16e23d75c0cca9c2c880c8a05468b7743bf9"
 dependencies = [
  "ahash",
  "arrow-array",
- "arrow-buffer",
+ "arrow-buffer 59.3.0",
  "arrow-data",
  "arrow-schema",
  "num-traits",
@@ -3343,7 +3355,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3d5ddf226a2dbf7607570d0657c2bf6fbe299208368b2914f3dd7e7ba0b57688"
 dependencies = [
  "arrow-array",
- "arrow-buffer",
+ "arrow-buffer 59.3.0",
  "arrow-cast",
  "arrow-data",
  "arrow-schema",
@@ -5334,7 +5346,7 @@ name = "zarrista"
 version = "0.1.0"
 dependencies = [
  "arrow-array",
- "arrow-buffer",
+ "arrow-buffer 60.0.0",
  "arrow-schema",
  "async-trait",
  "bytes",

@@ -39,7 +39,7 @@ generate-import-lib = ["pyo3/generate-import-lib"]
 
 [dependencies]
 arrow-array = "59"
-arrow-buffer = "59"
+arrow-buffer = "60"
 arrow-schema = "59"
 async-trait = { version = "0.1", optional = true }
 bytes = "1.12.0"
