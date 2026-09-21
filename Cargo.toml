@@ -40,7 +40,7 @@ generate-import-lib = ["pyo3/generate-import-lib"]
 [dependencies]
 arrow-array = "59"
 arrow-buffer = "59"
-arrow-schema = "59"
+arrow-schema = "60"
 async-trait = { version = "0.1", optional = true }
 bytes = "1.12.0"
 # Fork of dlpark 0.8.0 that gates bindgen's 64-bit layout tests so the crate
