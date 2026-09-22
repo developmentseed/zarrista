@@ -34,8 +34,11 @@ exposed to Python via `pyo3`.
   a `FromPyObject` impl only inspects the string (e.g. matching against known
   values), extract a `PyBackedStr` instead of an owned `String` to avoid a
   needless allocation. `PyBackedStr` derefs to `str`.
-- **Prefer turbofish on `extract`.** Write `let name = ob.extract::<PyBackedStr>()?;`
-  rather than annotating the binding (`let name: PyBackedStr = ob.extract()?;`).
+- **Let the compiler infer the type of `extract` when it can.** Write
+  `half::f16::from_f64(ob.extract()?)`, not `ob.extract::<f64>()?`, when the
+  call site already fixes the type. If the type is not inferred, use a
+  turbofish (`let name = ob.extract::<PyBackedStr>()?;`) rather than annotating
+  the binding (`let name: PyBackedStr = ob.extract()?;`).
 
 ## Documentation conventions
 

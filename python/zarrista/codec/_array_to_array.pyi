@@ -1,8 +1,8 @@
 from zarr_metadata import JSONValue
 
 from zarrista._array_bytes import ArrayBytes
-from zarrista._dtype import DataType
-from zarrista._fill_value import FillValue
+from zarrista._dtype import DataType, DataTypeInput
+from zarrista._fill_value import FillValue, FillValueInput
 
 # Imported only so that the `Raises:` sections below link to the exception docs.
 from zarrista.exceptions import (  # noqa: F401
@@ -35,7 +35,7 @@ class ArrayToArrayCodec:
             PluginCreateError: If the metadata names an unsupported codec, or
                 if the configuration is not valid for that codec.
         """
-    def encoded_data_type(self, decoded_data_type: DataType) -> DataType:
+    def encoded_data_type(self, decoded_data_type: DataTypeInput) -> DataType:
         """Return the data type that this codec produces when it encodes.
 
         Args:
@@ -44,27 +44,26 @@ class ArrayToArrayCodec:
         Returns:
             The data type of the encoded chunk.
         """
-    def encoded_fill_value(
-        self,
-        decoded_data_type: DataType,
-        decoded_fill_value: FillValue,
-    ) -> FillValue:
+    def encoded_fill_value(self, decoded_fill_value: FillValue) -> FillValue:
         """Return the fill value that this codec produces when it encodes.
 
+        The fill value carries the data type of the decoded chunk. Therefore
+        this method takes no data type.
+
         Args:
-            decoded_data_type: The data type of the decoded chunk.
             decoded_fill_value: The fill value of the decoded chunk.
 
         Returns:
-            The fill value of the encoded chunk.
+            The fill value of the encoded chunk, with the data type from
+                [`encoded_data_type`][zarrista.codec.ArrayToArrayCodec.encoded_data_type].
         """
     def encode(
         self,
         value: ArrayBytes,
         /,
         shape: list[int],
-        data_type: DataType,
-        fill_value: FillValue,
+        data_type: DataTypeInput,
+        fill_value: FillValueInput,
     ) -> ArrayBytes:
         """Encode chunk bytes with this codec.
 
@@ -73,7 +72,8 @@ class ArrayToArrayCodec:
             shape: The shape of the decoded chunk, in elements along each
                 dimension.
             data_type: The data type of the decoded chunk.
-            fill_value: The fill value of the decoded chunk.
+            fill_value: The fill value of the decoded chunk, as a Python value
+                of `data_type`.
 
         Returns:
             The encoded chunk bytes.
@@ -87,17 +87,24 @@ class ArrayToArrayCodec:
         value: ArrayBytes,
         /,
         shape: list[int],
-        data_type: DataType,
-        fill_value: FillValue,
+        data_type: DataTypeInput,
+        fill_value: FillValueInput,
     ) -> ArrayBytes:
         """Decode chunk bytes with this codec.
 
+        The codec describes its input by the chunk that it decodes to.
+        Therefore `shape`, `data_type` and `fill_value` are those of the
+        decoded chunk, exactly as they are for
+        [`encode`][zarrista.codec.ArrayToArrayCodec.encode], and not those of
+        the encoded chunk that you pass in `value`.
+
         Args:
             value: The encoded chunk bytes.
-            shape: The shape of the encoded chunk, in elements along each
+            shape: The shape of the decoded chunk, in elements along each
                 dimension.
-            data_type: The data type of the encoded chunk.
-            fill_value: The fill value of the encoded chunk.
+            data_type: The data type of the decoded chunk.
+            fill_value: The fill value of the decoded chunk, as a Python value
+                of `data_type`.
 
         Returns:
             The decoded chunk bytes.

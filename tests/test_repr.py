@@ -148,7 +148,17 @@ def test_chunk_grid_repr() -> None:
 
 
 def test_fill_value_repr() -> None:
-    assert repr(FillValue(b"\x00\x00\x00\x00")) == r"FillValue(b'\x00\x00\x00\x00')"
+    """The repr shows the fill value and its data type, and it round-trips."""
+    fill_value = FillValue(-9999, dtype="int32")
+
+    assert repr(fill_value) == "FillValue(-9999, dtype='int32')"
+
+
+def test_fill_value_repr_of_a_non_finite_float() -> None:
+    """A non-finite float shows the name that the Zarr v3 metadata uses."""
+    assert repr(FillValue(float("nan"), dtype="float32")) == (
+        "FillValue('NaN', dtype='float32')"
+    )
 
 
 def test_thread_pool_repr() -> None:
@@ -165,7 +175,7 @@ def test_array_builder_repr() -> None:
     builder = ArrayBuilder(
         ChunkGrid.regular([4, 4], chunk_shape=[2, 2]),
         DataType.from_string("int32"),
-        FillValue(b"\x00\x00\x00\x00"),
+        0,
     )
 
     # The builder has no accessors of its own, so the metadata it would write

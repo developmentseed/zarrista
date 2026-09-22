@@ -16,7 +16,7 @@ pub use builder::PyArrayBuilder;
 pub use chunk_grid::PyChunkGrid;
 pub use chunk_key_encoding::PyChunkKeyEncoding;
 pub use encoded_chunk::PyEncodedChunk;
-pub use fill_value::PyFillValue;
+pub use fill_value::{PyFillValue, PyFillValueInput};
 pub use sync::{PyArray, PyShardCache};
 pub use type_wrappers::{
     PyArrayIndices, PyArrayShape, PyArraySubset, PyChunkIndices, PyChunkShape, PyDimensionName,

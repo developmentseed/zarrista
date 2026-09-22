@@ -80,6 +80,12 @@ create_exception!(
 );
 create_exception!(
     zarrista.exceptions,
+    FillValueError,
+    ZarristaError,
+    "Raised when a fill value is incompatible with its data type."
+);
+create_exception!(
+    zarrista.exceptions,
     ChunkGridCreateError,
     ZarristaError,
     "Raised when a chunk grid cannot be created from the given shapes."
@@ -112,6 +118,7 @@ pub fn register_exceptions_module(parent: &Bound<'_, PyModule>) -> PyResult<()> 
     exceptions.add("TransposeOrderError", py.get_type::<TransposeOrderError>())?;
     exceptions.add("PluginCreateError", py.get_type::<PluginCreateError>())?;
     exceptions.add("SerializationError", py.get_type::<SerializationError>())?;
+    exceptions.add("FillValueError", py.get_type::<FillValueError>())?;
     exceptions.add(
         "ChunkGridCreateError",
         py.get_type::<ChunkGridCreateError>(),

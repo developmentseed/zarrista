@@ -183,7 +183,7 @@ impl PyFixedLengthTensor {
 /// | -------------------------------- | --------- | ---------- | ------------ |
 /// | `complex64` / `complex_float32`  | `float32` | 64         | `complex64`  |
 /// | `complex128` / `complex_float64` | `float64` | 128        | `complex128` |
-fn numpy_dtype_name(data_type: &DataType) -> PyResult<Cow<'static, str>> {
+pub(crate) fn numpy_dtype_name(data_type: &DataType) -> PyResult<Cow<'static, str>> {
     // Cast temporal data types to their NumPy names
     if let Some(dt) = data_type.downcast_ref::<NumpyDateTime64DataType>() {
         return Ok(numpy_temporal_name("datetime64", dt.unit, dt.scale_factor).into());

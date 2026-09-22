@@ -50,6 +50,14 @@ This alias comes from the per-dtype name literals in
 nobody must maintain the list here.
 """
 
+DataTypeInput: TypeAlias = DataType | DataTypeName | str | ZarrV3NamedConfigJSON
+"""A value that names a data type.
+
+Every argument that takes a data type accepts these forms. A name describes most
+data types. A data type that has a configuration, such as `numpy.datetime64`
+with its unit and scale factor, needs the metadata form.
+"""
+
 class DataType:
     """A Zarr v3 data type."""
 

@@ -20,7 +20,6 @@ from zarrista import (
     ChunkGrid,
     DataType,
     EncodedChunk,
-    FillValue,
     FixedLengthTensor,
     codec,
 )
@@ -35,7 +34,7 @@ def _builder(*, compressed: bool = False) -> ArrayBuilder:
     builder = ArrayBuilder(
         ChunkGrid.regular([4, 4], chunk_shape=[4, 4]),
         DataType.from_string("int32"),
-        FillValue(b"\x00\x00\x00\x00"),
+        0,
     ).subchunk_shape([2, 2])
     if compressed:
         # The builder nests codecs inside the sharding codec, so this compresses

@@ -1,6 +1,7 @@
 use pyo3::prelude::*;
 use pythonize::{PythonizeError, depythonize, pythonize};
 use serde_json::{Map, Value};
+use zarrs::array::FillValueMetadata;
 use zarrs::metadata::v2::{ArrayMetadataV2, GroupMetadataV2, MetadataV2};
 use zarrs::metadata::v3::{ArrayMetadataV3, GroupMetadataV3, MetadataV3};
 use zarrs::metadata::{ArrayMetadata, Configuration, GroupMetadata};
@@ -62,6 +63,7 @@ pythonized_metadata!(PyMetadataV3, MetadataV3);
 pythonized_metadata!(PyArrayMetadata, ArrayMetadata);
 pythonized_metadata!(PyArrayMetadataV2, ArrayMetadataV2);
 pythonized_metadata!(PyArrayMetadataV3, ArrayMetadataV3);
+pythonized_metadata!(PyFillValueMetadata, FillValueMetadata);
 pythonized_metadata!(PyGroupMetadata, GroupMetadata);
 pythonized_metadata!(PyGroupMetadataV2, GroupMetadataV2);
 pythonized_metadata!(PyGroupMetadataV3, GroupMetadataV3);

@@ -137,7 +137,7 @@ impl PyEncodedChunk {
     /// The fill value of the decoded chunk.
     #[getter]
     fn fill_value(&self) -> PyFillValue {
-        self.fill_value.clone().into()
+        PyFillValue::new(self.fill_value.clone(), self.data_type.clone())
     }
 
     /// The shape of the decoded chunk, in elements along each dimension.

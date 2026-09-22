@@ -1,9 +1,11 @@
-//! Data-type handling: zarrs `DataType` names, reading regions into numpy
-//! arrays, and converting fill values into Python scalars.
+//! Data-type handling: the zarrs `DataType` wrapper, the Python values that it
+//! accepts as input, and the name to show for a data type in a message.
 
 use std::borrow::Cow;
 
+use pyo3::exceptions::PyTypeError;
 use pyo3::prelude::*;
+use pyo3::pybacked::PyBackedStr;
 use zarrs::array::{DataType, DataTypeSize};
 use zarrs::metadata::v3::MetadataV3;
 
@@ -11,7 +13,7 @@ use crate::error::ZarristaResult;
 use crate::metadata::PyMetadataV3;
 
 #[derive(Debug, Clone)]
-#[pyclass(module = "zarrista", frozen, name = "DataType", from_py_object)]
+#[pyclass(module = "zarrista", frozen, name = "DataType", skip_from_py_object)]
 pub struct PyDataType {
     inner: DataType,
 }
@@ -75,6 +77,36 @@ impl PyDataType {
     }
 }
 
+/// Accept a `DataType`, its Zarr v3 name, or its Zarr v3 metadata.
+impl FromPyObject<'_, '_> for PyDataType {
+    type Error = PyErr;
+
+    fn extract(ob: Borrowed<'_, '_, PyAny>) -> PyResult<Self> {
+        if let Ok(data_type) = ob.cast::<Self>() {
+            return Ok(data_type.get().clone());
+        }
+
+        if let Ok(name) = ob.extract::<PyBackedStr>() {
+            return Ok(Self::from_string(&name)?);
+        }
+
+        // A value that is neither a name nor metadata gets a message that names
+        // what this argument takes. Pythonize's own message describes only the
+        // metadata form.
+        let metadata = ob.extract().map_err(|_| {
+            let type_name = ob
+                .get_type()
+                .name()
+                .map_or_else(|_| "<unknown>".to_string(), |name| name.to_string());
+            PyTypeError::new_err(format!(
+                "expected a DataType, a data type name, or Zarr v3 metadata, \
+                 but got a value of type '{type_name}'"
+            ))
+        })?;
+        Ok(Self::from_metadata(metadata)?)
+    }
+}
+
 impl From<DataType> for PyDataType {
     fn from(data_type: DataType) -> Self {
         PyDataType { inner: data_type }
@@ -85,4 +117,15 @@ impl From<PyDataType> for DataType {
     fn from(py_data_type: PyDataType) -> Self {
         py_data_type.inner
     }
+}
+
+/// The Zarr v3 name of `data_type`, for use in a user-facing message.
+///
+/// `DataType`'s `Display` renders as `int32 / <i4`, which is informative but is
+/// not something a user can paste into `astype`. Fall back to it only for a data
+/// type that has no Zarr v3 name.
+pub(crate) fn data_type_display(data_type: &DataType) -> Cow<'_, str> {
+    data_type
+        .name_v3()
+        .unwrap_or_else(|| Cow::Owned(data_type.to_string()))
 }

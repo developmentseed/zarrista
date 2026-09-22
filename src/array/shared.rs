@@ -86,7 +86,10 @@ macro_rules! shared_array_methods {
 
             #[getter]
             fn fill_value(&self) -> $crate::array::PyFillValue {
-                self.inner.fill_value().clone().into()
+                $crate::array::PyFillValue::new(
+                    self.inner.fill_value().clone(),
+                    self.inner.data_type().clone(),
+                )
             }
 
             #[getter]

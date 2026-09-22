@@ -6,11 +6,13 @@
 //! [`ZarristaResult`] can therefore use `?` directly on those underlying
 //! errors instead of sprinkling `.map_err(...)` everywhere.
 
+use pyo3::CastError;
 use pyo3::prelude::*;
 use pythonize::PythonizeError;
 use thiserror::Error;
 use zarrs::array::chunk_grid::{RectilinearChunkGridCreateError, RegularChunkGridCreateError};
 use zarrs::array::codec::TransposeOrderError;
+use zarrs::array::data_type::api::{DataTypeFillValueError, DataTypeFillValueMetadataError};
 use zarrs::array::{ArrayCreateError, ArrayError, CodecError, IncompatibleDimensionalityError};
 use zarrs::filesystem::FilesystemStoreCreateError;
 use zarrs::group::GroupCreateError;
@@ -94,6 +96,14 @@ pub enum ZarristaError {
     #[error(transparent)]
     RectilinearChunkGridCreate(#[from] RectilinearChunkGridCreateError),
 
+    /// Failed to describe a fill value as metadata.
+    #[error(transparent)]
+    DataTypeFillValue(#[from] DataTypeFillValueError),
+
+    /// Failed to create a fill value from its metadata.
+    #[error(transparent)]
+    DataTypeFillValueMetadata(#[from] DataTypeFillValueMetadataError),
+
     /// A shape's dimensionality is incompatible with another.
     #[error(transparent)]
     IncompatibleDimensionality(#[from] IncompatibleDimensionalityError),
@@ -126,10 +136,20 @@ impl From<ZarristaError> for PyErr {
             ZarristaError::RectilinearChunkGridCreate(err) => {
                 exc::ChunkGridCreateError::new_err(err.to_string())
             }
+            ZarristaError::DataTypeFillValue(err) => exc::FillValueError::new_err(err.to_string()),
+            ZarristaError::DataTypeFillValueMetadata(err) => {
+                exc::FillValueError::new_err(err.to_string())
+            }
             ZarristaError::IncompatibleDimensionality(err) => {
                 exc::IncompatibleDimensionalityError::new_err(err.to_string())
             }
         }
+    }
+}
+
+impl From<CastError<'_, '_>> for ZarristaError {
+    fn from(error: CastError<'_, '_>) -> Self {
+        Self::Py(error.into())
     }
 }
 

@@ -12,7 +12,7 @@ from zarrista import (
     codec,
 )
 from zarrista.codec import ArrayToBytesCodec
-from zarrista.exceptions import ChunkGridCreateError, ZarristaError
+from zarrista.exceptions import ChunkGridCreateError, FillValueError, ZarristaError
 from zarrista.store import MemoryStore
 
 
@@ -21,7 +21,7 @@ def _builder() -> ArrayBuilder:
     return ArrayBuilder(
         ChunkGrid.regular([8, 8], chunk_shape=[4, 4]),
         DataType.from_string("int8"),
-        FillValue(b"\x00"),
+        0,
     )
 
 
@@ -169,3 +169,34 @@ def test_chunk_grid_dimension_mismatch_raises():
 
 def test_chunk_grid_create_error_is_zarrista_error():
     assert issubclass(ChunkGridCreateError, ZarristaError)
+
+
+def test_fill_value_sets_the_data_type_too():
+    """The fill value carries its data type, so one setter changes both."""
+    changed = _builder().fill_value(-1.5, dtype="float64").create_metadata()
+
+    assert changed["data_type"] == "float64"
+    assert changed["fill_value"] == -1.5
+
+
+def test_fill_value_accepts_a_fill_value_of_that_data_type():
+    changed = _builder().fill_value(FillValue(7, dtype="int16"), dtype="int16")
+
+    assert changed.create_metadata()["fill_value"] == 7
+
+
+def test_fill_value_rejects_a_fill_value_of_another_data_type():
+    with pytest.raises(FillValueError, match="has data type 'int16'"):
+        _builder().fill_value(FillValue(7, dtype="int16"), dtype="int32")
+
+
+def test_data_type_accepts_a_name():
+    """Every data type argument takes a name, not only a `DataType`."""
+    builder = ArrayBuilder(ChunkGrid.regular([4], chunk_shape=[4]), "uint8", 0)
+
+    assert builder.create_metadata()["data_type"] == "uint8"
+
+
+def test_fill_value_must_match_the_data_type():
+    with pytest.raises(FillValueError):
+        ArrayBuilder(ChunkGrid.regular([4], chunk_shape=[4]), "int8", 300)

@@ -3,7 +3,7 @@
 import pytest
 from obstore.store import LocalStore
 
-from zarrista import Array, ArrayBuilder, AsyncArray, ChunkGrid, DataType, FillValue
+from zarrista import Array, ArrayBuilder, AsyncArray, ChunkGrid, DataType
 from zarrista.store import MemoryStore
 
 
@@ -12,7 +12,7 @@ def _builder() -> ArrayBuilder:
     return ArrayBuilder(
         ChunkGrid.regular([4, 4], chunk_shape=[2, 2]),
         DataType.from_string("int8"),
-        FillValue(b"\x00"),
+        0,
     ).attrs({"units": "m", "long_name": "height"})
 
 
