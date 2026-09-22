@@ -3,7 +3,7 @@
 import numpy as np
 import pytest
 
-from zarrista import Array, ArrayBuilder, ArrayBytes, ChunkGrid, DataType
+from zarrista import Array, ArrayBuilder, ArrayBytes, ChunkGrid
 from zarrista.exceptions import ZarristaError
 from zarrista.store import MemoryStore
 
@@ -12,7 +12,7 @@ def _writable_array() -> Array:
     """A 4x4 int8 array (single 4x4 chunk, fill 0) created in a MemoryStore."""
     return ArrayBuilder(
         ChunkGrid.regular([4, 4], chunk_shape=[4, 4]),
-        DataType.from_string("int8"),
+        "int8",
         0,
     ).create(MemoryStore(), "/a")
 

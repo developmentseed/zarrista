@@ -20,7 +20,7 @@ def _builder() -> ArrayBuilder:
     """A minimal int8 builder: 8x8 array, 4x4 regular chunks, fill value 0."""
     return ArrayBuilder(
         ChunkGrid.regular([8, 8], chunk_shape=[4, 4]),
-        DataType.from_string("int8"),
+        "int8",
         0,
     )
 

@@ -12,7 +12,6 @@ from zarrista import (
     ArrayBytes,
     AsyncArray,
     ChunkGrid,
-    DataType,
 )
 from zarrista.exceptions import ArrayCreateError
 from zarrista.store import MemoryStore
@@ -25,7 +24,7 @@ def _array(store: MemoryStore) -> Array:
     """
     return ArrayBuilder(
         ChunkGrid.regular([4, 4], chunk_shape=[2, 2]),
-        DataType.from_string("int8"),
+        "int8",
         0,
     ).create(store, "/a")
 
@@ -101,7 +100,7 @@ def test_wrong_dimensionality_raises(shape: list[int]) -> None:
 async def test_async_with_shape_returns_new_array(tmp_path: Path) -> None:
     array = await ArrayBuilder(
         ChunkGrid.regular([4, 4], chunk_shape=[2, 2]),
-        DataType.from_string("int8"),
+        "int8",
         0,
     ).create_async(LocalStore(str(tmp_path)), "/a")
 
