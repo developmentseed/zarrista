@@ -160,9 +160,9 @@ dependencies = [
 
 [[package]]
 name = "async-compression"
-version = "0.4.42"
+version = "0.4.48"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e79b3f8a79cccc2898f31920fc69f304859b3bd567490f75ebf51ae1c792a9ac"
+checksum = "fb61aea1a7def73ee7c350a184f0e70b32c182344e2e75bf70c9b621b83417fd"
 dependencies = [
  "compression-codecs",
  "compression-core",
@@ -893,7 +893,7 @@ dependencies = [
  "lz4_flex",
  "pkg-config",
  "snap",
- "zstd",
+ "zstd 0.13.3",
 ]
 
 [[package]]
@@ -1072,20 +1072,20 @@ dependencies = [
 
 [[package]]
 name = "compression-codecs"
-version = "0.4.38"
+version = "0.4.43"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ce2548391e9c1929c21bf6aa2680af86fe4c1b33e6cea9ac1cfeec0bd11218cf"
+checksum = "bef16c47ba2797aa6a909cc37d39911f3a6743811fe7408ac0b0cc0276b656e9"
 dependencies = [
  "compression-core",
- "zstd",
- "zstd-safe",
+ "zstd 0.14.0",
+ "zstd-safe 8.0.0",
 ]
 
 [[package]]
 name = "compression-core"
-version = "0.4.32"
+version = "0.4.33"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "cc14f565cf027a105f7a44ccf9e5b424348421a1d8952a8fc9d499d313107789"
+checksum = "6e8ccc4ea9f6acc32d102c0f6d471d11d913ad15f20c04de743374861fa1d414"
 
 [[package]]
 name = "concurrent-queue"
@@ -2135,9 +2135,9 @@ dependencies = [
 
 [[package]]
 name = "icechunk"
-version = "2.2.0"
+version = "2.2.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "04a905203acc7e712a27add97491414a1cf39ab59bfbde19393bdaa25357b9cd"
+checksum = "268e3d063944e80cc1b455b4893f83217c6cc7e88d6854c62381032d43e5e985"
 dependencies = [
  "async-compression",
  "async-recursion",
@@ -2171,14 +2171,14 @@ dependencies = [
  "typetag",
  "url",
  "urlencoding",
- "zstd",
+ "zstd 0.14.0",
 ]
 
 [[package]]
 name = "icechunk-arrow-object-store"
-version = "2.2.0"
+version = "2.2.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "baf02f586938c8c4ebdb0ef3ce601d14819f6c829cde7e070844266c1bd020de"
+checksum = "c5f03237d2d7db9d6644a39340584bf6d04c2fd00c251eafc958afc022c82f26"
 dependencies = [
  "async-trait",
  "bytes",
@@ -2200,9 +2200,9 @@ dependencies = [
 
 [[package]]
 name = "icechunk-format"
-version = "2.2.0"
+version = "2.2.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "70a29182f7a6fb0558c51d12794a82f00297a9cd300fd2beda701f64f2a9fc6f"
+checksum = "abd7fca322762ecce758811d403ddf5b0da501dad80060611c2091654f46f32b"
 dependencies = [
  "base32",
  "bytes",
@@ -2221,14 +2221,14 @@ dependencies = [
  "thiserror 2.0.20",
  "tracing",
  "url",
- "zstd",
+ "zstd 0.14.0",
 ]
 
 [[package]]
 name = "icechunk-s3"
-version = "2.2.0"
+version = "2.2.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8eb1cd4a64aa798e569a0ed84e831b5d451ccc1a506ac8714f65a1897955371a"
+checksum = "187d676031f290cc9b7633d731d13d8a79c3da3f209bc2ef5b8a67a526c297c4"
 dependencies = [
  "async-trait",
  "aws-config",
@@ -2252,9 +2252,9 @@ dependencies = [
 
 [[package]]
 name = "icechunk-storage"
-version = "2.2.0"
+version = "2.2.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6f826bb55d5a403e97a002c8e123cb068e8c38a52a142517c3f0c29f97d244b2"
+checksum = "0b22438b5a55ae6e2b773111e7a009fe511190456c6b6bf4e9dde00cd196f2de"
 dependencies = [
  "async-trait",
  "bytes",
@@ -2273,9 +2273,9 @@ dependencies = [
 
 [[package]]
 name = "icechunk-types"
-version = "2.2.0"
+version = "2.2.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "972c8748d7144b007c08e67a3bc276e20ba0960608d70e0702aadbbfe18aa7c6"
+checksum = "b170eca1703ff3b8076db550e06e327b89548ee203e18350e337e5fbff355ea5"
 dependencies = [
  "serde",
  "serde_with",
@@ -3669,7 +3669,7 @@ dependencies = [
  "ownable",
  "tracing",
  "winnow",
- "zstd",
+ "zstd 0.13.3",
 ]
 
 [[package]]
@@ -5411,7 +5411,7 @@ dependencies = [
  "zarrs_metadata_ext",
  "zarrs_plugin",
  "zarrs_storage",
- "zstd",
+ "zstd 0.13.3",
 ]
 
 [[package]]
@@ -5688,7 +5688,16 @@ version = "0.13.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e91ee311a569c327171651566e07972200e76fcfe2242a4fa446149a3881c08a"
 dependencies = [
- "zstd-safe",
+ "zstd-safe 7.2.4",
+]
+
+[[package]]
+name = "zstd"
+version = "0.14.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "bf06bd8162af0734b344780deb55b42a2429ae430870d13fcc12f238e880fe6e"
+dependencies = [
+ "zstd-safe 8.0.0",
 ]
 
 [[package]]
@@ -5701,10 +5710,19 @@ dependencies = [
 ]
 
 [[package]]
-name = "zstd-sys"
-version = "2.0.16+zstd.1.5.7"
+name = "zstd-safe"
+version = "8.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "91e19ebc2adc8f83e43039e79776e3fda8ca919132d68a1fed6a5faca2683748"
+checksum = "ae42c0555055784c70058d19ba8e275528e8a99a706684868ace5da4e716a4ab"
+dependencies = [
+ "zstd-sys",
+]
+
+[[package]]
+name = "zstd-sys"
+version = "2.1.0+zstd.1.5.7"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0ef0a8027ec3ee71300ab3bcbcd0393f434aa72b91ca6d635a39941deae8eea0"
 dependencies = [
  "cc",
  "pkg-config",
