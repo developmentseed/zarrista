@@ -60,6 +60,16 @@ def test_non_finite_floats_use_their_spec_names(value, metadata):
     assert FillValue(value, dtype="float32").metadata == metadata
 
 
+@pytest.mark.parametrize("name", ["NaN", "Infinity", "-Infinity"])
+def test_a_float_data_type_takes_the_spec_name_of_a_non_finite_value(name):
+    """A float extraction rejects a string, so this falls back to the metadata."""
+    assert FillValue(name, dtype="float32").metadata == name
+
+
+def test_a_float_data_type_takes_a_hex_string():
+    assert FillValue("0x3c00", dtype="float16").metadata == 1.0
+
+
 def test_complex_uses_a_two_element_array():
     assert FillValue(1 + 2j, dtype="complex64").metadata == [1.0, 2.0]
 
@@ -187,10 +197,25 @@ def test_dtype_accepts_metadata_with_a_configuration():
     assert fill_value.dtype.name == "numpy.datetime64"
 
 
-def test_repr_round_trips():
-    fill_value = FillValue(-9999, dtype="int32")
+@pytest.mark.parametrize(
+    ("value", "dtype"),
+    [
+        (-9999, "int32"),
+        (float("nan"), "float32"),
+        (b"ab", "bytes"),
+        (1 + 2j, "complex64"),
+        ("missing", "string"),
+    ],
+)
+def test_repr_round_trips(value, dtype):
+    fill_value = FillValue(value, dtype=dtype)
 
     assert eval(repr(fill_value)) == fill_value  # noqa: S307
+
+
+def test_bytes_repr_shows_bytes():
+    """The metadata of a `bytes` fill value is a list of integers."""
+    assert repr(FillValue(b"ab", dtype="bytes")) == "FillValue(b'ab', dtype='bytes')"
 
 
 def test_a_fill_value_of_another_data_type_is_rejected():

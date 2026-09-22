@@ -92,12 +92,18 @@ class ArrayToArrayCodec:
     ) -> ArrayBytes:
         """Decode chunk bytes with this codec.
 
+        The codec describes its input by the chunk that it decodes to.
+        Therefore `shape`, `data_type` and `fill_value` are those of the
+        decoded chunk, exactly as they are for
+        [`encode`][zarrista.codec.ArrayToArrayCodec.encode], and not those of
+        the encoded chunk that you pass in `value`.
+
         Args:
             value: The encoded chunk bytes.
-            shape: The shape of the encoded chunk, in elements along each
+            shape: The shape of the decoded chunk, in elements along each
                 dimension.
-            data_type: The data type of the encoded chunk.
-            fill_value: The fill value of the encoded chunk, as a Python value
+            data_type: The data type of the decoded chunk.
+            fill_value: The fill value of the decoded chunk, as a Python value
                 of `data_type`.
 
         Returns:

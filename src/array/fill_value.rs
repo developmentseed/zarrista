@@ -5,6 +5,7 @@ use pyo3::prelude::*;
 use pyo3::pybacked::{PyBackedBytes, PyBackedStr};
 use pyo3_bytes::PyBytes;
 use pythonize::depythonize;
+use zarrs::array::data_type::BytesDataType;
 use zarrs::array::{DataType, FillValue, FillValueMetadata};
 
 use crate::data::numpy_dtype_name;
@@ -104,6 +105,13 @@ impl PyFillValue {
     }
 
     fn __repr__(&self, py: Python) -> PyResult<String> {
+        // The metadata of a `bytes` fill value is a list of integers, which
+        // reads worse than the Python bytes that the constructor takes.
+        if self.dtype.is::<BytesDataType>() {
+            let value = pyo3::types::PyBytes::new(py, self.fill_value.as_ne_bytes()).repr()?;
+            return Ok(format!("FillValue({value}, dtype='bytes')"));
+        }
+
         // Show the fill value the way the user gave it, which is also the way
         // the metadata stores it. A data type that cannot describe its own fill
         // value falls back to the bytes.
@@ -162,7 +170,14 @@ impl PyFillValueInput<'_> {
             return Ok(fill_value.inner().clone());
         }
 
+        // If direct conversino fails, retry via the metadata path. This supports input values like
+        // string "NaN"
         self.convert(dtype)
+            .or_else(|error| {
+                self.to_fill_value_metadata()
+                    .and_then(|metadata| Ok(dtype.fill_value_v3(&metadata)?))
+                    .map_err(|_| error)
+            })
             .map_err(|error| self.add_error_context(error, dtype))
     }
 
