@@ -20,7 +20,6 @@ from zarrista import (
     ArrayBytes,
     AsyncArray,
     ChunkGrid,
-    DataType,
 )
 from zarrista.store import MemoryStore
 
@@ -41,7 +40,7 @@ def _chunked_array() -> Array:
     """A 4x4 int32 array: a 2x2 grid of 2x2 chunks, each filled with `1 + 2i + j`."""
     array = ArrayBuilder(
         ChunkGrid.regular([4, 4], chunk_shape=[2, 2]),
-        DataType.from_string("int32"),
+        "int32",
         0,
     ).create(MemoryStore(), "/a")
     for i in (0, 1):
@@ -56,7 +55,7 @@ def _sharded_array() -> Array:
     array = (
         ArrayBuilder(
             ChunkGrid.regular([8, 8], chunk_shape=[4, 4]),
-            DataType.from_string("int32"),
+            "int32",
             0,
         )
         .subchunk_shape([2, 2])

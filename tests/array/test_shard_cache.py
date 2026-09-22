@@ -17,7 +17,6 @@ from zarrista import (
     AsyncArray,
     AsyncShardCache,
     ChunkGrid,
-    DataType,
     ShardCache,
 )
 from zarrista.store import MemoryStore
@@ -33,7 +32,7 @@ def _builder() -> ArrayBuilder:
     """
     return ArrayBuilder(
         ChunkGrid.regular([8, 4], chunk_shape=[4, 4]),
-        DataType.from_string("int32"),
+        "int32",
         0,
     ).subchunk_shape([2, 2])
 

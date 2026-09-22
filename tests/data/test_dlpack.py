@@ -17,7 +17,6 @@ from zarrista import (
     Array,
     ArrayBuilder,
     ChunkGrid,
-    DataType,
     FixedLengthTensor,
 )
 from zarrista.store import MemoryStore
@@ -233,7 +232,7 @@ async def test_async_write_outlives_the_source_array(tmp_path):
     deleter runs on whichever thread drops that future."""
     arr = await ArrayBuilder(
         ChunkGrid.regular([4, 4], chunk_shape=[2, 2]),
-        DataType.from_string("int32"),
+        "int32",
         _fill_value("int32"),
     ).create_async(LocalStore(str(tmp_path)), "/a")
     expected = _data()
@@ -253,7 +252,7 @@ async def test_many_concurrent_async_writes(tmp_path):
 
     arr = await ArrayBuilder(
         ChunkGrid.regular([4, 4], chunk_shape=[2, 2]),
-        DataType.from_string("int32"),
+        "int32",
         _fill_value("int32"),
     ).create_async(LocalStore(str(tmp_path)), "/a")
 

@@ -32,7 +32,7 @@ def _array(*, compressed: bool = False) -> Array:
     """A 4x4 int32 array in one 4x4 chunk."""
     builder = ArrayBuilder(
         ChunkGrid.regular([4, 4], chunk_shape=[4, 4]),
-        DataType.from_string("int32"),
+        "int32",
         0,
     )
     if compressed:
@@ -157,7 +157,7 @@ async def test_async_array_returns_an_encoded_chunk(tmp_path: Path):
     arr = await (
         ArrayBuilder(
             ChunkGrid.regular([4, 4], chunk_shape=[4, 4]),
-            DataType.from_string("int32"),
+            "int32",
             0,
         )
         .compressors([codec.zstd(3, checksum=False)])
@@ -175,7 +175,7 @@ async def test_async_array_returns_an_encoded_chunk(tmp_path: Path):
 async def test_async_array_absent_chunk_is_none(tmp_path: Path):
     arr = await ArrayBuilder(
         ChunkGrid.regular([4, 4], chunk_shape=[4, 4]),
-        DataType.from_string("int32"),
+        "int32",
         0,
     ).create_async(LocalStore(str(tmp_path)), "/a")
 

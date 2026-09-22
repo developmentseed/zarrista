@@ -22,7 +22,6 @@ from zarrista import (
     ArrayBytes,
     ChunkGrid,
     ChunkKeyEncoding,
-    DataType,
     FillValue,
     Group,
     ThreadPool,
@@ -174,7 +173,7 @@ def test_array_bytes_repr() -> None:
 def test_array_builder_repr() -> None:
     builder = ArrayBuilder(
         ChunkGrid.regular([4, 4], chunk_shape=[2, 2]),
-        DataType.from_string("int32"),
+        "int32",
         0,
     )
 
