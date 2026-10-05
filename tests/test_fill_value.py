@@ -176,8 +176,6 @@ def test_an_error_names_the_value_and_the_data_type():
     ) as error:
         FillValue(300, dtype="int8")
 
-    # The original error stays in the message. Its text comes from the Rust
-    # standard library and changes between Rust versions, so match its type.
     assert "OverflowError" in str(error.value)
 
 
