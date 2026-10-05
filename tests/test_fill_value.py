@@ -176,8 +176,9 @@ def test_an_error_names_the_value_and_the_data_type():
     ) as error:
         FillValue(300, dtype="int8")
 
-    # The text of the original error stays in the message.
-    assert "out of range" in str(error.value)
+    # The original error stays in the message. Its text comes from the Rust
+    # standard library and changes between Rust versions, so match its type.
+    assert "OverflowError" in str(error.value)
 
 
 def test_dtype_accepts_a_data_type():
