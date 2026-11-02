@@ -7,9 +7,6 @@ from ._zarrista import (
     Array,
     ArrayBuilder,
     ArrayBytes,
-    AsyncArray,
-    AsyncGroup,
-    AsyncShardCache,
     ChunkGrid,
     ChunkKeyEncoding,
     DataType,
@@ -24,6 +21,17 @@ from ._zarrista import (
     VariableLengthTensor,
     __version__,
 )
+
+# The async classes are only registered by the Rust extension when it is
+# built with the `async` feature. The pyemscripten wheel is built with
+# `--no-default-features`, so importing them unconditionally makes
+# `import zarrista` fail on Pyodide. Import them only when they are present.
+try:
+    from ._zarrista import AsyncArray, AsyncGroup, AsyncShardCache
+except ImportError:
+    _ASYNC_CLASSES_AVAILABLE = False
+else:
+    _ASYNC_CLASSES_AVAILABLE = True
 
 Tensor: TypeAlias = (
     FixedLengthTensor
@@ -65,3 +73,10 @@ __all__ = [
     "exceptions",
     "store",
 ]
+
+if not _ASYNC_CLASSES_AVAILABLE:
+    __all__ = [
+        name
+        for name in __all__
+        if name not in ("AsyncArray", "AsyncGroup", "AsyncShardCache")
+    ]

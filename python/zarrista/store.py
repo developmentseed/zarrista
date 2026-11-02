@@ -2,7 +2,18 @@
 
 from typing import TYPE_CHECKING, TypeAlias
 
-from ._zarrista import AsyncZipStore, FilesystemStore, MemoryStore, ZipStore
+from ._zarrista import FilesystemStore, MemoryStore, ZipStore
+
+# AsyncZipStore is only registered by the Rust extension when it is built
+# with the `async` feature, which the pyemscripten wheel disables (see
+# `zarrista/__init__.py`). Importing it unconditionally makes
+# `import zarrista` fail on Pyodide.
+try:
+    from ._zarrista import AsyncZipStore
+except ImportError:
+    _ASYNC_ZIP_STORE_AVAILABLE = False
+else:
+    _ASYNC_ZIP_STORE_AVAILABLE = True
 
 if TYPE_CHECKING:
     from icechunk import Session
@@ -40,3 +51,6 @@ __all__ = [
     "MemoryStore",
     "ZipStore",
 ]
+
+if not _ASYNC_ZIP_STORE_AVAILABLE:
+    __all__ = [name for name in __all__ if name != "AsyncZipStore"]
