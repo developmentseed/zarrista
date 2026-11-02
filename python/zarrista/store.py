@@ -53,4 +53,4 @@ __all__ = [
 ]
 
 if not _ASYNC_ZIP_STORE_AVAILABLE:
-    __all__.remove("AsyncZipStore")
+    __all__ = [name for name in __all__ if name != "AsyncZipStore"]
