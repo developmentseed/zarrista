@@ -43,10 +43,10 @@ jobs:
           - runner: ubuntu-latest
             target: aarch64
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@v7.0.1
 
       - name: Install uv
-        uses: astral-sh/setup-uv@v7
+        uses: astral-sh/setup-uv@v7.6.0
         with:
           enable-cache: true
 
@@ -55,7 +55,7 @@ jobs:
         # When 3.15 is released, add `3.15t` above for the abi3t build.
 
       - name: Build abi3 wheel
-        uses: PyO3/maturin-action@v1
+        uses: PyO3/maturin-action@v1.51.0
         with:
           target: ${{ matrix.platform.target }}
           args: --release --out dist --features abi3-py311 -i 3.11
@@ -63,7 +63,7 @@ jobs:
           manylinux: "2_28"
 
       - name: Build free-threaded (cp314t) wheel
-        uses: PyO3/maturin-action@v1
+        uses: PyO3/maturin-action@v1.51.0
         with:
           target: ${{ matrix.platform.target }}
           args: --release --out dist -i 3.14t
@@ -79,7 +79,7 @@ jobs:
       #     manylinux: "2_28"
 
       - name: Upload wheels
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@v7.0.2
         with:
           name: wheels-linux-${{ matrix.platform.target }}
           path: dist
@@ -95,10 +95,10 @@ jobs:
           - runner: ubuntu-latest
             target: aarch64
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@v7.0.1
 
       - name: Install uv
-        uses: astral-sh/setup-uv@v7
+        uses: astral-sh/setup-uv@v7.6.0
         with:
           enable-cache: true
 
@@ -107,7 +107,7 @@ jobs:
         # When 3.15 is released, add `3.15t` above for the abi3t build.
 
       - name: Build abi3 wheel
-        uses: PyO3/maturin-action@v1
+        uses: PyO3/maturin-action@v1.51.0
         with:
           target: ${{ matrix.platform.target }}
           args: --release --out dist --features abi3-py311 -i 3.11
@@ -115,7 +115,7 @@ jobs:
           manylinux: musllinux_1_2
 
       - name: Build free-threaded (cp314t) wheel
-        uses: PyO3/maturin-action@v1
+        uses: PyO3/maturin-action@v1.51.0
         with:
           target: ${{ matrix.platform.target }}
           args: --release --out dist -i 3.14t
@@ -131,7 +131,7 @@ jobs:
       #     manylinux: musllinux_1_2
 
       - name: Upload wheels
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@v7.0.2
         with:
           name: wheels-musllinux-${{ matrix.platform.target }}
           path: dist
@@ -140,25 +140,25 @@ jobs:
     if: github.event_name != 'pull_request'
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@v7.0.1
 
       # uv-provided Python has linking issues on Windows with maturin, so use
       # the GitHub-actions-provided interpreter. `generate-import-lib` lets
       # maturin build the version-specific wheels (e.g. 3.14t) without each of
       # those interpreters installed.
-      - uses: actions/setup-python@v7
+      - uses: actions/setup-python@v7.1.0
         with:
           python-version: "3.12"
 
       - name: Build abi3 wheel
-        uses: PyO3/maturin-action@v1
+        uses: PyO3/maturin-action@v1.51.0
         with:
           target: x64
           args: --release --out dist --features abi3-py311 --features generate-import-lib -i 3.11
           sccache: "true"
 
       - name: Build free-threaded (cp314t) wheel
-        uses: PyO3/maturin-action@v1
+        uses: PyO3/maturin-action@v1.51.0
         with:
           target: x64
           args: --release --out dist --features generate-import-lib -i 3.14t
@@ -172,7 +172,7 @@ jobs:
       #     sccache: "true"
 
       - name: Upload wheels
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@v7.0.2
         with:
           name: wheels-windows-x64
           path: dist
@@ -188,10 +188,10 @@ jobs:
           - runner: macos-15
             target: aarch64
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@v7.0.1
 
       - name: Install uv
-        uses: astral-sh/setup-uv@v7
+        uses: astral-sh/setup-uv@v7.6.0
         with:
           enable-cache: true
 
@@ -200,14 +200,14 @@ jobs:
         # When 3.15 is released, add `3.15t` above for the abi3t build.
 
       - name: Build abi3 wheel
-        uses: PyO3/maturin-action@v1
+        uses: PyO3/maturin-action@v1.51.0
         with:
           target: ${{ matrix.platform.target }}
           args: --release --out dist --features abi3-py311 -i 3.11
           sccache: "true"
 
       - name: Build free-threaded (cp314t) wheel
-        uses: PyO3/maturin-action@v1
+        uses: PyO3/maturin-action@v1.51.0
         with:
           target: ${{ matrix.platform.target }}
           args: --release --out dist -i 3.14t
@@ -221,7 +221,7 @@ jobs:
       #     sccache: "true"
 
       - name: Upload wheels
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@v7.0.2
         with:
           name: wheels-macos-${{ matrix.platform.target }}
           path: dist
@@ -258,10 +258,10 @@ jobs:
           - python-version: "3.14"
             rust-toolchain-override: "1.94"
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@v7.0.1
 
       - name: Install uv
-        uses: astral-sh/setup-uv@v7
+        uses: astral-sh/setup-uv@v7.6.0
         with:
           enable-cache: true
           python-version: ${{ matrix.python-version }}
@@ -303,7 +303,7 @@ jobs:
           } >> "$GITHUB_PATH"
 
       - name: Build emscripten wheel
-        uses: PyO3/maturin-action@v1
+        uses: PyO3/maturin-action@v1.51.0
         env:
           CARGO_TARGET_WASM32_UNKNOWN_EMSCRIPTEN_RUSTFLAGS: ${{ steps.pyodide-config.outputs.rustflags }}
           CFLAGS_wasm32_unknown_emscripten: ${{ steps.pyodide-config.outputs.cflags }}
@@ -323,7 +323,7 @@ jobs:
           ls dist/*-pyemscripten_*_wasm32.whl >/dev/null
 
       - name: Upload wheels
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@v7.0.2
         with:
           name: wheels-emscripten-py${{ matrix.python-version }}
           path: dist
@@ -332,16 +332,16 @@ jobs:
     if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@v7.0.1
 
       - name: Build sdist
-        uses: PyO3/maturin-action@v1
+        uses: PyO3/maturin-action@v1.51.0
         with:
           command: sdist
           args: --out dist
 
       - name: Upload sdist
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@v7.0.2
         with:
           name: wheels-sdist
           path: dist
@@ -358,7 +358,7 @@ jobs:
     if: startsWith(github.ref, 'refs/tags/')
     needs: [linux, musllinux, windows, macos, emscripten, sdist]
     steps:
-      - uses: actions/download-artifact@v8
+      - uses: actions/download-artifact@v8.0.2
         with:
           pattern: wheels-*
           merge-multiple: true
