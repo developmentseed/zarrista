@@ -18,10 +18,10 @@ jobs:
       - uses: actions/checkout@v7.0.1
 
       # Use ruff-action so we get annotations in the GitHub UI.
-      - uses: astral-sh/ruff-action@v3.6.1
+      - uses: astral-sh/ruff-action@v4.1.0
 
       # The default step above runs `ruff check`; also enforce formatting.
-      - uses: astral-sh/ruff-action@v3.6.1
+      - uses: astral-sh/ruff-action@v4.1.0
         with:
           args: "format --check"
 
