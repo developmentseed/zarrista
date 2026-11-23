@@ -23,6 +23,7 @@ workflows:
         - 'swatinem/rust-cache@v2.9.3'
     '.github/workflows/test.yml':
         - 'actions/checkout@v7.0.1'
+        - 'actions/setup-python@v7.1.0'
         - 'dtolnay/rust-toolchain@master'
         - 'swatinem/rust-cache@v2.9.3'
     '.github/workflows/verify-actions-lock.yml':
