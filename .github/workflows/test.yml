@@ -23,8 +23,6 @@ jobs:
           toolchain: stable
           components: clippy
 
-      # `cargo test` links against this Python. Without it, PyO3 uses the
-      # runner image's system Python, which the Rust cache does not track.
       - uses: actions/setup-python@v7.1.0
         with:
           python-version: "3.13"
